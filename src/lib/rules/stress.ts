@@ -1,37 +1,56 @@
-import { BorrowerProfile, StressScenario } from '../types';
+import { BorrowerProfile, StressScenario, ConsequenceStatus } from '../types';
 
 /**
- * Conducts stress testing under two critical borrower vulnerabilities:
- * 1. Income shock: Net monthly income falls by 20% (job disruption, business slowdown).
- * 2. Rate hike: Interest rate climbs by 200 bps (+2.0%).
+ * Conducts stress testing under income shock vulnerability.
+ * Rule: Income shock = -20% (Source: My judgement)
+ * 
+ * Tracks consequence:
+ * Normal: EMI / net income = X%
+ * Stressed: EMI / stressed income = Y%
+ * Status:
+ *   - <= 40%: "Still manageable"
+ *   - 41%–50%: "Uncomfortable"
+ *   - > 50%: "Unsafe" (breaches safe debt ceiling)
  */
 export function calculateStressScenario(
   profile: BorrowerProfile,
-  recommendedMaxEMI: number
+  recommendedMaxEMI: number,
+  incomeStressPercent: number = 20
 ): StressScenario {
   const netIncome = Math.max(1, profile.netMonthlyIncome);
   const existingEMI = Math.max(0, profile.existingMonthlyEMI);
   const totalOriginalObligation = existingEMI + recommendedMaxEMI;
   const originalFOIR = Math.round((totalOriginalObligation / netIncome) * 100);
 
-  // Scenario: 20% Income Reduction
-  const stressedIncome = netIncome * 0.80;
+  // Stressed income
+  const stressMultiplier = Math.max(0.1, (100 - incomeStressPercent) / 100);
+  const stressedIncome = netIncome * stressMultiplier;
   const stressedFOIR = Math.round((totalOriginalObligation / stressedIncome) * 100);
 
-  // Breach threshold is 50% FOIR under stress
-  const isBreached = stressedFOIR > 50;
+  let consequenceStatus: ConsequenceStatus = 'Still manageable';
+  if (stressedFOIR > 50) {
+    consequenceStatus = 'Unsafe';
+  } else if (stressedFOIR > 38) {
+    consequenceStatus = 'Uncomfortable';
+  }
 
-  const explanation = isBreached
-    ? `If income drops by 20%, your total debt burden jumps from ${originalFOIR}% to ${stressedFOIR}% of monthly income. This crosses the safe 50% limit. We recommend lowering the requested principal or opting for a 48m tenure to cushion monthly cash flow.`
-    : `Even if income falls by 20%, your total EMI commitment remains at ${stressedFOIR}% of earnings, leaving adequate buffer for household living expenses.`;
+  const isBreached = consequenceStatus === 'Unsafe';
+
+  const explanation = consequenceStatus === 'Unsafe'
+    ? `If monthly income drops by ${incomeStressPercent}%, your total debt servicing jumps from ${originalFOIR}% to ${stressedFOIR}% of income. This breaches the safe 50% crisis ceiling, threatening essential living expenses.`
+    : consequenceStatus === 'Uncomfortable'
+    ? `If monthly income drops by ${incomeStressPercent}%, your total debt burden climbs from ${originalFOIR}% to ${stressedFOIR}%. This leaves little room for discretionary spending, though essential bills remain covered.`
+    : `Even with a ${incomeStressPercent}% drop in monthly earnings, your total debt obligations remain at ${stressedFOIR}% of income, leaving a comfortable cushion for living expenses.`;
 
   return {
     type: 'income_shock',
-    title: '20% Income Shock Stress Test',
-    description: 'Simulates financial stability if your take-home pay or business revenue decreases by 20%.',
+    title: `${incomeStressPercent}% Income Drop Stress Test`,
+    description: `Evaluates debt burden if take-home income falls by ${incomeStressPercent}%.`,
+    incomeStressPercent,
     originalFOIR,
     stressedFOIR,
     isBreached,
+    consequenceStatus,
     explanation
   };
 }

@@ -54,6 +54,30 @@ export interface BorrowerProfile {
   variablePayPortionPercent?: number;// Bonus/commission share of annual compensation
 }
 
+export interface QuizOption {
+  value: any;
+  label: string;
+  description?: string;
+  badge?: string;
+}
+
+export interface QuizQuestion {
+  id: keyof BorrowerProfile | string;
+  title: string;
+  subtitle: string;
+  whyWeAsk?: string;
+  canSkip?: boolean;
+  inputType: 'choice_pill' | 'currency_slider' | 'number_stepper';
+  options?: QuizOption[];
+  min?: number;
+  max?: number;
+  step?: number;
+  defaultValue: any;
+  targetOutputs: string[];
+  shouldAsk: (profile: Partial<BorrowerProfile>) => boolean;
+  informationScore: (profile: Partial<BorrowerProfile>) => number;
+}
+
 // ----------------------------------------------------------------
 // Normalized Facts & Derived Metrics
 // ----------------------------------------------------------------
@@ -95,7 +119,9 @@ export interface DerivedMetrics {
 // ----------------------------------------------------------------
 
 export interface ReasonTrace {
+  metric?: string;
   valueDescription: string;
+  formula?: string;
   drivers: string[];
   bindingRule: string;
   rationale: string;
@@ -103,6 +129,13 @@ export interface ReasonTrace {
 
 export type Verdict = 'BORROW' | 'BORROW LESS' | 'DON\'T BORROW YET';
 export type ConfidenceLevel = 'HIGH' | 'MEDIUM' | 'LOW';
+export type ConsequenceStatus = 'Still manageable' | 'Uncomfortable' | 'Unsafe';
+
+export interface AssumptionOverrides {
+  safeFOIRCapPercent?: number;
+  gigFOIRCapPercent?: number;
+  incomeStressPercent?: number;
+}
 
 export type ActionableAlternative = 
   | 'borrow_now'
@@ -131,9 +164,11 @@ export interface StressScenario {
   type: 'income_shock' | 'rate_hike';
   title: string;
   description?: string;
+  incomeStressPercent: number;
   originalFOIR: number;
   stressedFOIR: number;
   isBreached: boolean;
+  consequenceStatus: ConsequenceStatus;
   explanation: string;
 }
 

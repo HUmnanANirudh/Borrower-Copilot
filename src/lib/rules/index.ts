@@ -5,7 +5,8 @@ import {
   BetterAlternative, 
   ReasonTrace,
   LenderQuoteInput,
-  LenderQuoteEvaluation
+  LenderQuoteEvaluation,
+  AssumptionOverrides
 } from '../types';
 import { normalizeFacts, deriveMetrics } from './pipeline';
 import { calculateEligibilityAndSanction } from './eligibility';
@@ -18,12 +19,15 @@ import { calculateStressScenario } from './stress';
  * MASTER FINANCIAL ASSESSMENT ENGINE
  * Refined around: Facts -> Derived Metrics -> Decisions Pipeline
  */
-export function evaluateAssessment(profile: BorrowerProfile): Assessment {
+export function evaluateAssessment(
+  profile: BorrowerProfile,
+  overrides?: AssumptionOverrides
+): Assessment {
   // Step 1: Normalize Facts
   const facts = normalizeFacts(profile);
 
-  // Step 2: Derive Metrics
-  const metrics = deriveMetrics(facts, profile);
+  // Step 2: Derive Metrics (with optional overrides for evaluator sandbox)
+  const metrics = deriveMetrics(facts, profile, overrides);
 
   // Step 3: Determine Pricing (Dimension 3)
   const rateAnalysis = calculateFairRates(profile);
@@ -107,7 +111,11 @@ export function evaluateAssessment(profile: BorrowerProfile): Assessment {
     baselinePrincipal > 0 ? baselinePrincipal : profile.requestedAmount,
     midFairRate
   );
-  const stressScenario = calculateStressScenario(profile, safeMaxEMI);
+  const stressScenario = calculateStressScenario(
+    profile, 
+    safeMaxEMI, 
+    overrides?.incomeStressPercent ?? 20
+  );
 
   // Step 8: Verdict & Actionable "Better Alternative"
   let verdict: Verdict = 'BORROW';

@@ -51,3 +51,15 @@ export function decodeCardPayload(encoded: string): SharedCardPayload | null {
     return null;
   }
 }
+
+/**
+ * Creates the full shareable URL pointing to /card/[token]
+ */
+export function createShareableCardUrl(
+  assessment: Assessment, 
+  profile: BorrowerProfile, 
+  origin: string = ''
+): string {
+  const token = encodeCardPayload(assessment, profile);
+  return `${origin}/card/${token}`;
+}

@@ -115,6 +115,8 @@ export const BASELINE_FINANCIAL_QUESTIONS: QuizQuestion[] = [
     id: 'creditScoreStatus',
     title: 'What is your approximate credit bureau score?',
     subtitle: 'If unsure, pick Unknown. We never penalize unknowns as zero or 300.',
+    whyWeAsk: 'Knowing your bureau score tier narrows the fair rate band from ±250 bps down to ±75 bps.',
+    canSkip: true,
     inputType: 'choice_pill',
     options: [
       { value: '750_plus', label: '750+ (Prime Tier)', badge: 'Lowest Rates' },
@@ -143,6 +145,8 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
     id: 'hasUnencumberedCollateral',
     title: 'Do you or your family own clear-title, unencumbered property?',
     subtitle: 'Pledging a residential or commercial premises unlocks Loan Against Property (LAP) at 9%–10.5% instead of 16%+.',
+    whyWeAsk: 'Pledging property can route your request to a Secured LAP at 9.0%–10.5% instead of a 16%+ unsecured loan.',
+    canSkip: true,
     inputType: 'choice_pill',
     options: [
       { value: 'true', label: 'Yes, own clear property (shop / house / plot)', description: 'Can unlock LAP at half the rate' },
@@ -170,6 +174,8 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
     id: 'collateralEstimatedValue',
     title: 'What is the approximate market value of this property?',
     subtitle: 'Lenders cap Secured LAP at 50%–65% Loan-to-Value (LTV) of unencumbered market price.',
+    whyWeAsk: 'Property valuation sets the 50%–65% Loan-to-Value (LTV) regulatory ceiling for secured lending.',
+    canSkip: true,
     inputType: 'currency_slider',
     min: 500000,
     max: 20000000,
@@ -185,6 +191,8 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
     id: 'coApplicantIncome',
     title: 'Does your spouse or a family co-applicant have regular income?',
     subtitle: 'Adding verifiable co-applicant income expands household cash flow and lowers debt risk.',
+    whyWeAsk: 'Adding verifiable family income expands household debt servicing capacity and lowers default risk.',
+    canSkip: true,
     inputType: 'currency_slider',
     min: 0,
     max: 500000,
@@ -205,6 +213,8 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
     id: 'businessVintageYears',
     title: 'How many continuous years has your business or shop been active?',
     subtitle: '10+ years operating vintage proves cash-flow resilience and offsets missing bureau records.',
+    whyWeAsk: 'A 10+ year operating history demonstrates cash-flow resilience and helps offset missing bureau credit files.',
+    canSkip: true,
     inputType: 'number_stepper',
     min: 1,
     max: 40,
@@ -219,6 +229,7 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
     id: 'hasHighCostAppLoans',
     title: 'Are any of your current loans from instant apps or private lenders at 30%+?',
     subtitle: 'Predatory digital apps drain cash flow with weekly or high-frequency interest.',
+    whyWeAsk: 'Active high-cost loans (30%+) drain cash flow; knowing this determines whether consolidating debt first is your best move.',
     inputType: 'choice_pill',
     options: [
       { value: 'false', label: 'No – Only standard bank / NBFC loans', description: 'Normal interest rates' },
@@ -244,6 +255,8 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
     id: 'recentDelinquencyOrBounce',
     title: 'Have you had any missed due dates or bounced EMIs in the past 6 months?',
     subtitle: 'Active bounces cause instant automated rejection at tier-1 banks and signal credit distress.',
+    whyWeAsk: 'Recent missed payments trigger strict bank rejection policies, changing which lenders are realistic.',
+    canSkip: true,
     inputType: 'choice_pill',
     options: [
       { value: 'false', label: 'Clean Record – Zero bounces', description: 'All repayments on time' },
@@ -271,6 +284,8 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
     id: 'variablePayPortionPercent',
     title: 'What percentage of your annual compensation is variable or bonus?',
     subtitle: 'Lenders haircut annual bonus components by 50% when calculating fixed monthly EMI limits.',
+    whyWeAsk: 'Banks discount annual bonus pay by 50% when calculating your fixed monthly EMI limit.',
+    canSkip: true,
     inputType: 'choice_pill',
     options: [
       { value: '0', label: '0% – 100% Fixed Base Salary', description: 'Stable monthly paycheck' },
@@ -288,6 +303,8 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
     id: 'emergencySavingsMonths',
     title: 'How many months of essential expenses do you have in liquid savings?',
     subtitle: 'Having a 3+ month buffer prevents unexpected emergencies from causing loan default.',
+    whyWeAsk: 'Having 3+ months of emergency reserves determines whether taking on new debt is safe during emergencies.',
+    canSkip: true,
     inputType: 'choice_pill',
     options: [
       { value: '0', label: 'Zero / Under 1 Month', description: 'Living paycheck to paycheck' },
@@ -305,6 +322,25 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
     informationScore: () => 7
   }
 ];
+
+/**
+ * Context transition messages explaining why path adapts
+ */
+export function getContextTransition(questionId: string, profile: Partial<BorrowerProfile>): string | null {
+  if (questionId === 'hasUnencumberedCollateral' && profile.primaryIncomeSignal === 'self_employed_business') {
+    return "Because you're self-employed and mentioned a substantial loan amount, we check if unencumbered property can unlock a lower-rate secured loan.";
+  }
+  if (questionId === 'hasHighCostAppLoans' && (profile.primaryIncomeSignal === 'gig_freelance' || profile.loanPurpose === 'debt_consolidation')) {
+    return "Because you have existing obligations, we check your high-cost debt exposure to protect against debt spiral risk.";
+  }
+  if (questionId === 'recentDelinquencyOrBounce' && profile.hasHighCostAppLoans) {
+    return "Because you are servicing digital loan apps, we verify repayment stability before assessing new borrowing.";
+  }
+  if (questionId === 'variablePayPortionPercent' && profile.primaryIncomeSignal === 'salaried_corporate') {
+    return "Because corporate compensation often includes variable bonus components, we check your guaranteed monthly base.";
+  }
+  return null;
+}
 
 /**
  * Deterministic Information-Value Selection Engine:

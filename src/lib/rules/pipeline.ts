@@ -1,4 +1,4 @@
-import { BorrowerProfile, NormalizedFacts, DerivedMetrics } from '../types';
+import { BorrowerProfile, NormalizedFacts, DerivedMetrics, AssumptionOverrides } from '../types';
 
 /**
  * Normalizes raw borrower inputs into clean facts.
@@ -50,7 +50,11 @@ export function normalizeFacts(profile: BorrowerProfile): NormalizedFacts {
 /**
  * Computes derived risk, cash-flow, and capacity metrics.
  */
-export function deriveMetrics(facts: NormalizedFacts, profile: BorrowerProfile): DerivedMetrics {
+export function deriveMetrics(
+  facts: NormalizedFacts, 
+  profile: BorrowerProfile,
+  overrides?: AssumptionOverrides
+): DerivedMetrics {
   const income = facts.effectiveIncomeAfterHaircut;
   const existingEMI = facts.existingEMI;
   const expenses = facts.effectiveExpensesWithSanityFloor;
@@ -64,9 +68,9 @@ export function deriveMetrics(facts: NormalizedFacts, profile: BorrowerProfile):
   const uncommittedCashFlowFloor = Math.max(0, disposableCash - untouchableReserveBuffer);
 
   // 3. Safe FOIR Cap
-  let safeFOIRCapPercent = 35;
+  let safeFOIRCapPercent = overrides?.safeFOIRCapPercent ?? 35;
   if (profile.primaryIncomeSignal === 'gig_freelance' || profile.primaryIncomeSignal === 'salaried_informal') {
-    safeFOIRCapPercent = 25; // Gig cash flow fluctuates
+    safeFOIRCapPercent = overrides?.gigFOIRCapPercent ?? 25; // Gig cash flow fluctuates
   }
 
   const maxAllowableDebtServicing = (income * safeFOIRCapPercent) / 100;

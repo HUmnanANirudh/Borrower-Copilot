@@ -89,6 +89,18 @@ The questioning flow avoids fixed 3-branch classification early. It operates via
 | **Variable Bonus Share %** | Amount, EMI | Primary Income = Salaried Corporate | **7 / 10** |
 | **Emergency Savings Months** | Verdict, Confidence | Existing FOIR $\ge 20\%$ OR Gig Worker | **7 / 10** |
 
+### 3.1 Explicit Questionnaire Stopping Criteria
+
+The engine halts questioning and transitions to assessment outputs when **ALL** of the following conditions are satisfied:
+
+| Stopping Condition | Threshold | Why | Source vs. Judgement |
+| :--- | :--- | :--- | :--- |
+| **1. Universal Baseline Minimum** | All Phase 1 (3) + Phase 2 (5) questions answered (8 total) | Without purpose, amount, age, income, existing EMI, expenses, and credit status, outputs cannot be calculated. | **Product Requirement** |
+| **2. High-Impact Risk Unresolved** | Zero remaining unasked questions with Information Score $\ge 9$ | If high-cost app debt, collateral, or vintage could alter the verdict or product route, the engine must not stop prematurely. | **My Judgement** |
+| **3. Safe Amount Interval Stability** | Borrower-safe loan range width $\le 20\%$ of ceiling | When further questions would not move the safe borrowing range by $> \pm 10\%$, questioning stops. | **My Judgement** |
+| **4. Rate Band Narrowing Floor** | Fair rate band width $\le 150\text{ bps}$ (known score) or $\le 300\text{ bps}$ (unknown score) | A known score cannot be tightened further without a formal bureau pull; an unknown score honestly retains uncertainty. | **My Judgement** |
+| **5. Unanswered Questions Marginal Utility** | Expected change in safe EMI $< ₹1,500/\text{month}$ | Prevents borrower survey fatigue when remaining variables produce statistically negligible impact on cash flow. | **My Judgement** |
+
 ---
 
 ## 4. Inferred Product Routing Decisions
