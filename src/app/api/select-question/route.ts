@@ -10,11 +10,16 @@ interface SelectQuestionRequest {
 }
 
 export async function POST(req: Request) {
+  let profile: Partial<BorrowerProfile> = {};
+  let answeredIds: string[] = [];
+
   try {
-    const { profile, answeredIds } = (await req.json()) as SelectQuestionRequest;
+    const body = (await req.json()) as SelectQuestionRequest;
+    profile = body.profile || {};
+    answeredIds = body.answeredIds || [];
 
     // 1. Gather all logically eligible candidate questions
-    const candidates = getEligibleAdaptiveQuestions(profile, answeredIds || []);
+    const candidates = getEligibleAdaptiveQuestions(profile, answeredIds);
 
     // If no candidate questions exist, stop immediately
     if (!candidates || candidates.length === 0) {

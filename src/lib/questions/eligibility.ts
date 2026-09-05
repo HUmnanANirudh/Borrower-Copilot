@@ -46,34 +46,36 @@ export function rankCandidatesHeuristically(
 
     // Priya case: Salaried with wedding loan -> Variable pay is critical
     if (q.id === 'variablePayPortionPercent' && profile.primaryIncomeSignal === 'salaried_corporate') {
-      score += 5;
+      score += 15;
       rationale = 'Evaluates potential volatility in corporate bonus pay to protect safe EMI ceiling.';
     }
 
-    // Ravi case: Self-employed with shop -> Collateral ownership is highest value
-    if (q.id === 'hasUnencumberedCollateral' && profile.primaryIncomeSignal === 'self_employed_business') {
-      score += 8;
+    // Ravi case: Self-employed with shop or high ticket -> Collateral ownership is highest value
+    if (q.id === 'hasUnencumberedCollateral' && (profile.primaryIncomeSignal === 'self_employed_business' || (profile.requestedAmount || 0) >= 1500000 || profile.loanPurpose === 'business_expansion')) {
+      score += 12;
       rationale = 'Evaluates whether unencumbered property can unlock a 9.0%–10.5% LAP instead of 16%+ personal loan.';
     }
 
     if (q.id === 'collateralEstimatedValue' && profile.hasUnencumberedCollateral === true) {
-      score += 9;
+      score += 15;
       rationale = 'Measures property valuation to calculate exact 50%–60% LTV sanction capacity.';
     }
 
     if (q.id === 'businessVintageYears' && profile.primaryIncomeSignal === 'self_employed_business') {
-      score += 6;
+      score += 8;
       rationale = 'Tests operating track record to compensate for lack of credit bureau score.';
     }
 
     // Anita case: Gig worker / high distress -> Instant app loans and bounces are urgent
-    if (q.id === 'hasHighCostAppLoans' && (profile.primaryIncomeSignal === 'gig_freelance' || profile.loanPurpose === 'debt_consolidation')) {
-      score += 10;
+    if (q.id === 'hasHighCostAppLoans' && (profile.primaryIncomeSignal === 'gig_freelance' || profile.loanPurpose === 'debt_consolidation' || ((profile.existingMonthlyEMI || 0) / (profile.netMonthlyIncome || 1)) >= 0.20)) {
+      score += 14;
       rationale = 'Identifies active 30%+ instant app loans that trigger debt spiral risk.';
     }
 
-    if (q.id === 'recentDelinquencyOrBounce' && (profile.hasHighCostAppLoans === true || profile.creditScoreStatus === 'unknown' || profile.primaryIncomeSignal === 'gig_freelance')) {
-      score += 10;
+    // Only prioritize bounce check if borrower has existing debt or flagged app loans
+    const hasExistingLoans = (profile.existingMonthlyEMI || 0) > 0 || profile.hasHighCostAppLoans === true;
+    if (q.id === 'recentDelinquencyOrBounce' && hasExistingLoans) {
+      score += 13;
       rationale = 'Checks recent repayment bounce to determine if lender rejection is certain.';
     }
 
