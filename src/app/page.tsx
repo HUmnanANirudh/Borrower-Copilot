@@ -11,22 +11,28 @@ import { LandingFooter } from '@/components/landing/LandingFooter';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col bg-[#f3ede7] text-[#171717] font-sans selection:bg-[#5769e7]/20 selection:text-[#5769e7]">
-      {/* Header */}
+    <div className="min-h-screen flex flex-col">
+      {/* Header — transparent, merges into sand hero */}
       <LandingHeader />
 
-      {/* Main Marketing Surfaces */}
       <main className="flex-1">
+        {/* Sand: Hero */}
         <HeroSection />
+        {/* Sand: Value props */}
         <ValueProps />
+        {/* White: How it works */}
         <HowItWorks />
+        {/* Sand: Trust quote (dark card inside) */}
         <TrustSection />
+        {/* White: Methodology */}
         <MethodologySection />
+        {/* Sand: Privacy (white card inside) */}
         <PrivacySection />
+        {/* Blue: Final CTA */}
         <FinalCTA />
       </main>
 
-      {/* Footer */}
+      {/* Sand: Footer */}
       <LandingFooter />
     </div>
   );
