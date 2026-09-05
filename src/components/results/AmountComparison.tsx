@@ -16,7 +16,7 @@ export function AmountComparison({ assessment, profile }: AmountComparisonProps)
         <span className="text-xs uppercase font-extrabold tracking-wider text-[#5769e7] block mb-1">
           Loan Sizing Analysis
         </span>
-        <h2 className="font-display text-[32px] font-normal leading-tight text-[#171717] tracking-tight">
+        <h2 className="font-display text-[32px] font-normal leading-[0.9] tracking-[-0.02em] text-[#171717] tracking-tight">
           Safe Carrying Capacity vs. Lender Estimate
         </h2>
       </div>
@@ -33,7 +33,7 @@ export function AmountComparison({ assessment, profile }: AmountComparisonProps)
             </span>
           </div>
 
-          <span className="font-display text-[40px] font-normal leading-tight text-emerald-800 block my-2">
+          <span className="font-display text-[40px] font-normal leading-[0.9] tracking-[-0.02em] text-emerald-800 block my-2">
             {formatLakhs(assessment.borrowerSafeRange[0])} – {formatLakhs(assessment.borrowerSafeRange[1])}
           </span>
 
@@ -48,7 +48,7 @@ export function AmountComparison({ assessment, profile }: AmountComparisonProps)
             What a lender may offer
           </span>
 
-          <span className="font-display text-[40px] font-normal leading-tight text-[#171717] block my-2">
+          <span className="font-display text-[40px] font-normal leading-[0.9] tracking-[-0.02em] text-[#171717] block my-2">
             {formatLakhs(assessment.estimatedLenderRange[0])} – {formatLakhs(assessment.estimatedLenderRange[1])}
           </span>
 

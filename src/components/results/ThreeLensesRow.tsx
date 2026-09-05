@@ -20,7 +20,7 @@ export function ThreeLensesRow({ assessment }: ThreeLensesRowProps) {
         }`}>
           {assessment.eligibilityStatus === 'ELIGIBLE' ? 'LIKELY' : assessment.eligibilityStatus}
         </span>
-        <span className="font-display text-[28px] font-normal text-[#171717] block leading-tight">
+        <span className="font-display text-[28px] font-normal text-[#171717] block leading-[0.9] tracking-[-0.02em]">
           {formatLakhs(assessment.estimatedLenderRange[0])} – {formatLakhs(assessment.estimatedLenderRange[1])}
         </span>
         <span className="text-[12px] text-[#747371] block mt-1">What bank may offer</span>
@@ -34,7 +34,7 @@ export function ThreeLensesRow({ assessment }: ThreeLensesRowProps) {
         <span className="text-[12px] font-semibold text-emerald-700 block">
           {assessment.affordabilityStatus === 'AFFORDABLE' ? 'SAFE' : assessment.affordabilityStatus}
         </span>
-        <span className="font-display text-[28px] font-normal text-emerald-700 block leading-tight">
+        <span className="font-display text-[28px] font-normal text-emerald-700 block leading-[0.9] tracking-[-0.02em]">
           {formatLakhs(assessment.borrowerSafeRange[0])} – {formatLakhs(assessment.borrowerSafeRange[1])}
         </span>
         <span className="text-[12px] text-emerald-800 font-medium block mt-1">What you should carry</span>
@@ -48,7 +48,7 @@ export function ThreeLensesRow({ assessment }: ThreeLensesRowProps) {
         <span className="text-[12px] font-semibold text-[#5769e7] block">
           {assessment.pricingStatus}
         </span>
-        <span className="font-display text-[28px] font-normal text-[#171717] block leading-tight">
+        <span className="font-display text-[28px] font-normal text-[#171717] block leading-[0.9] tracking-[-0.02em]">
           {assessment.fairRateRange[0]}% – {assessment.fairRateRange[1]}%
         </span>
         <span className="text-[12px] text-[#747371] block mt-1">Fair market band</span>

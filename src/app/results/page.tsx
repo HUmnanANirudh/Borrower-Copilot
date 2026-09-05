@@ -11,7 +11,7 @@ import { EMITenureTable } from '@/components/results/EMITenureTable';
 import { StressTestCard } from '@/components/results/StressTestCard';
 import { FairRateAPRCard } from '@/components/results/FairRateAPRCard';
 import { ReasonTraceAccordion } from '@/components/results/ReasonTraceAccordion';
-import { QuoteChecker } from '@/components/results/QuoteChecker';
+import Avatar from 'boring-avatars';
 import { ShieldCheckIcon, ArrowLeft01Icon, ArrowRight01Icon } from '@/components/icons';
 
 export default function ResultsPage() {
@@ -79,10 +79,10 @@ export default function ResultsPage() {
         <div className="max-w-[1280px] mx-auto px-5 lg:px-16 h-14 flex items-center justify-between">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-[#5d5b59] hover:text-[#171717]"
+            className="flex items-center gap-2 font-display text-[20px] text-[#171717] tracking-tight"
           >
-            <ArrowLeft01Icon className="w-4 h-4" aria-hidden="true" />
-            <span>Home</span>
+            <Avatar size={26} name="BorrowIQ" variant="pixel" colors={["#5769e7", "#171717", "#f3ede7", "#52ad6e", "#d5daf7"]} />
+            BorrowIQ
           </Link>
 
           <div className="flex items-center gap-3">

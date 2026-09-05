@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BorrowerProfile, QuizQuestion } from '@/lib/types';
 import { getPrioritizedQuestions, getContextTransition } from '@/lib/quizzing';
+import Avatar from 'boring-avatars';
 import { 
   ArrowLeft01Icon, 
   ArrowRight01Icon, 
@@ -99,10 +100,10 @@ export function QuizContainer() {
         <div className="flex items-center justify-between mb-4">
           <Link 
             href="/"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#5d5b59] hover:text-[#171717] transition-colors"
+            className="flex items-center gap-2 font-display text-[20px] text-[#171717] tracking-tight"
           >
-            <ArrowLeft01Icon className="w-4 h-4" aria-hidden="true" />
-            <span>BorrowIQ</span>
+            <Avatar size={26} name="BorrowIQ" variant="pixel" colors={["#5769e7", "#171717", "#f3ede7", "#52ad6e", "#d5daf7"]} />
+            BorrowIQ
           </Link>
 
           <div className="text-right">
@@ -143,7 +144,7 @@ export function QuizContainer() {
         <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#ebeae8] shadow-sm space-y-6">
           {/* Question Title & Subtitle */}
           <div>
-            <h1 className="font-display text-[32px] sm:text-[40px] lg:text-[48px] font-normal text-[#171717] leading-[1.05] tracking-tight mb-2">
+            <h1 className="font-display text-[32px] sm:text-[40px] lg:text-[48px] font-normal text-[#171717] leading-[0.9] tracking-[-0.02em] uppercase mb-2">
               {currentQuestion.title}
             </h1>
             <p className="text-[15px] sm:text-[16px] text-[#5d5b59] leading-relaxed">
@@ -290,7 +291,7 @@ export function QuizContainer() {
           <button
             type="button"
             onClick={handlePrevious}
-            className="inline-flex items-center gap-1.5 px-5 py-3 rounded-full text-xs sm:text-sm font-bold bg-white border border-[#dedcd9] hover:bg-[#f2f1f0] text-[#171717] cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-5 py-3 rounded-full text-[14px] font-semibold bg-white border border-[#dedcd9] hover:bg-[#f2f1f0] text-[#171717] cursor-pointer"
           >
             <ArrowLeft01Icon className="w-4 h-4" aria-hidden="true" />
             <span>Previous</span>
@@ -304,7 +305,7 @@ export function QuizContainer() {
             <button
               type="button"
               onClick={handleSkip}
-              className="text-xs sm:text-sm font-bold text-[#747371] hover:text-[#171717] px-3 py-2 cursor-pointer transition-colors"
+              className="text-[14px] font-semibold text-[#747371] hover:text-[#171717] px-3 py-2 cursor-pointer transition-colors"
             >
               Don’t know? Skip
             </button>
@@ -313,7 +314,7 @@ export function QuizContainer() {
           <button
             type="button"
             onClick={handleNext}
-            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-xs sm:text-sm font-extrabold bg-[#5769e7] hover:bg-[#4958be] text-white cursor-pointer shadow-sm active:scale-98 transition-all"
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-[15px] font-semibold bg-[#5769e7] hover:bg-[#4958be] text-white cursor-pointer shadow-sm active:scale-98 transition-all"
           >
             <span>{currentStep === totalSteps - 1 ? 'Calculate My Position' : 'Continue'}</span>
             <ArrowRight01Icon className="w-4 h-4" aria-hidden="true" />

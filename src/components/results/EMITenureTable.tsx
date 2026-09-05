@@ -22,12 +22,12 @@ export function EMITenureTable({ assessment }: EMITenureTableProps) {
           <span className="text-xs uppercase font-extrabold tracking-wider text-[#5769e7] block">
             Payment Capacity
           </span>
-          <h2 className="font-display text-[32px] font-normal leading-tight text-[#171717] tracking-tight">
+          <h2 className="font-display text-[32px] font-normal leading-[0.9] tracking-[-0.02em] text-[#171717] tracking-tight">
             Your Safe EMI Ceiling
           </h2>
         </div>
         <div className="text-left sm:text-right">
-          <span className="font-display text-[40px] font-normal leading-tight text-[#5769e7]">
+          <span className="font-display text-[40px] font-normal leading-[0.9] tracking-[-0.02em] text-[#5769e7]">
             {formatINR(assessment.recommendedMaxEMI)}
           </span>
           <span className="text-xs text-[#747371] block mt-0.5">/ month</span>

@@ -39,7 +39,7 @@ export function ReasonTraceAccordion({ assessment, profile }: ReasonTraceAccordi
         <div className="flex items-center gap-2.5">
           <ShieldCheckIcon className="w-5 h-5 text-[#5769e7]" aria-hidden="true" />
           <div>
-            <h3 className="font-display text-[24px] font-normal text-[#171717] leading-tight tracking-tight">
+            <h3 className="font-display text-[24px] font-normal text-[#171717] leading-[0.9] tracking-[-0.02em] tracking-tight">
               How we reached this (Deterministic Reason Trace)
             </h3>
             <p className="text-[13px] text-[#747371] mt-1">

@@ -31,7 +31,7 @@ export function StressTestCard({ assessment }: StressTestCardProps) {
           <span className="text-[10px] uppercase font-bold tracking-wider text-amber-800 block">
             Resilience Simulation
           </span>
-          <h3 className="font-display text-[28px] font-normal leading-tight text-[#171717] tracking-tight">
+          <h3 className="font-display text-[28px] font-normal leading-[0.9] tracking-[-0.02em] text-[#171717] tracking-tight">
             What happens if things go wrong?
           </h3>
         </div>
@@ -43,7 +43,7 @@ export function StressTestCard({ assessment }: StressTestCardProps) {
           <span className="text-[10px] font-bold uppercase text-[#747371] block">
             Normal Situation
           </span>
-          <span className="font-display text-[24px] font-normal leading-tight text-[#171717] block mt-1">
+          <span className="font-display text-[24px] font-normal leading-[0.9] tracking-[-0.02em] text-[#171717] block mt-1">
             {stressScenario.originalFOIR}% of income
           </span>
           <span className="text-[11px] text-[#5d5b59]">
@@ -55,7 +55,7 @@ export function StressTestCard({ assessment }: StressTestCardProps) {
           <span className="text-[10px] font-bold uppercase text-amber-900 block">
             After {stressScenario.incomeStressPercent}% Income Drop
           </span>
-          <span className="font-display text-[24px] font-normal leading-tight text-amber-950 block mt-1">
+          <span className="font-display text-[24px] font-normal leading-[0.9] tracking-[-0.02em] text-amber-950 block mt-1">
             {stressScenario.originalFOIR}% → {stressScenario.stressedFOIR}%
           </span>
           <span className="text-[11px] text-amber-900">
