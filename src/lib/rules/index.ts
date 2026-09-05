@@ -260,7 +260,7 @@ export function evaluateLenderQuote(
   const fairRateMin = assessment.fairRateRange[0];
   const fairRateMax = assessment.fairRateRange[1];
 
-  // 1. Quoted Monthly EMI
+  // 1. Quoted Monthly EMI (Standard reducing balance amortization)
   const quotedMonthlyEMI = calculateEMI(quote.loanAmount, quote.quotedInterestRate, quote.tenureMonths);
   const isEMIExceeded = quotedMonthlyEMI > assessment.recommendedMaxEMI;
 
@@ -268,40 +268,63 @@ export function evaluateLenderQuote(
   const midFairRate = (fairRateMin + fairRateMax) / 2;
   const rateVarianceBps = Math.round((quote.quotedInterestRate - midFairRate) * 100);
 
-  // 3. Verdict on Quote
-  let verdict: 'FAIR' | 'SLIGHTLY_HIGH' | 'ABOVE_FAIR_RANGE' | 'PREDATORY' = 'FAIR';
-  if (quote.quotedInterestRate > fairRateMax + 4.0) {
-    verdict = 'PREDATORY';
-  } else if (quote.quotedInterestRate > fairRateMax) {
-    verdict = 'ABOVE_FAIR_RANGE';
-  } else if (quote.quotedInterestRate > fairRateMin + 1.0) {
-    verdict = 'SLIGHTLY_HIGH';
-  }
+  // 3. Upfront charges with 18% GST on processing fee
+  const feeWithGST = Math.round((quote.loanAmount * quote.processingFeePercent / 100) * 1.18);
+  const totalUpfront = feeWithGST + (quote.mandatoryInsuranceOrCharges || 0);
 
-  // 4. Effective All-In APR of Quote
-  const feeWithGST = (quote.loanAmount * quote.processingFeePercent / 100) * 1.18;
-  const totalUpfront = feeWithGST + quote.mandatoryInsuranceOrCharges;
-  const tenureYears = quote.tenureMonths / 12;
-  const upfrontAnnualPercent = (totalUpfront / quote.loanAmount) / tenureYears * 100;
-  const effectiveAllInAPR = Number((quote.quotedInterestRate + upfrontAnnualPercent).toFixed(2));
+  // 4. Exact Actuarial All-In APR (Solving for internal rate of return)
+  // Net disbursed = Principal - Upfront charges
+  const netDisbursed = quote.loanAmount - totalUpfront;
+  let effectiveAllInAPR = quote.quotedInterestRate;
+
+  if (netDisbursed > 0 && quotedMonthlyEMI > 0 && quote.tenureMonths > 0) {
+    let r = (quotedMonthlyEMI * quote.tenureMonths - netDisbursed) / (netDisbursed * quote.tenureMonths);
+    if (r <= 0) r = quote.quotedInterestRate / 1200;
+
+    for (let i = 0; i < 25; i++) {
+      const pow = Math.pow(1 + r, -quote.tenureMonths);
+      const f = (quotedMonthlyEMI * (1 - pow) / r) - netDisbursed;
+      const df = quotedMonthlyEMI * ((quote.tenureMonths * pow / (1 + r)) - ((1 - pow) / (r * r)));
+      if (Math.abs(df) < 1e-12) break;
+      const nextR = r - f / df;
+      if (Math.abs(nextR - r) < 1e-7) {
+        r = nextR;
+        break;
+      }
+      r = nextR > 0 ? nextR : r / 2;
+    }
+    effectiveAllInAPR = Number((r * 12 * 100).toFixed(2));
+  }
 
   // 5. Total Cost of Credit
   const totalInterest = (quotedMonthlyEMI * quote.tenureMonths) - quote.loanAmount;
   const totalCostOfCredit = Math.round(totalInterest + totalUpfront);
 
-  // 6. Actionable Counter-Offer Advice
+  // 6. Verdict Determination
+  let verdict: 'FAIR' | 'SLIGHTLY_HIGH' | 'ABOVE_FAIR_RANGE' | 'PREDATORY' = 'FAIR';
+  const isExtremelyExceeded = quotedMonthlyEMI > assessment.recommendedMaxEMI * 1.15;
+
+  if (isExtremelyExceeded || quote.quotedInterestRate >= fairRateMax + 2.5 || effectiveAllInAPR >= fairRateMax + 3.5) {
+    verdict = 'PREDATORY';
+  } else if (isEMIExceeded || quote.quotedInterestRate > fairRateMax) {
+    verdict = 'ABOVE_FAIR_RANGE';
+  } else if (quote.quotedInterestRate > fairRateMin + 0.5 || effectiveAllInAPR > fairRateMax) {
+    verdict = 'SLIGHTLY_HIGH';
+  }
+
+  // 7. Counter-Offer Advice (Clean text, no emojis)
   const counterOfferAdvice: string[] = [];
   if (quote.quotedInterestRate > fairRateMax) {
     counterOfferAdvice.push(`Quoted interest rate (${quote.quotedInterestRate}%) is ${rateVarianceBps} bps above your fair band (${fairRateMin}%–${fairRateMax}%). Counter with: "My verified profile qualifies for ${fairRateMin}%. Please escalate to your credit manager."`);
   }
   if (isEMIExceeded) {
-    counterOfferAdvice.push(`DANGER: Quoted EMI of ₹${quotedMonthlyEMI.toLocaleString('en-IN')}/mo exceeds your safe ceiling (₹${assessment.recommendedMaxEMI.toLocaleString('en-IN')}/mo) by ₹${(quotedMonthlyEMI - assessment.recommendedMaxEMI).toLocaleString('en-IN')}/mo. Do not accept without reducing loan amount.`);
+    counterOfferAdvice.push(`Quoted monthly EMI of ₹${quotedMonthlyEMI.toLocaleString('en-IN')}/mo exceeds your safe ceiling of ₹${assessment.recommendedMaxEMI.toLocaleString('en-IN')}/mo by ₹${(quotedMonthlyEMI - assessment.recommendedMaxEMI).toLocaleString('en-IN')}/mo. Reduce the loan principal to match your cash flow.`);
   }
   if (quote.mandatoryInsuranceOrCharges > 0) {
-    counterOfferAdvice.push(`Insurance charges of ₹${quote.mandatoryInsuranceOrCharges.toLocaleString('en-IN')} are being bundled. Insist on opt-out: "I already hold existing life/term cover; please remove the mandatory loan protection fee."`);
+    counterOfferAdvice.push(`Insurance charges of ₹${quote.mandatoryInsuranceOrCharges.toLocaleString('en-IN')} are bundled into the quote. Request: "I already hold existing term life cover; remove the mandatory loan protection charge."`);
   }
   if (quote.processingFeePercent > 1.0) {
-    counterOfferAdvice.push(`Processing fee of ${quote.processingFeePercent}% is negotiable. Request: "Please match the 0.5%–0.75% fee offered by competing banks."`);
+    counterOfferAdvice.push(`Processing fee of ${quote.processingFeePercent}% is higher than competitive tier-1 benchmarks. Request: "Please reduce processing fees to 0.5%–0.75% to match market standards."`);
   }
 
   return {

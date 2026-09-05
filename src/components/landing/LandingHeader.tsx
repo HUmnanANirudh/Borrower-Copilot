@@ -12,20 +12,6 @@ export function LandingHeader() {
           BorrowIQ
         </Link>
 
-        {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-1">
-          <Link href="#how-it-works" className="px-3 py-1.5 text-[14px] font-medium text-[#5d5b59] hover:text-[#171717] transition-colors">
-            How it works
-          </Link>
-          <Link href="#methodology" className="px-3 py-1.5 text-[14px] font-medium text-[#5d5b59] hover:text-[#171717] transition-colors">
-            Methodology
-          </Link>
-          <Link href="#privacy" className="px-3 py-1.5 text-[14px] font-medium text-[#5d5b59] hover:text-[#171717] transition-colors">
-            Privacy
-          </Link>
-        </div>
-
-        {/* CTA — always visible */}
         <Link
           href="/assess"
           className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#5769e7] hover:bg-[#4958be] text-white text-[13px] font-semibold transition-colors"
