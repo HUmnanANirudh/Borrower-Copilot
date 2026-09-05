@@ -2,13 +2,11 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { BorrowerProfile, Assessment } from '@/lib/types';
-import { PERSONA_PRIYA } from '@/lib/personas';
 import { evaluateAssessment } from '@/lib/rules/index';
 import { getPrioritizedQuestions } from '@/lib/quizzing';
 import { decodeCardPayload } from '@/lib/share';
 
 import { Header } from '@/components/Header';
-import { PersonaBar } from '@/components/PersonaBar';
 import { HeroSection } from '@/components/HeroSection';
 import { QuizView } from '@/components/QuizView';
 import { AssessmentResults } from '@/components/AssessmentResults';
@@ -19,21 +17,17 @@ type AppScreen = 'landing' | 'quiz' | 'results' | 'card';
 
 export default function Home() {
   const [screen, setScreen] = useState<AppScreen>('landing');
-  const [activePersonaName, setActivePersonaName] = useState<string | undefined>(undefined);
   
   // Borrower profile state
   const [profile, setProfile] = useState<Partial<BorrowerProfile>>({
     loanPurpose: 'wedding_personal',
-    requestedAmount: 800000,
-    age: 29,
+    requestedAmount: 500000,
+    age: 30,
     primaryIncomeSignal: 'salaried_corporate',
-    netMonthlyIncome: 110000,
-    existingMonthlyEMI: 14000,
-    householdLivingExpenses: 40000,
-    creditScoreStatus: '750_plus',
-    variablePayPortionPercent: 10,
-    emergencySavingsMonths: 6,
-    recentDelinquencyOrBounce: false,
+    netMonthlyIncome: 75000,
+    existingMonthlyEMI: 0,
+    householdLivingExpenses: 30000,
+    creditScoreStatus: 'unknown'
   });
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -118,15 +112,6 @@ export default function Home() {
     }
   };
 
-  // Evaluator Persona Preset Loader
-  const handleSelectPersona = (persona: BorrowerProfile, name: string) => {
-    setProfile(persona);
-    setActivePersonaName(name);
-    setCurrentStep(0);
-    // Instant review: jump straight to results so evaluators can inspect outputs immediately
-    setScreen('results');
-  };
-
   const handleReset = () => {
     setProfile({
       loanPurpose: 'wedding_personal',
@@ -138,7 +123,6 @@ export default function Home() {
       householdLivingExpenses: 30000,
       creditScoreStatus: 'unknown'
     });
-    setActivePersonaName(undefined);
     setCurrentStep(0);
     setScreen('landing');
     if (typeof window !== 'undefined') {
@@ -150,9 +134,6 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-[#f3ede7] text-[#171717] font-sans selection:bg-[#5769e7]/20 selection:text-[#5769e7]">
       {/* Sticky Header */}
       <Header onReset={handleReset} showReset={screen !== 'landing'} />
-
-      {/* Evaluator Benchmark Presets Bar (Always visible for quick inspection) */}
-      <PersonaBar onSelectPersona={handleSelectPersona} activePersona={activePersonaName} />
 
       {/* Main Content Surfaces */}
       <main className="flex-1">
