@@ -1,13 +1,13 @@
-# Borrower Copilot
+# BorrowIQ
 
 ## The Concept: Closing the Information Gap
 
 Every lender uses a credit model to determine what a borrower receives. The borrower enters the branch with nothing. They accept the first sanction letter and often discover years later that they paid 400 basis points over the fair market rate and committed to a loan that consumes 65% of their monthly income.
 
-This application eliminates that information gap. It is not a credit model; it is a **borrower self-assessment engine** that equips the borrower to negotiate from a position of informed strength.
+**BorrowIQ** eliminates that information gap. It is not a credit model; it is a **borrower self-assessment engine** that equips the borrower to negotiate from a position of informed strength.
 
 > **Core Architectural Principle:**  
-> Borrower Copilot uses AI to decide what information to ask for, but never uses AI to decide what the borrower should borrow.
+> BorrowIQ uses AI to decide what information to ask for, but never uses AI to decide what the borrower should borrow.
 
 ---
 
@@ -20,7 +20,7 @@ flowchart TD
         Base["Answers 8 Base Questions"]
     end
 
-    subgraph AISelector["AI Question Selector (Groq Llama 3.3)"]
+    subgraph AISelector["AI Question Selector"]
         Inspect["Inspects current borrower state"]
         Filter["Evaluates eligible questions from Registry"]
         Rank["Selects single highest-value question"]

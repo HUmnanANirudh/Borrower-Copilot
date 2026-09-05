@@ -131,13 +131,23 @@ Select the next best question id or stop. Return JSON only:`;
     });
 
   } catch (error) {
-    console.error('AI Selector Error:', error);
-    // Graceful fallback to deterministic logic
-    return Response.json({
-      shouldStop: false,
-      questionId: null,
-      reason: 'Standard risk evaluation rules active.',
-      mode: 'fallback_error',
-    });
+    console.error('AI Selector Error, falling back to deterministic ranker:', error);
+    try {
+      const candidates = getEligibleAdaptiveQuestions(profile, answeredIds || []);
+      const fallback = rankCandidatesHeuristically(candidates, profile);
+      return Response.json({
+        shouldStop: !fallback.selected,
+        questionId: fallback.selected?.id || null,
+        reason: fallback.reason,
+        mode: 'heuristic_fallback',
+      });
+    } catch {
+      return Response.json({
+        shouldStop: true,
+        questionId: null,
+        reason: 'Sufficient profile information collected.',
+        mode: 'deterministic_stop',
+      });
+    }
   }
 }

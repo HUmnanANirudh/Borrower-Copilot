@@ -1,6 +1,6 @@
-# Rules Engine
+# BorrowIQ — Rules Engine
 
-This document lists the business rules, limits, and assumptions that control the assessment engine. The application separates these mathematical rules from the user interface logic.
+This document lists the business rules, limits, and assumptions that control the BorrowIQ assessment engine. The application separates these mathematical rules from the user interface logic.
 
 
 ## 1. Income and Household Data

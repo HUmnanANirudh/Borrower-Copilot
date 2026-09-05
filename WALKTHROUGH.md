@@ -1,8 +1,8 @@
-# Borrower Copilot Walkthrough
+# BorrowIQ
 
 ## Application Design
 
-I built a client-side application that protects user privacy and adapts to the risk profile of each borrower. 
+I built **BorrowIQ**, a client-side application that protects user privacy and adapts to the risk profile of each borrower. 
 
 The application generates a **Negotiation Card**. This document provides the borrower with four clear data points:
 1. **The decision to borrow:** Whether they should take a loan, and what to do instead if they should not.
