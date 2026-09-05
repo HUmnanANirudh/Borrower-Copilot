@@ -1,67 +1,59 @@
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight01Icon, SecurityCheckIcon } from '@/components/icons';
+import { ArrowRight01Icon } from '@/components/icons';
 import { MiniatureCard } from './MiniatureCard';
 
 export function HeroSection() {
   return (
-    <section aria-labelledby="hero-title" className="w-full py-20 lg:py-32 px-6 lg:px-16 bg-[#f3ede7]">
-      <div className="max-w-[1280px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-16 lg:gap-20">
-        {/* Left Editorial Copy */}
-        <div className="w-full lg:w-7/12 text-center lg:text-left flex flex-col items-center lg:items-start gap-8">
-          {/* Tag Pill */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#f2f1f0] border border-[#dedcd9] text-sm font-semibold text-[#171717]">
-            <SecurityCheckIcon className="w-4 h-4 text-[#5769e7]" aria-hidden="true" />
-            <span>Independent Borrower Decision Engine</span>
-          </div>
+    <section aria-labelledby="hero-title" className="w-full bg-[#f3ede7]">
+      <div className="max-w-[1280px] mx-auto px-6 lg:px-16 pt-12 lg:pt-20 pb-16 lg:pb-28">
+        <div className="flex flex-col lg:flex-row items-start justify-between gap-12 lg:gap-16">
 
-          {/* Mentimeter-Style Large Headline */}
-          <h1 
-            id="hero-title" 
-            className="font-display text-[52px] sm:text-[64px] lg:text-[88px] font-medium text-[#101010] tracking-[-0.03em] leading-[0.9]"
-            style={{ fontStretch: '85%' }}
-          >
-            Know what you should borrow before the lender tells you what you can borrow.
-          </h1>
-
-          {/* Subheading */}
-          <p className="text-lg sm:text-[22px] text-[#5d5b59] max-w-xl leading-[1.45] font-normal">
-            A private, no-login assessment that estimates your safe borrowing limit, fair interest rate and EMI — then arms you with a defensible card to negotiate with.
-          </p>
-
-          {/* Action CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 w-full sm:w-auto mt-2">
-            <Link
-              href="/assess"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full bg-[#5769e7] hover:bg-[#4958be] active:bg-[#3f4ba1] text-white text-base font-semibold transition-colors cursor-pointer"
+          {/* Left: Copy + CTA */}
+          <div className="w-full lg:w-7/12 flex flex-col gap-6 lg:gap-8">
+            <h1
+              id="hero-title"
+              className="font-display text-[48px] sm:text-[64px] lg:text-[88px] font-normal text-[#171717] leading-[0.85] tracking-normal"
             >
-              <span>Start my assessment</span>
-              <ArrowRight01Icon className="w-5 h-5" aria-hidden="true" />
-            </Link>
+              Know what you should borrow before the lender tells you what you can.
+            </h1>
 
-            <Link
-              href="#how-it-works"
-              className="text-base font-semibold text-[#171717] hover:bg-[#ebeae8] bg-[#f2f1f0] transition-colors py-4 px-7 rounded-full inline-flex items-center justify-center w-full sm:w-auto"
-            >
-              See how it works ↓
-            </Link>
+            <p className="text-[16px] sm:text-[18px] text-[#5d5b59] max-w-[520px] leading-[1.55]">
+              A private, no-login assessment that estimates your safe borrowing limit, fair interest rate and EMI — then arms you with a defensible card to negotiate with.
+            </p>
+
+            {/* CTA Buttons — Mentimeter style: large pill primary + secondary pill */}
+            <div className="flex flex-col sm:flex-row items-start gap-3 pt-2">
+              <Link
+                href="/assess"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-[#5769e7] hover:bg-[#4958be] active:bg-[#3f4ba1] text-white text-[16px] font-semibold transition-colors"
+              >
+                Start my assessment
+                <ArrowRight01Icon className="w-5 h-5" aria-hidden="true" />
+              </Link>
+              <Link
+                href="#how-it-works"
+                className="inline-flex items-center justify-center px-8 py-4 rounded-full bg-[#f2f1f0] hover:bg-[#ebeae8] text-[#171717] text-[16px] font-semibold transition-colors"
+              >
+                See how it works
+              </Link>
+            </div>
+
+            {/* Micro-assurances */}
+            <p className="text-[14px] text-[#5d5b59] flex flex-wrap gap-x-4 gap-y-1">
+              <span>✓ No login required</span>
+              <span>✓ Zero credit bureau pull</span>
+              <span>✓ Runs in your browser</span>
+            </p>
           </div>
 
-          {/* Micro-assurances */}
-          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-sm font-medium text-[#747371] mt-2">
-            <span className="flex items-center gap-1.5"><span className="text-[#52ad6e]">✓</span> No login required</span>
-            <span className="flex items-center gap-1.5"><span className="text-[#52ad6e]">✓</span> Zero credit bureau pull</span>
-          </div>
-        </div>
-
-        {/* Right Hero Visual: Miniature Card */}
-        <div className="w-full lg:w-5/12 flex justify-center">
-          <div className="relative w-full max-w-md" style={{ perspective: '1000px' }}>
-            {/* We apply Mentimeter's specific shadow classes here */}
-            <div className="transform rotate-y-[-5deg] rotate-x-[5deg] menti-card-shadow bg-white rounded-[20px] overflow-hidden border-[8.8px] border-black">
+          {/* Right: Hero Visual */}
+          <div className="w-full lg:w-5/12 flex justify-center lg:justify-end">
+            <div className="w-full max-w-[420px] rounded-[20px] border-[3px] border-black bg-white menti-card-shadow overflow-hidden">
               <MiniatureCard />
             </div>
           </div>
+
         </div>
       </div>
     </section>

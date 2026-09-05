@@ -4,58 +4,53 @@ import { ShieldCheckIcon, ArrowRight01Icon } from '@/components/icons';
 
 export function LandingHeader() {
   return (
-    <header className="w-full bg-[#f3ede7]">
-      <div className="max-w-[1280px] mx-auto px-6 lg:px-16 h-20 flex items-center justify-between">
-        {/* Brand Logo & Tagline */}
-        <Link 
+    <header className="w-full bg-transparent">
+      <nav className="max-w-[1280px] mx-auto px-6 lg:px-16 h-16 flex items-center justify-between">
+        {/* Logo */}
+        <Link
           href="/"
-          className="flex items-center gap-3 text-left group focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#5769e7] rounded-lg p-1"
+          className="flex items-center gap-2.5 group"
           aria-label="Borrower Copilot Home"
         >
-          <div className="w-10 h-10 rounded-full bg-[#5769e7] flex items-center justify-center text-white shrink-0 group-hover:scale-105 transition-transform">
-            <ShieldCheckIcon className="w-5 h-5" aria-hidden="true" />
+          <div className="w-8 h-8 rounded-full bg-[#5769e7] flex items-center justify-center text-white shrink-0">
+            <ShieldCheckIcon className="w-4 h-4" aria-hidden="true" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-display font-medium text-[22px] text-[#101010] tracking-tight">Borrower Copilot</span>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#e5e9ff] text-[#5769e7]">
-                India
-              </span>
-            </div>
-          </div>
+          <span className="font-display text-[20px] text-[#171717] tracking-tight">
+            Borrower Copilot
+          </span>
         </Link>
 
-        {/* Center / Right Links */}
-        <nav className="flex items-center gap-5 sm:gap-7">
-          <Link 
+        {/* Nav Links */}
+        <div className="flex items-center gap-1">
+          <Link
             href="#how-it-works"
-            className="text-[15px] font-semibold text-[#171717] hover:text-[#5769e7] transition-colors hidden md:inline"
+            className="hidden md:inline-flex items-center px-4 py-2 text-[16px] font-semibold text-[#171717] hover:bg-[#f2f1f0] rounded-lg transition-colors"
           >
             How it works
           </Link>
-          <Link 
+          <Link
             href="#methodology"
-            className="text-[15px] font-semibold text-[#171717] hover:text-[#5769e7] transition-colors hidden md:inline"
+            className="hidden md:inline-flex items-center px-4 py-2 text-[16px] font-semibold text-[#171717] hover:bg-[#f2f1f0] rounded-lg transition-colors"
           >
             Methodology
           </Link>
-          <Link 
+          <Link
             href="#privacy"
-            className="text-[15px] font-semibold text-[#171717] hover:text-[#5769e7] transition-colors hidden sm:inline"
+            className="hidden sm:inline-flex items-center px-4 py-2 text-[16px] font-semibold text-[#171717] hover:bg-[#f2f1f0] rounded-lg transition-colors"
           >
             Privacy
           </Link>
 
-          {/* Primary CTA */}
+          {/* CTA */}
           <Link
             href="/assess"
-            className="inline-flex items-center gap-1.5 px-6 py-3 rounded-full bg-[#5769e7] hover:bg-[#4958be] active:bg-[#3f4ba1] text-white text-[15px] font-semibold transition-colors cursor-pointer"
+            className="ml-2 inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-[#5769e7] hover:bg-[#4958be] active:bg-[#3f4ba1] text-white text-[14px] font-semibold transition-colors"
           >
-            <span>Start assessment</span>
-            <ArrowRight01Icon className="w-4 h-4" aria-hidden="true" />
+            Start assessment
+            <ArrowRight01Icon className="w-3.5 h-3.5" aria-hidden="true" />
           </Link>
-        </nav>
-      </div>
+        </div>
+      </nav>
     </header>
   );
 }
