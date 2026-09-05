@@ -1,26 +1,104 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Mentimeter Color System */
+    --palette-sand-50: #fcf7f2;
+    --palette-sand-100: #f3ede7;
+    --palette-sand-200: #ddd6cf;
+    --palette-sand-300: #ccc5bd;
+    --palette-sand-400: #b7afa7;
+
+    --palette-gray-50: #fcfbf9;
+    --palette-gray-100: #f7f6f4;
+    --palette-gray-200: #f2f1f0;
+    --palette-gray-300: #ebeae8;
+    --palette-gray-400: #e8e6e3;
+    --palette-gray-500: #dedcd9;
+    --palette-gray-600: #c5c3c1;
+    --palette-gray-700: #a09f9d;
+    --palette-gray-800: #747371;
+    --palette-gray-900: #5d5b59;
+    --palette-gray-1100: #302e2c;
+    --palette-gray-1200: #1c1b19;
+    --palette-gray-1300: #171717;
+    --palette-gray-1400: #101010;
+
+    --palette-blue-50: #e5e9ff;
+    --palette-blue-100: #d5daf7;
+    --palette-blue-200: #a9b5fc;
+    --palette-blue-500: #5769e7;
+    --palette-blue-600: #4958be;
+    --palette-blue-700: #3f4ba1;
+    --palette-blue-800: #323c7c;
+
+    --palette-coral-50: #fff3f2;
+    --palette-coral-100: #ffdedd;
+    --palette-coral-500: #ff7471;
+    --palette-coral-600: #c74e4c;
+    --palette-coral-800: #802e2d;
+
+    --palette-green-50: #f0faf2;
+    --palette-green-100: #e4f4e7;
+    --palette-green-500: #52ad6e;
+    --palette-green-600: #3b8552;
+    --palette-green-800: #253e2d;
+
+    --palette-yellow-50: #fffbf1;
+    --palette-yellow-100: #fff4d7;
+    --palette-yellow-500: #ffc738;
+    --palette-yellow-700: #b28615;
+
+    /* Semantic Mappings */
+    --background: var(--palette-sand-100);
+    --foreground: var(--palette-gray-1300);
+    --surface: #ffffff;
+    --surface-sunken: var(--palette-gray-200);
+    --surface-warm: var(--palette-sand-50);
+    --border-subtle: var(--palette-gray-300);
+    --border-strong: var(--palette-gray-1300);
+    --brand: var(--palette-blue-500);
+    --brand-hover: var(--palette-blue-600);
+    --brand-active: var(--palette-blue-700);
   }
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Mentimeter Elevated Card Shadow */
+.menti-card-shadow {
+  box-shadow: 
+    rgba(0, 0, 0, 0.08) 0px 2px 4px 0px,
+    rgba(0, 0, 0, 0.04) 0px 6px 16px 0px,
+    rgba(0, 0, 0, 0.02) 0px 14px 28px 0px;
+}
+
+.menti-display-title {
+  font-stretch: 85%;
+  letter-spacing: -0.03em;
+  line-height: 0.92;
+}
+
+/* Print Optimization */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .menti-card-shadow {
+    box-shadow: none !important;
+    border: 1px solid #000000 !important;
+  }
 }
