@@ -2,85 +2,114 @@
 
 ## The Concept: Closing the Information Gap
 
-Every lender uses a complex credit model to determine what a borrower gets. The borrower enters the branch with nothing. They accept the first sanction letter and often discover years later that they paid 400 basis points over the fair market rate and committed to a loan that consumes 65% of their income.
+Every lender uses a credit model to determine what a borrower receives. The borrower enters the branch with nothing. They accept the first sanction letter and often discover years later that they paid 400 basis points over the fair market rate and committed to a loan that consumes 65% of their monthly income.
 
-This application eliminates that information gap. It is not a lender credit model; it is a **borrower self-assessment engine**. It makes the borrower the most informed person in the room.
+This application eliminates that information gap. It is not a credit model; it is a **borrower self-assessment engine** that equips the borrower to negotiate from a position of informed strength.
 
-The borrower answers a short, adaptive sequence of questions and receives a **Negotiation Card**. This card provides four critical data points:
-1. **The Verdict:** An objective assessment of whether they should borrow at all.
-2. **The Capacity:** The maximum safe amount they can borrow, clearly separated from the inflated amount the lender will try to approve.
-3. **The Fair Price:** A specific interest rate band based on their risk profile, including the true annualized cost (APR).
-4. **The Limit:** An absolute monthly EMI ceiling anchored to their uncommitted cash flow.
+> **Core Architectural Principle:**  
+> Borrower Copilot uses AI to decide what information to ask for, but never uses AI to decide what the borrower should borrow.
 
-The borrower uses this card to negotiate directly with the lender, ensuring they secure fair terms.
+---
 
-## System Architecture
-
-The application uses a strict separation of concerns to ensure performance, privacy, and mathematical accuracy.
+## Clear Separation of Responsibilities
 
 ```mermaid
-graph TD
-    UI[User Interface] -->|Raw Inputs| Engine[Underwriting Engine]
-    
-    subgraph Core Rule Engine
-        Engine --> Norm[Normalize Data]
-        Norm --> Metrics[Calculate Cash-Flow Limits]
-        Metrics --> Price[Determine Fair Rate]
+flowchart TD
+    subgraph Borrower["Borrower Flow"]
+        Start["Borrower opens /assess"]
+        Base["Answers 8 Base Questions"]
     end
-    
-    Price --> Card[Negotiation Card]
-    
-    Card -->|Compress State| URL[Stateless URL]
-    Card -->|Provide Context| AI[AI Negotiation Coach]
-    
-    AI -.->|Groq API| Advice[Custom Borrower Advice]
+
+    subgraph AISelector["AI Question Selector (Groq Llama 3.3)"]
+        Inspect["Inspects current borrower state"]
+        Filter["Evaluates eligible questions from Registry"]
+        Rank["Selects single highest-value question"]
+        StopCheck{"Enough information to decide?"}
+    end
+
+    subgraph RulesEngine["Deterministic Rules Engine (TypeScript)"]
+        Calculate["Calculates 4 Outputs: Verdict, Safe Amount, Fair Rate, Safe EMI"]
+    end
+
+    subgraph OutputView["Borrower Presentation"]
+        Card["One-Page Negotiation Card"]
+        Share["Stateless Base64 URL"]
+    end
+
+    Start --> Base
+    Base --> Inspect
+    Inspect --> Filter
+    Filter --> Rank
+    Rank --> StopCheck
+    StopCheck -->|"Yes, ask question"| Base
+    StopCheck -->|"No more questions needed"| Calculate
+    Calculate --> Card
+    Card --> Share
 ```
 
-### 1. The Underwriting Rule Engine
-The core mathematical logic resides in a pure TypeScript library (`src/lib/rules`). The engine operates entirely independently of the user interface. It normalizes inputs, applies risk haircuts, calculates debt-to-income limits, and routes the borrower to the correct financial product. The application documents every rule, threshold, and limit in the `RULES.md` file.
+### 1. AI: "What should I ask this borrower next?"
+The AI acts as an **adaptive interviewer**. It receives the borrower's current profile, the remaining candidate questions from the **Question Registry**, and the uncertainty in current outputs. It determines whether more information is needed and selects the single question with the highest marginal impact:
+* For **Priya** (Salaried engineer, ₹1.1L income, ₹8L wedding loan), the AI prioritizes variable bonus compensation to ensure the safe EMI holds during low bonus cycles.
+* For **Ravi** (Kirana store owner, unencumbered shop, ₹15L business loan), the AI prioritizes collateral ownership and business vintage to unlock a 9%–10.5% LAP instead of a 16%+ personal loan.
+* For **Anita** (Gig delivery rider, ₹28K income, ₹35K app debt), the AI prioritizes 30%+ instant app loans and recent bounce history to catch debt-spiral risk before sanctioning any new debt.
 
-**Logic Pipeline:**
+The AI cannot invent arbitrary questions. It can only select from the pre-vetted **Question Registry**.
+
+### 2. Rules Engine: "Given the answers, what are the numbers?"
+The core mathematical logic resides in an isolated TypeScript library (`src/lib/rules`). It calculates:
+* **The Verdict:** Borrow, Borrow Less, or Do Not Borrow Yet.
+* **Maximum Amount:** Two clearly separated figures: what a lender will sanction (using 50%–60% FOIR over 60 months) versus what the borrower can safely carry (using 35% FOIR over 36–48 months).
+* **Fair Rate Band:** The rate band the borrower deserves, plus the all-inclusive APR (including processing fees and 18% GST).
+* **Safe EMI:** An absolute monthly ceiling anchored to uncommitted cash flow, plus a 20% income-drop stress case.
+
+### 3. UI: "How do I present the question and result?"
+The interface uses the Next.js 15 App Router. The quiz renders clean, accessible inputs (choice pills, currency sliders, number steppers) without distracting visual clutter. When the AI selects an adaptive question, the UI displays a clear explanation of why that specific question was prioritized.
+
+### 4. Negotiation Card: "What can the borrower take to the lender?"
+The final output is a one-page summary designed for direct use in a branch. The card provides:
+* The fair rate band with counter-offer scripts.
+* The safe EMI ceiling that the borrower must not cross.
+* Product routing guidance (e.g., instructing Ravi to request an MSME Loan Against Property instead of an unsecured personal loan).
+* A stateless, Base64-encoded URL hash that allows the borrower to share or bookmark their card with zero server data storage.
+
+---
+
+## Technical Pipeline
+
 ```mermaid
 flowchart LR
     subgraph Inputs
-        I1[Income]
-        I2[Expenses]
-        I3[Credit Score]
+        I1["Income & Stability"]
+        I2["Living Expenses"]
+        I3["Existing Debt"]
+        I4["Bureau Tier"]
     end
 
     subgraph Normalization
-        N1[Reduce Variable Pay]
-        N2[Apply Expense Minimum]
+        N1["50% Variable Pay Haircut"]
+        N2["20% Living Expense Floor"]
     end
 
     subgraph Metrics
-        M1[Calculate Cash-Flow Floor]
-        M2[Determine Debt Limit]
+        M1["Cash-Flow Floor"]
+        M2["Safe 35% FOIR Ceiling"]
     end
 
-    subgraph Outputs
-        O1[Maximum Safe EMI]
-        O2[Fair Interest Rate]
-        O3[Final Verdict]
+    subgraph CoreOutputs
+        O1["Safe Max EMI"]
+        O2["Fair Rate Band & APR"]
+        O3["Sanction vs Safe Amount"]
+        O4["Final Verdict"]
     end
 
     I1 --> N1
     I2 --> N2
     N1 --> M1
     N2 --> M1
-    I1 --> M2
+    I3 --> M2
     M1 --> O1
     M2 --> O1
-    I3 --> O2
+    I4 --> O2
     O1 --> O3
-    O2 --> O3
+    O1 --> O4
 ```
-
-### 2. Adaptive Client Interface
-The application uses the Next.js 15 App Router. The user interface uses React state to create an adaptive decision tree. The application only asks questions that mathematically alter the final assessment. For example, if a salaried worker has an excellent credit score, the application skips questions about business history and loan defaults.
-
-### 3. Stateless Privacy
-The application does not use a backend database. It does not store personal data or require user logins. The application processes the entire financial assessment locally in the borrower's browser. When the assessment finishes, the application compresses the mathematical output into a Base64-encoded URL hash. The borrower can share or save this URL, and the application can decode and render the Negotiation Card statelessly on any device.
-
-### 4. AI Negotiation Integration
-The application integrates the Vercel AI SDK and the Groq API (Llama 3.3 model). The system securely passes the evaluated assessment parameters to the AI model. The AI operates as a localized negotiation coach. The borrower can ask contextual questions (e.g., "How do I argue if the lender adds a mandatory insurance fee?") and receive immediate, customized advice based on their specific financial profile.

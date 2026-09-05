@@ -1,0 +1,89 @@
+import { BorrowerProfile } from '@/lib/types';
+import { RegisteredQuestion, QUESTION_REGISTRY, BASE_QUESTION_IDS } from './registry';
+
+export interface CandidateEvaluation {
+  question: RegisteredQuestion;
+  eligible: boolean;
+  score: number;
+  reason: string;
+}
+
+/**
+ * Returns candidate adaptive questions that are eligible to be asked next.
+ */
+export function getEligibleAdaptiveQuestions(
+  profile: Partial<BorrowerProfile>,
+  answeredIds: string[]
+): RegisteredQuestion[] {
+  const allKeys = Object.keys(QUESTION_REGISTRY) as (keyof BorrowerProfile)[];
+
+  // Candidates are questions not in BASE_QUESTION_IDS and not yet answered
+  const adaptiveCandidates = allKeys.filter(
+    id => !BASE_QUESTION_IDS.includes(id) && !answeredIds.includes(id)
+  );
+
+  return adaptiveCandidates
+    .map(id => QUESTION_REGISTRY[id])
+    .filter(q => q && q.appliesWhen(profile));
+}
+
+/**
+ * Deterministic fallback ranker for candidate questions
+ * Used when AI selector is unreachable, rate limited, or disabled.
+ */
+export function rankCandidatesHeuristically(
+  candidates: RegisteredQuestion[],
+  profile: Partial<BorrowerProfile>
+): { selected: RegisteredQuestion | null; reason: string } {
+  if (candidates.length === 0) {
+    return { selected: null, reason: 'No eligible candidate questions remain.' };
+  }
+
+  // Score candidate questions based on profile-specific sensitivity
+  const scored = candidates.map(q => {
+    let score = q.basePriority;
+    let rationale = q.aiDescription;
+
+    // Priya case: Salaried with wedding loan -> Variable pay is critical
+    if (q.id === 'variablePayPortionPercent' && profile.primaryIncomeSignal === 'salaried_corporate') {
+      score += 5;
+      rationale = 'Evaluates potential volatility in corporate bonus pay to protect safe EMI ceiling.';
+    }
+
+    // Ravi case: Self-employed with shop -> Collateral ownership is highest value
+    if (q.id === 'hasUnencumberedCollateral' && profile.primaryIncomeSignal === 'self_employed_business') {
+      score += 8;
+      rationale = 'Evaluates whether unencumbered property can unlock a 9.0%–10.5% LAP instead of 16%+ personal loan.';
+    }
+
+    if (q.id === 'collateralEstimatedValue' && profile.hasUnencumberedCollateral === true) {
+      score += 9;
+      rationale = 'Measures property valuation to calculate exact 50%–60% LTV sanction capacity.';
+    }
+
+    if (q.id === 'businessVintageYears' && profile.primaryIncomeSignal === 'self_employed_business') {
+      score += 6;
+      rationale = 'Tests operating track record to compensate for lack of credit bureau score.';
+    }
+
+    // Anita case: Gig worker / high distress -> Instant app loans and bounces are urgent
+    if (q.id === 'hasHighCostAppLoans' && (profile.primaryIncomeSignal === 'gig_freelance' || profile.loanPurpose === 'debt_consolidation')) {
+      score += 10;
+      rationale = 'Identifies active 30%+ instant app loans that trigger debt spiral risk.';
+    }
+
+    if (q.id === 'recentDelinquencyOrBounce' && (profile.hasHighCostAppLoans === true || profile.creditScoreStatus === 'unknown' || profile.primaryIncomeSignal === 'gig_freelance')) {
+      score += 10;
+      rationale = 'Checks recent repayment bounce to determine if lender rejection is certain.';
+    }
+
+    return { question: q, score, rationale };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+
+  return {
+    selected: scored[0].question,
+    reason: scored[0].rationale,
+  };
+}

@@ -1,6 +1,4 @@
 'use client';
-import { CopilotChat } from '@/components/chat/CopilotChat';
-
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { BorrowerProfile, Assessment } from '@/lib/types';
@@ -121,7 +119,6 @@ export function ResultsClient() {
           </Link>
         </div>
       </main>
-      <CopilotChat assessment={assessment} profile={profile} />
     </div>
   );
 }
