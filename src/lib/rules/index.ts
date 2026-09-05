@@ -28,12 +28,10 @@ export function evaluateAssessment(profile: BorrowerProfile): Assessment {
   const eligibility = calculateEligibilityAndSanction(profile, affordability.safeMaxEMI, midFairRate);
 
   // 4. Safe EMI & Tenure Matrix
-  // If user requested amount fits safe budget, compute EMI for requested amount;
-  // otherwise cap at safeMaxEMI
   const safeLoanCeiling = eligibility.borrowerSafeRange[1];
   const baselinePrincipal = Math.min(profile.requestedAmount, Math.max(10000, safeLoanCeiling));
   const recommendedMaxEMI = affordability.safeMaxEMI;
-  const tenureMatrix = generateTenureMatrix(baselinePrincipal, midFairRate);
+  const tenureMatrix = generateTenureMatrix(baselinePrincipal > 0 ? baselinePrincipal : profile.requestedAmount, midFairRate);
 
   // 5. Stress Scenario
   const stressScenario = calculateStressScenario(profile, recommendedMaxEMI);
@@ -46,12 +44,14 @@ export function evaluateAssessment(profile: BorrowerProfile): Assessment {
   if (
     affordability.isOverleveraged ||
     profile.recentDelinquencyOrBounce ||
-    (profile.hasInformalHighCostDebt && affordability.currentFOIR >= 35) ||
+    (profile.hasInformalHighCostDebt && affordability.currentFOIR >= 30) ||
     affordability.safeMaxEMI <= 0
   ) {
     verdict = 'DON\'T BORROW YET';
-    if (profile.recentDelinquencyOrBounce) {
-      verdictReason = 'Recent loan bounce or delinquency detected; taking additional debt now risks rapid default and severe credit score impairment. Restructure current debt first.';
+    if (profile.recentDelinquencyOrBounce && profile.hasInformalHighCostDebt) {
+      verdictReason = `Active delinquency detected with high-cost 30%+ app loans. Adding new debt now guarantees a debt spiral. Prioritize consolidating existing debt into an MFI / SHG loan first.`;
+    } else if (profile.recentDelinquencyOrBounce) {
+      verdictReason = 'Recent loan bounce or delinquency detected; taking additional debt now risks rapid default and severe credit score impairment.';
     } else if (affordability.isOverleveraged) {
       verdictReason = `Existing loan repayments already consume ${Math.round(affordability.currentFOIR)}% of your monthly income. Additional borrowing will breach safe living expense buffers.`;
     } else {
@@ -60,10 +60,12 @@ export function evaluateAssessment(profile: BorrowerProfile): Assessment {
   } else if (
     profile.requestedAmount > eligibility.borrowerSafeRange[1] * 1.15 ||
     stressScenario.isBreached ||
-    (profile.loanType === 'unsecured_personal' && profile.requestedAmount >= 1200000 && profile.incomeType === 'self_employed_business')
+    (profile.loanType === 'unsecured_personal' && profile.requestedAmount >= 1000000 && profile.incomeType === 'self_employed_business')
   ) {
     verdict = 'BORROW LESS';
-    if (profile.requestedAmount > eligibility.borrowerSafeRange[1]) {
+    if (profile.loanType === 'unsecured_personal' && profile.requestedAmount >= 1000000 && profile.hasCollateralProperty) {
+      verdictReason = `₹15L as an unsecured personal loan is unsafe on documented ITR cash flow. Shift to a Secured Loan Against Property (LAP) to borrow safely at half the interest rate.`;
+    } else if (profile.requestedAmount > eligibility.borrowerSafeRange[1]) {
       const requestedLakhs = (profile.requestedAmount / 100000).toFixed(1);
       const safeMaxLakhs = (eligibility.borrowerSafeRange[1] / 100000).toFixed(1);
       verdictReason = `Your requested amount (₹${requestedLakhs}L) exceeds your safe repayment capacity (₹${safeMaxLakhs}L). Trimming the loan amount protects you from unmanageable future EMIs.`;
