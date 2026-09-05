@@ -1,6 +1,4 @@
-'use client';
 
-import React, { use, useMemo } from 'react';
 import Link from 'next/link';
 import { decodeCardPayload } from '@/lib/share';
 import { PrintableCard } from '@/components/card/PrintableCard';
@@ -11,14 +9,11 @@ interface SharedCardPageProps {
   params: Promise<{ token: string }>;
 }
 
-export default function SharedCardPage({ params }: SharedCardPageProps) {
-  const resolvedParams = use(params);
+export default async function SharedCardPage({ params }: SharedCardPageProps) {
+  const resolvedParams = await params;
   const token = resolvedParams?.token;
 
-  const data = useMemo(() => {
-    if (!token) return null;
-    return decodeCardPayload(token);
-  }, [token]);
+  const data = token ? decodeCardPayload(token) : null;
 
   if (!data) {
     return (
