@@ -9,8 +9,7 @@ import {
   PrinterIcon, 
   AlertCircleIcon, 
   SparklesIcon,
-  CheckmarkCircle01Icon,
-  Share01Icon
+  CheckmarkCircle01Icon
 } from '@hugeicons/react';
 
 interface NegotiationCardProps {
@@ -48,33 +47,36 @@ export function NegotiationCard({ assessment, profile, onBackToResults }: Negoti
       <div className="flex items-center justify-between no-print">
         {onBackToResults && (
           <button
+            type="button"
             onClick={onBackToResults}
-            className="text-xs font-semibold text-[#5d5b59] hover:text-[#171717] cursor-pointer"
+            className="text-xs font-semibold text-[#5d5b59] hover:text-[#171717] cursor-pointer focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#5769e7] rounded-md px-1.5 py-0.5"
           >
             ← Back to Assessment
           </button>
         )}
         <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={handleCopyShareLink}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-[#dedcd9] hover:bg-[#f2f1f0] text-[#171717] cursor-pointer shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-[#dedcd9] hover:bg-[#f2f1f0] text-[#171717] cursor-pointer shadow-2xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#5769e7]"
           >
-            {copied ? <CheckmarkCircle01Icon className="w-3.5 h-3.5 text-emerald-600" /> : <Copy01Icon className="w-3.5 h-3.5" />}
+            {copied ? <CheckmarkCircle01Icon className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" /> : <Copy01Icon className="w-3.5 h-3.5" aria-hidden="true" />}
             <span>{copied ? 'Link Copied!' : 'Copy Share Link'}</span>
           </button>
 
           <button
+            type="button"
             onClick={handlePrint}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#5769e7] text-white hover:bg-[#4958be] cursor-pointer shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#5769e7] text-white hover:bg-[#4958be] cursor-pointer shadow-2xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#5769e7]"
           >
-            <PrinterIcon className="w-3.5 h-3.5" />
+            <PrinterIcon className="w-3.5 h-3.5" aria-hidden="true" />
             <span>Print / PDF</span>
           </button>
         </div>
       </div>
 
       {/* THE NEGOTIATION CARD (Single-Screen / Single-Sheet Format) */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-[#171717] menti-card-shadow space-y-6 print:border-black print:shadow-none">
+      <article aria-label="Official Borrower Defense Instrument" className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-[#171717] menti-card-shadow space-y-6 print:border-black print:shadow-none">
         {/* Card Header */}
         <div className="border-b-2 border-[#171717] pb-4 flex items-start justify-between gap-4">
           <div>
@@ -85,7 +87,7 @@ export function NegotiationCard({ assessment, profile, onBackToResults }: Negoti
               Borrower Negotiation Card
             </h1>
             <p className="text-xs text-[#5d5b59] mt-0.5 font-medium">
-              Requested: {formatINR(profile.requestedAmount)} · Route: {assessment.inferredProductRoute}
+              Requested: {formatINR(profile.requestedAmount)} · Inferred Route: {assessment.inferredProductRoute}
             </p>
           </div>
 
@@ -160,10 +162,10 @@ export function NegotiationCard({ assessment, profile, onBackToResults }: Negoti
 
         {/* Exact Talking Points */}
         <div className="space-y-2">
-          <h4 className="text-xs font-black uppercase tracking-wider text-[#171717] flex items-center gap-1.5">
-            <SparklesIcon className="w-4 h-4 text-[#5769e7]" />
+          <h2 className="text-xs font-black uppercase tracking-wider text-[#171717] flex items-center gap-1.5">
+            <SparklesIcon className="w-4 h-4 text-[#5769e7]" aria-hidden="true" />
             Exact Counter-Script For The Lender:
-          </h4>
+          </h2>
           <ul className="space-y-1.5 text-xs text-[#171717] pl-5 list-disc font-medium">
             {assessment.negotiationPoints.map((pt, i) => (
               <li key={i}>{pt}</li>
@@ -173,10 +175,10 @@ export function NegotiationCard({ assessment, profile, onBackToResults }: Negoti
 
         {/* Strict Do Not Cross */}
         <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-xs text-amber-950 space-y-1.5">
-          <h4 className="font-bold flex items-center gap-1.5 text-amber-900">
-            <AlertCircleIcon className="w-4 h-4 text-amber-700" />
+          <h2 className="font-bold flex items-center gap-1.5 text-amber-900">
+            <AlertCircleIcon className="w-4 h-4 text-amber-700" aria-hidden="true" />
             Hard Rules — Do Not Cross:
-          </h4>
+          </h2>
           <ul className="space-y-1 pl-5 list-disc text-amber-900 text-[11px] font-medium">
             {assessment.doNotCrossRules.map((rule, i) => (
               <li key={i}>{rule}</li>
@@ -189,7 +191,7 @@ export function NegotiationCard({ assessment, profile, onBackToResults }: Negoti
           <span>Generated via Borrower Copilot · Privacy Preserved</span>
           <span>Zero Bureau Pull · Stateless Hash Verification</span>
         </div>
-      </div>
+      </article>
     </div>
   );
 }
