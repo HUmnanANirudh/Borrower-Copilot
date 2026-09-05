@@ -30,7 +30,7 @@ export function ReasonTraceAccordion({ assessment, profile }: ReasonTraceAccordi
   const foirLimit = Math.round((totalIncome * 0.35) - existingEMI);
 
   return (
-    <div className="bg-white rounded-3xl border border-[#dedcd9] menti-card-shadow overflow-hidden">
+    <div className="bg-white rounded-3xl border border-[#ebeae8] shadow-sm overflow-hidden">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -53,13 +53,13 @@ export function ReasonTraceAccordion({ assessment, profile }: ReasonTraceAccordi
       </button>
 
       {isOpen && (
-        <div className="p-6 sm:p-7 pt-0 border-t border-[#dedcd9] space-y-5 bg-[#fcfbf9]">
+        <div className="p-6 sm:p-7 pt-0 border-t border-[#ebeae8] space-y-5 bg-[#fcfbf9]">
           <p className="text-xs text-[#5d5b59] font-medium leading-relaxed italic">
             {assessment.safeEMITrace.rationale}
           </p>
 
           {/* Mathematical Trace Chain Table */}
-          <div className="bg-white rounded-2xl border border-[#dedcd9] divide-y divide-[#ebeae8] text-xs">
+          <div className="bg-white rounded-2xl border border-[#ebeae8] divide-y divide-[#ebeae8] text-xs">
             <div className="p-3 flex justify-between">
               <span className="text-[#5d5b59]">Total Household Net Income</span>
               <span className="font-bold text-[#171717]">{formatINR(totalIncome)}/mo</span>
@@ -96,7 +96,7 @@ export function ReasonTraceAccordion({ assessment, profile }: ReasonTraceAccordi
             </span>
             <div className="flex flex-wrap gap-1.5">
               {assessment.safeEMITrace.drivers.map((driver, i) => (
-                <span key={i} className="text-[10px] px-2.5 py-1 rounded-full bg-white border border-[#dedcd9] text-[#171717]">
+                <span key={i} className="text-[10px] px-2.5 py-1 rounded-full bg-white border border-[#ebeae8] text-[#171717]">
                   {driver}
                 </span>
               ))}

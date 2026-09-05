@@ -23,7 +23,7 @@ export default function SharedCardPage({ params }: SharedCardPageProps) {
   if (!data) {
     return (
       <div className="min-h-screen bg-[#f3ede7] text-[#171717] flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-[#dedcd9] menti-card-shadow text-center space-y-5">
+        <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-[#ebeae8] shadow-sm text-center space-y-5">
           <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
             <ShieldCheckIcon className="w-6 h-6" aria-hidden="true" />
           </div>

@@ -50,19 +50,19 @@ export default function ResultsPage() {
   if (!profile || !assessment) {
     return (
       <div className="min-h-screen bg-[#f3ede7] text-[#171717] flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-[#dedcd9] menti-card-shadow text-center space-y-5">
-          <div className="w-12 h-12 rounded-full bg-[#e5e9ff] text-[#5769e7] flex items-center justify-center mx-auto">
+        <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-[#ebeae8] shadow-sm text-center space-y-5">
+          <div className="w-12 h-12 rounded-full bg-[#f0f3ff] text-[#5769e7] flex items-center justify-center mx-auto">
             <ShieldCheckIcon className="w-6 h-6" aria-hidden="true" />
           </div>
-          <h1 className="text-2xl font-black text-[#171717]">
+          <h1 className="font-display text-[32px] font-normal text-[#171717]">
             No Active Assessment Found
           </h1>
-          <p className="text-xs text-[#5d5b59] leading-relaxed">
+          <p className="text-[14px] text-[#5d5b59] leading-relaxed">
             Your assessment runs locally in your browser. If you refreshed or opened a new tab, please complete the 2-minute quiz to generate your numbers.
           </p>
           <Link
             href="/assess"
-            className="inline-flex items-center justify-center gap-2 w-full py-3.5 rounded-full bg-[#5769e7] text-white text-xs sm:text-sm font-extrabold shadow-sm hover:bg-[#4958be] transition-colors"
+            className="inline-flex items-center justify-center gap-2 w-full py-3.5 rounded-full bg-[#5769e7] text-white text-[15px] font-semibold shadow-sm hover:bg-[#4958be] transition-colors"
           >
             <span>Start 2-Minute Assessment</span>
             <ArrowRight01Icon className="w-4 h-4" aria-hidden="true" />
@@ -73,29 +73,29 @@ export default function ResultsPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f3ede7] text-[#171717] font-sans selection:bg-[#5769e7]/20 selection:text-[#5769e7]">
+    <div className="min-h-screen flex flex-col bg-[#f3ede7] text-[#171717]">
       {/* Sticky Sub-Header */}
-      <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-[#f3ede7]/90 border-b border-[#dedcd9] transition-all">
-        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+      <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-white/95 border-b border-[#ebeae8] transition-all">
+        <div className="max-w-[1280px] mx-auto px-5 lg:px-16 h-14 flex items-center justify-between">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#5d5b59] hover:text-[#171717]"
+            className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-[#5d5b59] hover:text-[#171717]"
           >
-            <ArrowLeft01Icon className="w-3.5 h-3.5" aria-hidden="true" />
+            <ArrowLeft01Icon className="w-4 h-4" aria-hidden="true" />
             <span>Home</span>
           </Link>
 
           <div className="flex items-center gap-3">
             <Link
               href="/assess"
-              className="text-xs font-semibold text-[#5d5b59] hover:text-[#171717] px-2.5 py-1 rounded-full border border-[#dedcd9] bg-white"
+              className="text-[13px] font-semibold text-[#5d5b59] hover:text-[#171717] px-3 py-1.5 rounded-full border border-[#ebeae8] bg-white transition-colors"
             >
               Edit Answers
             </Link>
 
             <Link
               href="/card"
-              className="inline-flex items-center gap-1 px-4 py-1.5 rounded-full text-xs font-bold bg-[#5769e7] text-white hover:bg-[#4958be] transition-all"
+              className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-[13px] font-semibold bg-[#5769e7] text-white hover:bg-[#4958be] transition-all"
             >
               <span>Negotiation Card</span>
               <ArrowRight01Icon className="w-3.5 h-3.5" aria-hidden="true" />
@@ -105,7 +105,7 @@ export default function ResultsPage() {
       </header>
 
       {/* Main Results Body */}
-      <main className="flex-1 max-w-4xl mx-auto px-4 py-8 space-y-7">
+      <main className="flex-1 max-w-[860px] mx-auto px-4 py-10 lg:py-16 space-y-7">
         <ResultsHero assessment={assessment} profile={profile} />
         <ThreeLensesRow assessment={assessment} />
         <AmountComparison assessment={assessment} profile={profile} />
@@ -116,10 +116,10 @@ export default function ResultsPage() {
         <QuoteChecker assessment={assessment} />
 
         {/* Bottom Card CTA */}
-        <div className="py-8 text-center">
+        <div className="py-10 text-center">
           <Link
             href="/card"
-            className="inline-flex items-center justify-center gap-2 px-9 py-4 rounded-full bg-[#5769e7] hover:bg-[#4958be] text-white text-base font-extrabold shadow-md transition-all cursor-pointer transform active:scale-98"
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-[#5769e7] hover:bg-[#4958be] text-white text-[16px] font-semibold shadow-sm transition-transform active:scale-95"
           >
             <span>Take Your Negotiation Card Into The Branch</span>
             <ArrowRight01Icon className="w-5 h-5" aria-hidden="true" />
@@ -128,8 +128,8 @@ export default function ResultsPage() {
       </main>
 
       {/* Clean Footer */}
-      <footer className="w-full py-6 text-center text-xs text-[#747371] border-t border-[#dedcd9]">
-        <span>Borrower Copilot · Self-reported borrower assessment</span>
+      <footer className="w-full py-8 text-center text-[12px] font-semibold text-[#a09f9d] border-t border-[#ebeae8] uppercase tracking-wider">
+        <span>BorrowIQ · Self-reported borrower assessment</span>
       </footer>
     </div>
   );

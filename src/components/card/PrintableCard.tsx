@@ -65,7 +65,7 @@ export function PrintableCard({ assessment, profile, isSharedView = false }: Pri
           <button
             type="button"
             onClick={handleCopyLink}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold bg-white border border-[#dedcd9] hover:bg-[#f2f1f0] text-[#171717] cursor-pointer shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold bg-white border border-[#ebeae8] hover:bg-[#f2f1f0] text-[#171717] cursor-pointer shadow-2xs"
           >
             {copied ? (
               <CheckmarkCircle01Icon className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
@@ -87,7 +87,7 @@ export function PrintableCard({ assessment, profile, isSharedView = false }: Pri
       </div>
 
       {/* Honest Link Disclosure (Hidden on Print) */}
-      <div className="p-3 bg-[#fcfbf9] rounded-2xl border border-[#dedcd9] text-[11px] text-[#747371] flex items-center gap-2 no-print">
+      <div className="p-3 bg-[#fcfbf9] rounded-2xl border border-[#ebeae8] text-[11px] text-[#747371] flex items-center gap-2 no-print">
         <InfoCircleIcon className="w-3.5 h-3.5 text-[#5769e7] shrink-0" aria-hidden="true" />
         <span>
           Shareable links contain an encoded copy of this assessment. Anyone with the link can view it.
@@ -95,15 +95,15 @@ export function PrintableCard({ assessment, profile, isSharedView = false }: Pri
       </div>
 
       {/* THE OFFICIAL NEGOTIATION CARD (Single-Sheet Document) */}
-      <article className="bg-white rounded-3xl p-6 sm:p-9 border-2 border-[#171717] menti-card-shadow space-y-6 print:border-black print:shadow-none">
+      <article className="bg-white rounded-3xl p-6 sm:p-9 border-2 border-[#171717] shadow-sm space-y-6 print:border-black print:shadow-none">
         {/* Card Header */}
         <div className="border-b-2 border-[#171717] pb-4 flex items-start justify-between gap-4">
           <div>
-            <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[#5769e7]">
+            <div className="flex items-center gap-1.5 text-[10px] font-display font-normal uppercase tracking-widest text-[#5769e7]">
               <ShieldCheckIcon className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Borrower Copilot · Official Instrument</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-[#171717] tracking-tight uppercase mt-0.5">
+            <h1 className="font-display text-[32px] font-normal leading-tight text-[#171717] tracking-tight uppercase mt-0.5">
               Borrower Negotiation Card
             </h1>
             <p className="text-xs text-[#5d5b59] font-medium mt-0.5">
@@ -113,7 +113,7 @@ export function PrintableCard({ assessment, profile, isSharedView = false }: Pri
 
           <div className="text-right shrink-0">
             <span className="text-[10px] uppercase font-bold text-[#747371] block">Verdict</span>
-            <span className={`text-xs font-black px-2.5 py-1 rounded-full border inline-block mt-0.5 ${
+            <span className={`text-xs font-display font-normal px-2.5 py-1 rounded-full border inline-block mt-0.5 ${
               assessment.verdict === 'BORROW'
                 ? 'bg-emerald-100 text-emerald-950 border-emerald-400'
                 : assessment.verdict === 'BORROW LESS'
@@ -128,16 +128,16 @@ export function PrintableCard({ assessment, profile, isSharedView = false }: Pri
         {/* 4 Core Quantitative Benchmarks */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
           <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-300">
-            <span className="text-[10px] font-black uppercase text-emerald-950 block">Safe Amount</span>
-            <span className="text-base sm:text-lg font-black text-emerald-800 mt-1 block">
+            <span className="text-[10px] font-display font-normal uppercase text-emerald-950 block">Safe Amount</span>
+            <span className="text-[24px] font-display font-normal text-emerald-800 mt-1 block">
               {formatLakhs(assessment.borrowerSafeRange[0])}–{formatLakhs(assessment.borrowerSafeRange[1])}
             </span>
             <span className="text-[9px] text-emerald-800 font-semibold">Borrower Safe</span>
           </div>
 
-          <div className="p-3 bg-[#f7f6f4] rounded-2xl border border-[#dedcd9]">
+          <div className="p-3 bg-[#f7f6f4] rounded-2xl border border-[#ebeae8]">
             <span className="text-[10px] font-bold uppercase text-[#5d5b59] block">Lender Estimate</span>
-            <span className="text-base sm:text-lg font-black text-[#171717] mt-1 block">
+            <span className="text-[24px] font-display font-normal text-[#171717] mt-1 block">
               {formatLakhs(assessment.estimatedLenderRange[0])}–{formatLakhs(assessment.estimatedLenderRange[1])}
             </span>
             <span className="text-[9px] text-[#747371]">Max Bank FOIR</span>
@@ -145,15 +145,15 @@ export function PrintableCard({ assessment, profile, isSharedView = false }: Pri
 
           <div className="p-3 bg-[#e5e9ff]/50 rounded-2xl border border-[#5769e7]/40">
             <span className="text-[10px] font-bold uppercase text-[#323c7c] block">Fair Rate</span>
-            <span className="text-base sm:text-lg font-black text-[#5769e7] mt-1 block">
+            <span className="text-[24px] font-display font-normal text-[#5769e7] mt-1 block">
               {assessment.fairRateRange[0]}%–{assessment.fairRateRange[1]}%
             </span>
             <span className="text-[9px] text-[#5d5b59]">All-In APR ~{assessment.effectiveAPRRange[1]}%</span>
           </div>
 
-          <div className="p-3 bg-[#f2f1f0] rounded-2xl border border-[#dedcd9]">
+          <div className="p-3 bg-[#f2f1f0] rounded-2xl border border-[#ebeae8]">
             <span className="text-[10px] font-bold uppercase text-[#5d5b59] block">Safe EMI Ceiling</span>
-            <span className="text-base sm:text-lg font-black text-[#171717] mt-1 block">
+            <span className="text-[24px] font-display font-normal text-[#171717] mt-1 block">
               {formatINR(assessment.recommendedMaxEMI)}
             </span>
             <span className="text-[9px] text-emerald-700 font-bold">10% Buffer</span>
@@ -162,7 +162,7 @@ export function PrintableCard({ assessment, profile, isSharedView = false }: Pri
 
         {/* KILLER FEATURE: The Exact Branch Negotiation Script */}
         <div className="p-4 rounded-2xl bg-[#fcfbf9] border-2 border-[#171717] space-y-2">
-          <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded-full bg-[#171717] text-white inline-block">
+          <span className="text-[10px] uppercase font-display font-normal px-2 py-0.5 rounded-full bg-[#171717] text-white inline-block">
             What to say to the lender
           </span>
           <p className="text-xs sm:text-sm font-semibold text-[#171717] leading-relaxed italic">
@@ -193,7 +193,7 @@ export function PrintableCard({ assessment, profile, isSharedView = false }: Pri
 
         {/* Do-Not-Cross Safety Rules */}
         <div className="p-3.5 rounded-2xl bg-rose-50/70 border border-rose-200 text-xs text-rose-950 space-y-1">
-          <span className="font-black text-[10px] uppercase tracking-wider block text-rose-900">
+          <span className="font-display font-normal text-[10px] uppercase tracking-wider block text-rose-900">
             Do-Not-Cross Rules
           </span>
           <p className="font-medium">
@@ -202,7 +202,7 @@ export function PrintableCard({ assessment, profile, isSharedView = false }: Pri
         </div>
 
         {/* Footer Audit Stamp */}
-        <div className="pt-2 border-t border-[#dedcd9] flex items-center justify-between text-[10px] text-[#747371]">
+        <div className="pt-2 border-t border-[#ebeae8] flex items-center justify-between text-[10px] text-[#747371]">
           <span>Generated by Borrower Copilot · Stateless Algorithm</span>
           <span>Not a loan sanction · Independent borrower guide</span>
         </div>

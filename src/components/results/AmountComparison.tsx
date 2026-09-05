@@ -11,12 +11,12 @@ export function AmountComparison({ assessment, profile }: AmountComparisonProps)
   const formatLakhs = (amt: number) => `₹${(amt / 100000).toFixed(1)} Lakhs`;
 
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#dedcd9] menti-card-shadow space-y-6">
+    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#ebeae8] shadow-sm space-y-6">
       <div>
         <span className="text-xs uppercase font-extrabold tracking-wider text-[#5769e7] block mb-1">
           Loan Sizing Analysis
         </span>
-        <h2 className="text-2xl sm:text-3xl font-black text-[#171717] tracking-tight">
+        <h2 className="font-display text-[32px] font-normal leading-tight text-[#171717] tracking-tight">
           Safe Carrying Capacity vs. Lender Estimate
         </h2>
       </div>
@@ -33,7 +33,7 @@ export function AmountComparison({ assessment, profile }: AmountComparisonProps)
             </span>
           </div>
 
-          <span className="text-3xl sm:text-4xl font-black text-emerald-800 block my-2">
+          <span className="font-display text-[40px] font-normal leading-tight text-emerald-800 block my-2">
             {formatLakhs(assessment.borrowerSafeRange[0])} – {formatLakhs(assessment.borrowerSafeRange[1])}
           </span>
 
@@ -43,12 +43,12 @@ export function AmountComparison({ assessment, profile }: AmountComparisonProps)
         </div>
 
         {/* What a Lender May Offer */}
-        <div className="p-6 rounded-2xl bg-[#f7f6f4] border border-[#dedcd9]">
+        <div className="p-6 rounded-2xl bg-[#f7f6f4] border border-[#ebeae8]">
           <span className="text-xs font-bold uppercase tracking-wider text-[#5d5b59] block mb-2">
             What a lender may offer
           </span>
 
-          <span className="text-3xl sm:text-4xl font-black text-[#171717] block my-2">
+          <span className="font-display text-[40px] font-normal leading-tight text-[#171717] block my-2">
             {formatLakhs(assessment.estimatedLenderRange[0])} – {formatLakhs(assessment.estimatedLenderRange[1])}
           </span>
 
@@ -59,7 +59,7 @@ export function AmountComparison({ assessment, profile }: AmountComparisonProps)
       </div>
 
       {/* Why Explanation */}
-      <div className="p-4 rounded-2xl bg-[#fcfbf9] border border-[#dedcd9] space-y-1.5">
+      <div className="p-4 rounded-2xl bg-[#fcfbf9] border border-[#ebeae8] space-y-1.5">
         <h4 className="text-xs font-bold text-[#171717] flex items-center gap-1.5">
           <ShieldCheckIcon className="w-4 h-4 text-[#5769e7]" aria-hidden="true" />
           Why is your safe range different?

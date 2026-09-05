@@ -99,14 +99,14 @@ export function QuizContainer() {
         <div className="flex items-center justify-between mb-4">
           <Link 
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#5d5b59] hover:text-[#171717] transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#5d5b59] hover:text-[#171717] transition-colors"
           >
-            <ArrowLeft01Icon className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>Borrower Copilot</span>
+            <ArrowLeft01Icon className="w-4 h-4" aria-hidden="true" />
+            <span>BorrowIQ</span>
           </Link>
 
           <div className="text-right">
-            <span className="text-xs font-extrabold text-[#171717]">
+            <span className="text-[13px] font-semibold text-[#171717]">
               Assessment progress: {progressPercent}%
             </span>
             <span className="text-[11px] text-[#747371] block">
@@ -140,13 +140,13 @@ export function QuizContainer() {
         )}
 
         {/* Main Question Card (Mentimeter Presentation Style) */}
-        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#dedcd9] menti-card-shadow space-y-6">
+        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#ebeae8] shadow-sm space-y-6">
           {/* Question Title & Subtitle */}
           <div>
-            <h1 className="text-2xl sm:text-4xl font-black text-[#171717] tracking-tight leading-snug">
+            <h1 className="font-display text-[32px] sm:text-[40px] lg:text-[48px] font-normal text-[#171717] leading-[1.05] tracking-tight mb-2">
               {currentQuestion.title}
             </h1>
-            <p className="text-xs sm:text-sm text-[#5d5b59] mt-2 leading-relaxed">
+            <p className="text-[15px] sm:text-[16px] text-[#5d5b59] leading-relaxed">
               {currentQuestion.subtitle}
             </p>
           </div>
@@ -171,11 +171,11 @@ export function QuizContainer() {
                     >
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className={`text-sm font-bold ${isSelected ? 'text-[#323c7c]' : 'text-[#171717]'}`}>
+                          <span className={`text-[15px] font-semibold ${isSelected ? 'text-[#323c7c]' : 'text-[#171717]'}`}>
                             {opt.label}
                           </span>
                           {opt.badge && (
-                            <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-white border border-[#dedcd9] text-[#5769e7]">
+                            <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-white border border-[#dedcd9] text-[#5769e7]">
                               {opt.badge}
                             </span>
                           )}
@@ -198,11 +198,11 @@ export function QuizContainer() {
             {/* 2. Currency Slider */}
             {currentQuestion.inputType === 'currency_slider' && (
               <div className="space-y-6 pt-2">
-                <div className="text-center py-5 bg-[#fcfbf9] rounded-2xl border border-[#dedcd9]">
-                  <span className="text-3xl sm:text-4xl font-black text-[#171717]">
+                <div className="text-center py-6 bg-[#f7f6f4] rounded-2xl border border-[#ebeae8]">
+                  <span className="font-display text-[40px] sm:text-[48px] text-[#171717] leading-none">
                     {formatINR(Number(currentValue))}
                   </span>
-                  <span className="text-xs text-[#747371] block mt-1">
+                  <span className="text-[13px] font-medium text-[#747371] block mt-1">
                     {Number(currentValue) >= 100000 
                       ? `₹${(Number(currentValue) / 100000).toFixed(2)} Lakhs` 
                       : ''}
@@ -216,10 +216,10 @@ export function QuizContainer() {
                   step={currentQuestion.step ?? 10000}
                   value={Number(currentValue)}
                   onChange={(e) => handleAnswer(currentQuestion.id as keyof BorrowerProfile, Number(e.target.value))}
-                  className="w-full h-3 bg-[#dedcd9] rounded-lg appearance-none cursor-pointer accent-[#5769e7]"
+                  className="w-full h-2 bg-[#ebeae8] rounded-lg appearance-none cursor-pointer accent-[#5769e7]"
                 />
 
-                <div className="flex justify-between text-xs text-[#747371]">
+                <div className="flex justify-between text-[13px] text-[#747371] font-medium">
                   <span>{formatINR(currentQuestion.min ?? 10000)}</span>
                   <span>{formatINR(currentQuestion.max ?? 5000000)}</span>
                 </div>
@@ -228,23 +228,23 @@ export function QuizContainer() {
 
             {/* 3. Number Stepper */}
             {currentQuestion.inputType === 'number_stepper' && (
-              <div className="flex items-center justify-center gap-6 py-6">
+              <div className="flex items-center justify-center gap-8 py-6">
                 <button
                   type="button"
                   onClick={() => {
                     const nextVal = Math.max((currentQuestion.min ?? 1), Number(currentValue) - 1);
                     handleAnswer(currentQuestion.id as keyof BorrowerProfile, nextVal);
                   }}
-                  className="w-12 h-12 rounded-full border border-[#dedcd9] bg-[#fcfbf9] hover:bg-[#f2f1f0] text-xl font-bold text-[#171717] flex items-center justify-center cursor-pointer transition-colors"
+                  className="w-14 h-14 rounded-full border border-[#ebeae8] bg-[#f7f6f4] hover:bg-[#f2f1f0] text-2xl text-[#171717] flex items-center justify-center cursor-pointer transition-colors"
                 >
                   -
                 </button>
 
-                <div className="text-center min-w-[120px]">
-                  <span className="text-4xl font-black text-[#171717]">
+                <div className="text-center min-w-[140px]">
+                  <span className="font-display text-[48px] text-[#171717] leading-none">
                     {currentValue}
                   </span>
-                  <span className="text-xs text-[#747371] block mt-1">
+                  <span className="text-[13px] font-medium text-[#747371] block mt-1">
                     {currentQuestion.id === 'age' ? 'Years Old' : 'Years Active'}
                   </span>
                 </div>
@@ -252,10 +252,10 @@ export function QuizContainer() {
                 <button
                   type="button"
                   onClick={() => {
-                    const nextVal = Math.min((currentQuestion.max ?? 65), Number(currentValue) + 1);
+                    const nextVal = Math.max((currentQuestion.max ?? 65), Number(currentValue) + 1);
                     handleAnswer(currentQuestion.id as keyof BorrowerProfile, nextVal);
                   }}
-                  className="w-12 h-12 rounded-full border border-[#dedcd9] bg-[#fcfbf9] hover:bg-[#f2f1f0] text-xl font-bold text-[#171717] flex items-center justify-center cursor-pointer transition-colors"
+                  className="w-14 h-14 rounded-full border border-[#ebeae8] bg-[#f7f6f4] hover:bg-[#f2f1f0] text-2xl text-[#171717] flex items-center justify-center cursor-pointer transition-colors"
                 >
                   +
                 </button>

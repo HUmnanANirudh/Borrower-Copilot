@@ -7,12 +7,12 @@ interface FairRateAPRCardProps {
 
 export function FairRateAPRCard({ assessment }: FairRateAPRCardProps) {
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#dedcd9] menti-card-shadow space-y-6">
+    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#ebeae8] shadow-sm space-y-6">
       <div>
         <span className="text-xs uppercase font-extrabold tracking-wider text-[#5769e7] block mb-1">
           Cost of Credit & Truth in Lending
         </span>
-        <h2 className="text-2xl sm:text-3xl font-black text-[#171717] tracking-tight">
+        <h2 className="font-display text-[32px] font-normal leading-tight text-[#171717] tracking-tight">
           Fair Interest Rate vs. Estimated All-In APR
         </h2>
       </div>
@@ -23,7 +23,7 @@ export function FairRateAPRCard({ assessment }: FairRateAPRCardProps) {
           <span className="text-[10px] font-bold uppercase text-[#323c7c] block">
             Fair Rate for Profile
           </span>
-          <span className="text-3xl font-black text-[#5769e7] block">
+          <span className="font-display text-[32px] font-normal leading-tight text-[#5769e7] block">
             {assessment.fairRateRange[0]}% – {assessment.fairRateRange[1]}%
           </span>
           <span className="text-[11px] text-[#5d5b59]">Target headline rate</span>
@@ -34,18 +34,18 @@ export function FairRateAPRCard({ assessment }: FairRateAPRCardProps) {
           <span className="text-[10px] font-bold uppercase text-amber-900 block">
             Expected Initial Pitch
           </span>
-          <span className="text-3xl font-black text-amber-900 block">
+          <span className="font-display text-[32px] font-normal leading-tight text-amber-900 block">
             {assessment.expectedLenderQuoteRange[0]}% – {assessment.expectedLenderQuoteRange[1]}%
           </span>
           <span className="text-[11px] text-amber-800">Before counter-offer</span>
         </div>
 
         {/* Estimated All-In APR */}
-        <div className="p-5 rounded-2xl bg-[#f2f1f0] border border-[#dedcd9] space-y-1">
+        <div className="p-5 rounded-2xl bg-[#f2f1f0] border border-[#ebeae8] space-y-1">
           <span className="text-[10px] font-bold uppercase text-[#171717] block">
             Estimated All-In APR
           </span>
-          <span className="text-3xl font-black text-[#171717] block">
+          <span className="font-display text-[32px] font-normal leading-tight text-[#171717] block">
             {assessment.effectiveAPRRange[0]}% – {assessment.effectiveAPRRange[1]}%
           </span>
           <span className="text-[11px] text-[#747371]">Includes 2% fee + 18% GST</span>
@@ -53,7 +53,7 @@ export function FairRateAPRCard({ assessment }: FairRateAPRCardProps) {
       </div>
 
       {/* Fee Assumptions Note */}
-      <div className="p-4 rounded-2xl bg-[#fcfbf9] border border-[#dedcd9] text-xs text-[#5d5b59] space-y-1.5">
+      <div className="p-4 rounded-2xl bg-[#fcfbf9] border border-[#ebeae8] text-xs text-[#5d5b59] space-y-1.5">
         <h4 className="font-bold text-[#171717]">Documented Fee Assumptions:</h4>
         <p className="leading-relaxed">
           {assessment.rateTrace.rationale}

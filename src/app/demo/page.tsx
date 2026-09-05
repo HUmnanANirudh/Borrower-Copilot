@@ -77,7 +77,7 @@ export default function EvaluatorDemoPage() {
   return (
     <div className="min-h-screen bg-[#f3ede7] text-[#171717] font-sans selection:bg-[#5769e7]/20 selection:text-[#5769e7] pb-16">
       {/* Top Header */}
-      <header className="sticky top-0 z-40 bg-[#f3ede7]/90 backdrop-blur-md border-b border-[#dedcd9] px-4 py-4">
+      <header className="sticky top-0 z-40 bg-[#f3ede7]/90 backdrop-blur-md border-b border-[#ebeae8] px-4 py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-[#171717] text-white flex items-center justify-center">
@@ -91,7 +91,7 @@ export default function EvaluatorDemoPage() {
 
           <Link
             href="/"
-            className="text-xs font-semibold text-[#5d5b59] hover:text-[#171717] px-3 py-1 rounded-full border border-[#dedcd9] bg-white"
+            className="text-xs font-semibold text-[#5d5b59] hover:text-[#171717] px-3 py-1 rounded-full border border-[#ebeae8] bg-white"
           >
             ← Public Home
           </Link>
@@ -100,7 +100,7 @@ export default function EvaluatorDemoPage() {
 
       <main className="max-w-5xl mx-auto px-4 pt-8 space-y-8">
         {/* 1. Benchmark Persona Selector */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#dedcd9] menti-card-shadow space-y-4">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#ebeae8] shadow-sm space-y-4">
           <div>
             <span className="text-[10px] uppercase font-bold tracking-widest text-[#5769e7] block">
               Step 1: Choose Evaluator Benchmark
@@ -118,7 +118,7 @@ export default function EvaluatorDemoPage() {
               className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
                 selectedPersonaKey === 'priya'
                   ? 'border-[#5769e7] bg-[#e5e9ff]/40 ring-2 ring-[#5769e7]/30'
-                  : 'border-[#dedcd9] bg-[#fcfbf9] hover:bg-[#f2f1f0]'
+                  : 'border-[#ebeae8] bg-[#fcfbf9] hover:bg-[#f2f1f0]'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -139,7 +139,7 @@ export default function EvaluatorDemoPage() {
               className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
                 selectedPersonaKey === 'ravi'
                   ? 'border-[#5769e7] bg-[#e5e9ff]/40 ring-2 ring-[#5769e7]/30'
-                  : 'border-[#dedcd9] bg-[#fcfbf9] hover:bg-[#f2f1f0]'
+                  : 'border-[#ebeae8] bg-[#fcfbf9] hover:bg-[#f2f1f0]'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -160,7 +160,7 @@ export default function EvaluatorDemoPage() {
               className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
                 selectedPersonaKey === 'anita'
                   ? 'border-[#5769e7] bg-[#e5e9ff]/40 ring-2 ring-[#5769e7]/30'
-                  : 'border-[#dedcd9] bg-[#fcfbf9] hover:bg-[#f2f1f0]'
+                  : 'border-[#ebeae8] bg-[#fcfbf9] hover:bg-[#f2f1f0]'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -177,7 +177,7 @@ export default function EvaluatorDemoPage() {
         </div>
 
         {/* 2. KILLER FEATURE: Live Assumption Overrides Sandbox */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-[#171717] menti-card-shadow space-y-4">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-[#171717] shadow-sm space-y-4">
           <div className="flex items-start justify-between">
             <div>
               <span className="text-[10px] uppercase font-black tracking-widest text-[#5769e7] block">
@@ -202,7 +202,7 @@ export default function EvaluatorDemoPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-2">
             {/* Safe FOIR Cap */}
-            <div className="p-4 bg-[#fcfbf9] rounded-2xl border border-[#dedcd9] space-y-2">
+            <div className="p-4 bg-[#fcfbf9] rounded-2xl border border-[#ebeae8] space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-bold text-[#171717]">Safe Salaried FOIR</span>
                 <span className="text-base font-black text-[#5769e7]">{safeFOIR}%</span>
@@ -220,7 +220,7 @@ export default function EvaluatorDemoPage() {
             </div>
 
             {/* Gig FOIR Cap */}
-            <div className="p-4 bg-[#fcfbf9] rounded-2xl border border-[#dedcd9] space-y-2">
+            <div className="p-4 bg-[#fcfbf9] rounded-2xl border border-[#ebeae8] space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-bold text-[#171717]">Gig / Informal FOIR</span>
                 <span className="text-base font-black text-[#5769e7]">{gigFOIR}%</span>
@@ -238,7 +238,7 @@ export default function EvaluatorDemoPage() {
             </div>
 
             {/* Income Stress % */}
-            <div className="p-4 bg-[#fcfbf9] rounded-2xl border border-[#dedcd9] space-y-2">
+            <div className="p-4 bg-[#fcfbf9] rounded-2xl border border-[#ebeae8] space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-bold text-[#171717]">Income Shock Stress</span>
                 <span className="text-base font-black text-[#5769e7]">{stressPercent}%</span>
@@ -258,8 +258,8 @@ export default function EvaluatorDemoPage() {
         </div>
 
         {/* 3. Live Assessment Output */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#dedcd9] menti-card-shadow space-y-6">
-          <div className="flex items-center justify-between border-b border-[#dedcd9] pb-4">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#ebeae8] shadow-sm space-y-6">
+          <div className="flex items-center justify-between border-b border-[#ebeae8] pb-4">
             <div>
               <span className="text-[10px] uppercase font-bold tracking-widest text-[#747371] block">
                 Calculated Output for {activePersona.primaryIncomeSignal.replace(/_/g, ' ')}
@@ -287,7 +287,7 @@ export default function EvaluatorDemoPage() {
               </span>
             </div>
 
-            <div className="p-3 bg-[#f7f6f4] rounded-2xl border border-[#dedcd9]">
+            <div className="p-3 bg-[#f7f6f4] rounded-2xl border border-[#ebeae8]">
               <span className="text-[10px] uppercase font-bold text-[#5d5b59] block">Lender Range</span>
               <span className="text-lg font-black text-[#171717] mt-1 block">
                 {formatLakhs(assessment.estimatedLenderRange[0])}–{formatLakhs(assessment.estimatedLenderRange[1])}
@@ -301,7 +301,7 @@ export default function EvaluatorDemoPage() {
               </span>
             </div>
 
-            <div className="p-3 bg-[#f2f1f0] rounded-2xl border border-[#dedcd9]">
+            <div className="p-3 bg-[#f2f1f0] rounded-2xl border border-[#ebeae8]">
               <span className="text-[10px] uppercase font-bold text-[#5d5b59] block">Safe EMI Ceiling</span>
               <span className="text-lg font-black text-[#171717] mt-1 block">
                 {formatINR(assessment.recommendedMaxEMI)}
@@ -310,7 +310,7 @@ export default function EvaluatorDemoPage() {
           </div>
 
           {/* Inferred Product Route */}
-          <div className="p-4 rounded-2xl bg-[#fcfbf9] border border-[#dedcd9] space-y-1">
+          <div className="p-4 rounded-2xl bg-[#fcfbf9] border border-[#ebeae8] space-y-1">
             <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-[#dedcd9] text-[#171717] inline-block">
               Inferred Product Route
             </span>
@@ -326,7 +326,7 @@ export default function EvaluatorDemoPage() {
             <p className="italic text-[#171717]">{assessment.safeEMITrace.rationale}</p>
             <div className="flex flex-wrap gap-1.5 pt-1">
               {assessment.safeEMITrace.drivers.map((drv, i) => (
-                <span key={i} className="bg-white px-2 py-1 rounded-lg border border-[#dedcd9] text-[10px] text-[#171717]">
+                <span key={i} className="bg-white px-2 py-1 rounded-lg border border-[#ebeae8] text-[10px] text-[#171717]">
                   {drv}
                 </span>
               ))}
@@ -334,13 +334,13 @@ export default function EvaluatorDemoPage() {
           </div>
 
           {/* Adaptive Questionnaire Execution Trail */}
-          <div className="space-y-2 pt-2 border-t border-[#dedcd9]">
+          <div className="space-y-2 pt-2 border-t border-[#ebeae8]">
             <span className="text-xs font-bold text-[#171717] block">
               Adaptive Questionnaire Trail ({questionsAsked.length} questions prioritized):
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               {questionsAsked.map((q, idx) => (
-                <div key={q.id as string} className="p-2.5 rounded-xl bg-[#fcfbf9] border border-[#dedcd9] flex items-center justify-between">
+                <div key={q.id as string} className="p-2.5 rounded-xl bg-[#fcfbf9] border border-[#ebeae8] flex items-center justify-between">
                   <span className="font-medium text-[#171717] truncate max-w-[280px]">
                     {idx + 1}. {q.title}
                   </span>

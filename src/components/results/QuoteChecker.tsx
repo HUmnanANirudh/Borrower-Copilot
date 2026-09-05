@@ -39,8 +39,8 @@ export function QuoteChecker({ assessment }: QuoteCheckerProps) {
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#dedcd9] menti-card-shadow space-y-6">
-      <div className="flex items-center gap-2.5 border-b border-[#dedcd9] pb-4">
+    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#ebeae8] shadow-sm space-y-6">
+      <div className="flex items-center gap-2.5 border-b border-[#ebeae8] pb-4">
         <div className="w-9 h-9 rounded-full bg-[#e5e9ff] text-[#5769e7] flex items-center justify-center">
           <CalculatorIcon className="w-5 h-5" aria-hidden="true" />
         </div>
@@ -65,7 +65,7 @@ export function QuoteChecker({ assessment }: QuoteCheckerProps) {
             step="25000"
             value={loanAmount}
             onChange={(e) => setLoanAmount(Number(e.target.value))}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-[#dedcd9] text-sm font-semibold text-[#171717] bg-[#fcfbf9] focus:border-[#5769e7] outline-none"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-[#ebeae8] text-sm font-semibold text-[#171717] bg-[#fcfbf9] focus:border-[#5769e7] outline-none"
           />
         </div>
 
@@ -78,7 +78,7 @@ export function QuoteChecker({ assessment }: QuoteCheckerProps) {
             step="0.25"
             value={quotedRate}
             onChange={(e) => setQuotedRate(Number(e.target.value))}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-[#dedcd9] text-sm font-semibold text-[#171717] bg-[#fcfbf9] focus:border-[#5769e7] outline-none"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-[#ebeae8] text-sm font-semibold text-[#171717] bg-[#fcfbf9] focus:border-[#5769e7] outline-none"
           />
         </div>
 
@@ -89,7 +89,7 @@ export function QuoteChecker({ assessment }: QuoteCheckerProps) {
           <select
             value={tenureMonths}
             onChange={(e) => setTenureMonths(Number(e.target.value))}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-[#dedcd9] text-sm font-semibold text-[#171717] bg-[#fcfbf9] focus:border-[#5769e7] outline-none"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-[#ebeae8] text-sm font-semibold text-[#171717] bg-[#fcfbf9] focus:border-[#5769e7] outline-none"
           >
             <option value={24}>24 Months (2 Years)</option>
             <option value={36}>36 Months (3 Years)</option>
@@ -107,7 +107,7 @@ export function QuoteChecker({ assessment }: QuoteCheckerProps) {
             step="0.25"
             value={feePercent}
             onChange={(e) => setFeePercent(Number(e.target.value))}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-[#dedcd9] text-sm font-semibold text-[#171717] bg-[#fcfbf9] focus:border-[#5769e7] outline-none"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-[#ebeae8] text-sm font-semibold text-[#171717] bg-[#fcfbf9] focus:border-[#5769e7] outline-none"
           />
         </div>
 
@@ -120,7 +120,7 @@ export function QuoteChecker({ assessment }: QuoteCheckerProps) {
             step="500"
             value={insurance}
             onChange={(e) => setInsurance(Number(e.target.value))}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-[#dedcd9] text-sm font-semibold text-[#171717] bg-[#fcfbf9] focus:border-[#5769e7] outline-none"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-[#ebeae8] text-sm font-semibold text-[#171717] bg-[#fcfbf9] focus:border-[#5769e7] outline-none"
           />
         </div>
 
@@ -136,8 +136,8 @@ export function QuoteChecker({ assessment }: QuoteCheckerProps) {
 
       {/* Evaluation Results */}
       {evaluation && (
-        <div className="pt-4 border-t border-[#dedcd9] space-y-4">
-          <div className="flex items-center justify-between p-4 rounded-2xl bg-[#fcfbf9] border border-[#dedcd9]">
+        <div className="pt-4 border-t border-[#ebeae8] space-y-4">
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-[#fcfbf9] border border-[#ebeae8]">
             <div>
               <span className="text-xs text-[#747371] block">Quote Verdict</span>
               <span className={`text-base font-black ${
@@ -170,7 +170,7 @@ export function QuoteChecker({ assessment }: QuoteCheckerProps) {
               <span className="text-xs font-bold text-[#171717] block">What to tell the lender:</span>
               <div className="space-y-1.5">
                 {evaluation.counterOfferAdvice.map((advice, i) => (
-                  <p key={i} className="text-xs text-[#5d5b59] bg-[#fcfbf9] p-2.5 rounded-xl border border-[#dedcd9]">
+                  <p key={i} className="text-xs text-[#5d5b59] bg-[#fcfbf9] p-2.5 rounded-xl border border-[#ebeae8]">
                     💬 {advice}
                   </p>
                 ))}

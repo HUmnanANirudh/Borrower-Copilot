@@ -22,7 +22,7 @@ export function StressTestCard({ assessment }: StressTestCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#dedcd9] menti-card-shadow space-y-5">
+    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#ebeae8] shadow-sm space-y-5">
       <div className="flex items-center gap-2">
         <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center">
           <CoinsSwapIcon className="w-4 h-4" aria-hidden="true" />
@@ -39,7 +39,7 @@ export function StressTestCard({ assessment }: StressTestCardProps) {
 
       {/* Comparison Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-        <div className="p-4 rounded-2xl bg-[#fcfbf9] border border-[#dedcd9]">
+        <div className="p-4 rounded-2xl bg-[#fcfbf9] border border-[#ebeae8]">
           <span className="text-[10px] font-bold uppercase text-[#747371] block">
             Normal Situation
           </span>
@@ -63,7 +63,7 @@ export function StressTestCard({ assessment }: StressTestCardProps) {
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#f2f1f0] border border-[#dedcd9] flex flex-col justify-between">
+        <div className="p-4 rounded-2xl bg-[#f2f1f0] border border-[#ebeae8] flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase text-[#5d5b59] block">
             Consequence Status
           </span>
@@ -76,7 +76,7 @@ export function StressTestCard({ assessment }: StressTestCardProps) {
         </div>
       </div>
 
-      <p className="text-xs text-[#5d5b59] bg-[#fcfbf9] p-4 rounded-2xl border border-[#dedcd9] leading-relaxed">
+      <p className="text-xs text-[#5d5b59] bg-[#fcfbf9] p-4 rounded-2xl border border-[#ebeae8] leading-relaxed">
         {stressScenario.explanation}
       </p>
     </div>

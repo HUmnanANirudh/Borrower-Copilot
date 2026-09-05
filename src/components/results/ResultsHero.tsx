@@ -38,23 +38,23 @@ export function ResultsHero({ assessment }: ResultsHeroProps) {
   const style = getVerdictStyle();
 
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#dedcd9] menti-card-shadow space-y-6">
+    <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#ebeae8] shadow-sm space-y-6">
       {/* Top Tag & Confidence */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#dedcd9] pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#ebeae8] pb-5">
         <div>
-          <span className="text-xs uppercase font-extrabold tracking-widest text-[#5769e7] block">
+          <span className="text-[12px] uppercase font-bold tracking-wider text-[#5769e7] block mb-1">
             Self-Reported Borrower Assessment
           </span>
-          <h1 className="text-3xl sm:text-5xl font-black text-[#171717] tracking-tight uppercase mt-1">
+          <h1 className="font-display text-[48px] sm:text-[64px] font-normal text-[#171717] tracking-tight uppercase leading-[0.9]">
             {assessment.verdict}
           </h1>
         </div>
 
         <div className="sm:text-right">
-          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border ${style.badgeBg}`}>
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase border ${style.badgeBg}`}>
             {assessment.confidence} CONFIDENCE
           </span>
-          <p className="text-[11px] text-[#747371] mt-1 sm:max-w-[240px]">
+          <p className="text-[12px] text-[#747371] mt-1.5 sm:max-w-[240px]">
             {assessment.confidenceReasons[0] || 'Based on your stated cash flow & commitments.'}
           </p>
         </div>
@@ -67,7 +67,7 @@ export function ResultsHero({ assessment }: ResultsHeroProps) {
         </p>
 
         {/* Actionable Next Move Recommendation */}
-        <div className="p-5 rounded-2xl bg-[#fcfbf9] border border-[#dedcd9] space-y-2">
+        <div className="p-5 rounded-2xl bg-[#fcfbf9] border border-[#ebeae8] space-y-2">
           <span className="text-[10px] uppercase font-extrabold px-2.5 py-0.5 rounded-full bg-[#e5e9ff] text-[#5769e7] inline-block">
             Your Next Move
           </span>
@@ -86,13 +86,13 @@ export function ResultsHero({ assessment }: ResultsHeroProps) {
       </div>
 
       {/* Direct CTA to Negotiation Card */}
-      <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#dedcd9]">
-        <span className="text-xs text-[#747371]">
+      <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#ebeae8]">
+        <span className="text-[13px] font-medium text-[#747371]">
           Take these figures into the bank or NBFC branch.
         </span>
         <Link
           href="/card"
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#5769e7] hover:bg-[#4958be] text-white text-xs sm:text-sm font-extrabold shadow-sm transition-all cursor-pointer"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-[#5769e7] hover:bg-[#4958be] text-white text-[15px] font-semibold shadow-sm transition-all cursor-pointer"
         >
           <span>View Negotiation Card</span>
           <ArrowRight01Icon className="w-4 h-4" aria-hidden="true" />

@@ -15,26 +15,26 @@ export function EMITenureTable({ assessment }: EMITenureTableProps) {
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#dedcd9] menti-card-shadow space-y-6">
+    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#ebeae8] shadow-sm space-y-6">
       {/* EMI Ceiling Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-b border-[#dedcd9] pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-b border-[#ebeae8] pb-4">
         <div>
           <span className="text-xs uppercase font-extrabold tracking-wider text-[#5769e7] block">
             Payment Capacity
           </span>
-          <h2 className="text-2xl sm:text-3xl font-black text-[#171717] tracking-tight">
+          <h2 className="font-display text-[32px] font-normal leading-tight text-[#171717] tracking-tight">
             Your Safe EMI Ceiling
           </h2>
         </div>
         <div className="text-left sm:text-right">
-          <span className="text-3xl sm:text-4xl font-black text-[#5769e7]">
+          <span className="font-display text-[40px] font-normal leading-tight text-[#5769e7]">
             {formatINR(assessment.recommendedMaxEMI)}
           </span>
           <span className="text-xs text-[#747371] block mt-0.5">/ month</span>
         </div>
       </div>
 
-      <p className="text-xs sm:text-sm font-semibold text-[#171717] bg-[#fcfbf9] p-3.5 rounded-2xl border border-[#dedcd9]">
+      <p className="text-xs sm:text-sm font-semibold text-[#171717] bg-[#fcfbf9] p-3.5 rounded-2xl border border-[#ebeae8]">
         ⚠️ Do not agree to an EMI above this without changing the loan amount or extending tenure.
       </p>
 
@@ -47,7 +47,7 @@ export function EMITenureTable({ assessment }: EMITenureTableProps) {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-[#dedcd9] text-[#747371]">
+              <tr className="border-b border-[#ebeae8] text-[#747371]">
                 <th className="py-2 font-bold">Tenure</th>
                 <th className="py-2 font-bold">Monthly EMI</th>
                 <th className="py-2 font-bold">Total Interest Paid</th>
