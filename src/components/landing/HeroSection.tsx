@@ -1,59 +1,97 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowRight01Icon } from '@/components/icons';
-import { MiniatureCard } from './MiniatureCard';
+
+function PhoneMockup() {
+  return (
+    <div className="relative mx-auto border-[#171717] bg-[#171717] border-[14px] rounded-[2.5rem] h-[600px] w-[300px] shadow-xl">
+      <div className="h-[32px] w-[3px] bg-[#171717] absolute -start-[17px] top-[72px] rounded-s-lg" />
+      <div className="h-[46px] w-[3px] bg-[#171717] absolute -start-[17px] top-[124px] rounded-s-lg" />
+      <div className="h-[46px] w-[3px] bg-[#171717] absolute -start-[17px] top-[178px] rounded-s-lg" />
+      <div className="h-[64px] w-[3px] bg-[#171717] absolute -end-[17px] top-[142px] rounded-e-lg" />
+      <div className="rounded-[2rem] overflow-hidden w-[272px] h-[572px] bg-white">
+        {/* In-phone UI */}
+        <div className="h-full flex flex-col text-[#171717]">
+          {/* Status bar */}
+          <div className="h-11 bg-[#f3ede7] flex items-end justify-center pb-1">
+            <span className="text-[10px] font-semibold text-[#5d5b59]">BorrowIQ</span>
+          </div>
+
+          {/* Card preview content */}
+          <div className="flex-1 bg-[#f3ede7] px-4 pt-3 pb-4 flex flex-col gap-3 overflow-hidden">
+            <div className="text-[11px] font-semibold text-[#5d5b59] uppercase tracking-wider">Your Assessment</div>
+
+            {/* Amount card */}
+            <div className="bg-white rounded-xl p-3.5 shadow-sm">
+              <div className="text-[10px] text-[#5d5b59] mb-1">Safe borrowing ceiling</div>
+              <div className="text-[28px] font-display font-medium text-[#171717] leading-none">₹18.5L</div>
+              <div className="text-[10px] text-[#52ad6e] font-medium mt-1">Within safe FOIR range</div>
+            </div>
+
+            {/* Rate card */}
+            <div className="bg-white rounded-xl p-3.5 shadow-sm">
+              <div className="text-[10px] text-[#5d5b59] mb-1">Fair interest rate</div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-[22px] font-display font-medium text-[#171717] leading-none">8.5%</span>
+                <span className="text-[10px] text-[#5d5b59]">– 10.2%</span>
+              </div>
+              <div className="mt-2 h-1.5 bg-[#f2f1f0] rounded-full overflow-hidden">
+                <div className="h-full w-3/5 bg-[#5769e7] rounded-full" />
+              </div>
+            </div>
+
+            {/* EMI card */}
+            <div className="bg-white rounded-xl p-3.5 shadow-sm">
+              <div className="text-[10px] text-[#5d5b59] mb-1">Estimated EMI</div>
+              <div className="text-[22px] font-display font-medium text-[#171717] leading-none">₹22,400<span className="text-[10px] text-[#5d5b59] ml-1">/mo</span></div>
+            </div>
+
+            {/* Verdict pill */}
+            <div className="flex items-center gap-2 bg-[#f0faf2] rounded-full px-3 py-2 mt-auto">
+              <div className="w-2 h-2 rounded-full bg-[#52ad6e]" />
+              <span className="text-[10px] font-semibold text-[#253e2d]">Safe to proceed · High confidence</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function HeroSection() {
   return (
     <section aria-labelledby="hero-title" className="w-full bg-[#f3ede7]">
-      <div className="max-w-[1280px] mx-auto px-6 lg:px-16 pt-12 lg:pt-20 pb-16 lg:pb-28">
-        <div className="flex flex-col lg:flex-row items-start justify-between gap-12 lg:gap-16">
+      <div className="max-w-[1280px] mx-auto px-5 lg:px-16 pt-10 lg:pt-20 pb-12 lg:pb-24">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-16">
 
-          {/* Left: Copy + CTA */}
-          <div className="w-full lg:w-7/12 flex flex-col gap-6 lg:gap-8">
+          {/* Left: Copy */}
+          <div className="w-full lg:w-1/2 flex flex-col gap-5 text-center lg:text-left items-center lg:items-start">
             <h1
               id="hero-title"
-              className="font-display text-[48px] sm:text-[64px] lg:text-[88px] font-normal text-[#171717] leading-[0.85] tracking-normal"
+              className="font-display text-[44px] sm:text-[56px] lg:text-[80px] font-normal text-[#171717] leading-[0.88]"
             >
-              Know what you should borrow before the lender tells you what you can.
+              Know your loan before the lender prices it.
             </h1>
 
-            <p className="text-[16px] sm:text-[18px] text-[#5d5b59] max-w-[520px] leading-[1.55]">
-              A private, no-login assessment that estimates your safe borrowing limit, fair interest rate and EMI — then arms you with a defensible card to negotiate with.
+            <p className="text-[15px] sm:text-[17px] text-[#5d5b59] max-w-[440px] leading-[1.5]">
+              Free, private assessment. No login, no credit bureau pull. Get your safe borrowing limit, fair rate, and a negotiation card in 3 minutes.
             </p>
 
-            {/* CTA Buttons — Mentimeter style: large pill primary + secondary pill */}
-            <div className="flex flex-col sm:flex-row items-start gap-3 pt-2">
+            <div className="flex flex-col sm:flex-row gap-3 pt-1">
               <Link
                 href="/assess"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-[#5769e7] hover:bg-[#4958be] active:bg-[#3f4ba1] text-white text-[16px] font-semibold transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-[#5769e7] hover:bg-[#4958be] text-white text-[15px] font-semibold transition-colors"
               >
-                Start my assessment
-                <ArrowRight01Icon className="w-5 h-5" aria-hidden="true" />
+                Start assessment
+                <ArrowRight01Icon className="w-4 h-4" aria-hidden="true" />
               </Link>
-              <Link
-                href="#how-it-works"
-                className="inline-flex items-center justify-center px-8 py-4 rounded-full bg-[#f2f1f0] hover:bg-[#ebeae8] text-[#171717] text-[16px] font-semibold transition-colors"
-              >
-                See how it works
-              </Link>
-            </div>
-
-            {/* Micro-assurances */}
-            <p className="text-[14px] text-[#5d5b59] flex flex-wrap gap-x-4 gap-y-1">
-              <span>✓ No login required</span>
-              <span>✓ Zero credit bureau pull</span>
-              <span>✓ Runs in your browser</span>
-            </p>
-          </div>
-
-          {/* Right: Hero Visual */}
-          <div className="w-full lg:w-5/12 flex justify-center lg:justify-end">
-            <div className="w-full max-w-[420px] rounded-[20px] border-[3px] border-black bg-white menti-card-shadow overflow-hidden">
-              <MiniatureCard />
             </div>
           </div>
 
+          {/* Right: Phone Mockup */}
+          <div className="w-full lg:w-1/2 flex justify-center">
+            <PhoneMockup />
+          </div>
         </div>
       </div>
     </section>

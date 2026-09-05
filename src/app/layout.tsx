@@ -8,8 +8,8 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
-  title: "Borrower Copilot — Indian Loan Decision Engine & Negotiation Card",
-  description: "Independent loan decision engine protecting Indian borrowers. Contrasts lender sanction vs safe borrowing, computes all-in APR, and generates shareable negotiation cards without bureau pulls or logins.",
+  title: "BorrowIQ — Know Your Loan Before The Lender Prices It",
+  description: "Free, private loan assessment for Indian borrowers. Get your safe borrowing limit, fair interest rate, and a one-page negotiation card — no login, no credit bureau pull.",
 };
 
 export default function RootLayout({

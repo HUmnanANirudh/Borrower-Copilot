@@ -1,57 +1,48 @@
 import React from 'react';
 
-const pillars = [
+const lenses = [
   {
-    title: 'Eligibility',
-    subtitle: 'Could a lender plausibly offer this?',
-    description: 'Lenders evaluate regulatory eligibility using 50%–60% FOIR and 60-month tenures to calculate the maximum loan they can legally approve.',
-    tag: 'Lender Perspective',
+    label: 'Eligibility',
+    question: 'What could a lender offer?',
+    answer: 'Based on FOIR limits and tenure caps — the maximum they can legally approve.',
   },
   {
-    title: 'Affordability',
-    subtitle: 'Can you safely carry it?',
-    description: 'Borrower Copilot calculates your safe cash-flow ceiling after subtracting actual living costs, existing EMIs, and an untouchable 10% emergency reserve.',
-    tag: 'Borrower Safety',
+    label: 'Affordability',
+    question: 'What can you safely carry?',
+    answer: 'After real living costs, existing EMIs, and a 10% emergency reserve.',
   },
   {
-    title: 'Pricing',
-    subtitle: 'Is the quote fair for your profile?',
-    description: 'We calculate fair interest rate bands based on credit tiers and vintage, and compute the estimated all-in APR including processing fees and 18% GST.',
-    tag: 'Market Fairness',
+    label: 'Pricing',
+    question: 'Is the rate fair?',
+    answer: 'Fair rate bands for your profile, plus the all-in APR with fees and GST.',
   },
 ];
 
 export function MethodologySection() {
   return (
-    <section id="methodology" className="w-full bg-white">
-      <div className="max-w-[1280px] mx-auto px-6 lg:px-16 py-16 lg:py-24">
-        {/* Section heading */}
-        <div className="text-center max-w-[800px] mx-auto mb-12 lg:mb-16">
-          <h2 className="font-display text-[48px] sm:text-[64px] lg:text-[88px] font-normal text-[#171717] leading-[0.85] tracking-normal">
-            Three things we strictly separate.
+    <section id="methodology" className="w-full bg-[#f3ede7]">
+      <div className="max-w-[1280px] mx-auto px-5 lg:px-16 py-14 lg:py-20">
+        {/* Narrative quote */}
+        <div className="text-center mb-10 lg:mb-14 max-w-[700px] mx-auto">
+          <h2 className="font-display text-[36px] sm:text-[48px] lg:text-[64px] font-normal text-[#171717] leading-[0.9] mb-4">
+            Three separate verdicts.
           </h2>
-          <p className="text-[16px] text-[#5d5b59] mt-4 max-w-[520px] mx-auto leading-[1.55]">
-            Most borrowers confuse being eligible for a loan with being able to afford it.
+          <p className="text-[15px] text-[#5d5b59] leading-[1.5]">
+            Most borrowers confuse what a lender <em>will</em> offer with what they can <em>safely</em> repay. BorrowIQ separates the two.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {pillars.map((pillar) => (
-            <div
-              key={pillar.title}
-              className="bg-[#f7f6f4] rounded-[16px] p-8 lg:p-10 flex flex-col"
-            >
-              <span className="text-[12px] uppercase font-semibold tracking-wider text-[#5d5b59] mb-6">
-                {pillar.tag}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {lenses.map((lens) => (
+            <div key={lens.label} className="bg-white rounded-2xl p-7 lg:p-8">
+              <span className="text-[11px] uppercase font-semibold tracking-wider text-[#5d5b59] block mb-3">
+                {lens.label}
               </span>
-              <h3 className="font-display text-[32px] lg:text-[40px] text-[#171717] leading-[1] tracking-tight mb-2">
-                {pillar.title}
+              <h3 className="text-[20px] font-semibold text-[#171717] leading-tight mb-2">
+                {lens.question}
               </h3>
-              <p className="text-[16px] font-semibold text-[#5769e7] mb-4">
-                {pillar.subtitle}
-              </p>
-              <p className="text-[16px] text-[#5d5b59] leading-[1.55]">
-                {pillar.description}
+              <p className="text-[15px] text-[#5d5b59] leading-[1.5]">
+                {lens.answer}
               </p>
             </div>
           ))}
