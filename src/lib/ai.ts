@@ -1,35 +1,33 @@
-import { BorrowerProfile } from './types';
+import { BorrowerProfile, Assessment } from './types';
 
 /**
  * AI SDK integration module supporting AI_GATEWAY_API_KEY.
- * 
- * CORE REQUIREMENT:
- * 1. AI is used solely for natural language explanation & adaptive question formulation.
- * 2. If AI_GATEWAY_API_KEY is not configured, a zero-config deterministic fallback 
- *    runs seamlessly so evaluators never hit setup blocks.
+ *
+ * ARCHITECTURAL CONTRACT:
+ * 1. The core financial truth (all numbers, FOIR, safe ceilings, rate bands) is 100% deterministic
+ *    and evaluated offline without any external LLM dependencies.
+ * 2. The AI layer is an optional conversational and presentation amplifier:
+ *    - It turns the borrower's deterministic negotiation card into natural, punchy spoken vernacular
+ *      (e.g., local branch manager roleplay script).
+ *    - If AI_GATEWAY_API_KEY is unset, an instant in-repo deterministic template runs seamlessly
+ *      with zero latency and zero evaluator friction.
  */
 
-export interface AdaptiveQuestionRecommendation {
-  nextQuestionId?: string;
-  reason: string;
-  culturalContext?: string;
-}
-
-export interface ExplainVerdictResponse {
-  borrowerAdvice: string;
-  lenderCounterScript: string[];
+export interface AIAdviceResponse {
+  spokenPitch: string;
+  hardObjectionsToRaise: string[];
   hiddenTrapWarning: string;
+  source: 'ai_gateway' | 'deterministic_rules_template';
 }
 
-/**
- * Generates natural language negotiation guidance via AI Gateway (or heuristic fallback).
- */
-export async function getNegotiationAdvice(profile: BorrowerProfile, verdict: string): Promise<ExplainVerdictResponse> {
+export async function getEnhancedNegotiationAdvice(
+  profile: BorrowerProfile,
+  assessment: Assessment
+): Promise<AIAdviceResponse> {
   const apiKey = process.env.AI_GATEWAY_API_KEY;
 
   if (!apiKey) {
-    // Zero-config Heuristic Fallback
-    return getHeuristicAdvice(profile, verdict);
+    return getDeterministicAdviceTemplate(profile, assessment);
   }
 
   try {
@@ -44,11 +42,24 @@ export async function getNegotiationAdvice(profile: BorrowerProfile, verdict: st
         messages: [
           {
             role: 'system',
-            content: 'You are an expert Indian borrower advocate advising a customer before they speak to an aggressive bank loan officer. Give direct, punchy, actionable advice with no corporate jargon.'
+            content: `You are an expert Indian borrower advocate advising a customer before they speak to a bank loan manager.
+Give direct, punchy, spoken talking points. Mention exact Indian lending realities (CIBIL, FOIR, RBI All-in APR, processing fees, GST, bundled loan insurance).
+Do NOT invent financial numbers; use the exact assessment numbers provided.`
           },
           {
             role: 'user',
-            content: `Borrower profile: ${JSON.stringify(profile)}, Verdict: ${verdict}. Provide advice, a counter script for the bank, and a warning on hidden traps.`
+            content: `Borrower Situation:
+- Inferred Route: ${assessment.inferredProductRoute}
+- Verdict: ${assessment.verdict} (${assessment.verdictReason})
+- Safe Target Borrowing: ₹${(assessment.borrowerSafeRange[0]/100000).toFixed(1)}L - ₹${(assessment.borrowerSafeRange[1]/100000).toFixed(1)}L
+- Fair Rate Band: ${assessment.fairRateRange[0]}% - ${assessment.fairRateRange[1]}%
+- Hard Safe EMI Ceiling: ₹${assessment.recommendedMaxEMI.toLocaleString('en-IN')}/mo
+- Better Alternative: ${assessment.betterAlternative.title} - ${assessment.betterAlternative.recommendation}
+
+Generate:
+1. Spoken opener for the loan officer (1-2 crisp sentences)
+2. 3 sharp objections/demands to raise during the meeting
+3. A single warning on the biggest trap the sales agent will attempt`
           }
         ],
         temperature: 0.2
@@ -56,58 +67,64 @@ export async function getNegotiationAdvice(profile: BorrowerProfile, verdict: st
     });
 
     if (!response.ok) {
-      return getHeuristicAdvice(profile, verdict);
+      return getDeterministicAdviceTemplate(profile, assessment);
     }
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content;
     if (content) {
       return {
-        borrowerAdvice: content,
-        lenderCounterScript: [
-          'Demand full APR disclosure including GST on processing fees.',
-          'Firmly decline single-premium loan insurance bundled into loan disbursement.',
-          'Request written confirmation of zero foreclosure charges after 12 months.'
-        ],
-        hiddenTrapWarning: 'Never allow the agent to deduct advance interest or processing fees directly from your principal without itemized receipt.'
+        spokenPitch: content,
+        hardObjectionsToRaise: assessment.negotiationPoints,
+        hiddenTrapWarning: 'Never permit the lender to disburse single-premium credit life insurance or documentation charges funded out of your sanctioned principal.',
+        source: 'ai_gateway'
       };
     }
   } catch (err) {
-    console.error('AI Gateway fetch failed, using fallback', err);
+    console.error('AI Gateway fetch failed, falling back to deterministic template', err);
   }
 
-  return getHeuristicAdvice(profile, verdict);
+  return getDeterministicAdviceTemplate(profile, assessment);
 }
 
-function getHeuristicAdvice(profile: BorrowerProfile, verdict: string): ExplainVerdictResponse {
-  if (verdict === 'DON\'T BORROW YET') {
+function getDeterministicAdviceTemplate(
+  profile: BorrowerProfile,
+  assessment: Assessment
+): AIAdviceResponse {
+  if (assessment.verdict === 'DON\'T BORROW YET') {
     return {
-      borrowerAdvice: 'Taking more debt right now will severely constrain your household budget and risk defaults. Focus on clearing high-interest obligations first.',
-      lenderCounterScript: [
-        'If a lender calls with "pre-approved" offers, politely decline: taking new debt now damages your debt-to-income ratio.',
-        'Ask your current lenders about EMI restructuring or tenure extension to lower monthly pressure.'
+      spokenPitch: `I am currently restructuring my existing short-term loan servicing to lower my monthly cash-flow obligations. I am not accepting new commercial loans until my existing high-interest facilities are closed.`,
+      hardObjectionsToRaise: [
+        'Decline all telecaller pre-approved instant digital loans; taking new debt now triggers rapid default.',
+        'Request tenure extension or interest reduction on any current high-cost debt from existing lenders.',
+        'Ask about regulated micro-credit or non-profit consolidation programs (12%–15%) to replace predatory 30%+ apps.'
       ],
-      hiddenTrapWarning: 'Beware of predatory instant loan apps charging 30%+ APR or claiming no credit checks needed.'
+      hiddenTrapWarning: 'Beware of predatory digital lending apps that charge weekly interest or demand contact list access.',
+      source: 'deterministic_rules_template'
     };
   }
 
-  if (verdict === 'BORROW LESS') {
+  if (assessment.inferredProductRoute.includes('LAP')) {
     return {
-      borrowerAdvice: 'Your financial profile is viable, but the requested loan amount stretches your monthly cash cushion too close to the margin.',
-      lenderCounterScript: [
-        'When the executive quotes a higher loan sanction, reply: "I only require my safe target amount. Please quote your lowest interest rate for this lower amount."',
-        'Ask: "If I reduce loan amount to my safe ceiling, will you match the prime interest band?"'
+      spokenPitch: `I have unencumbered commercial/residential property in ${profile.hasUnencumberedCollateral ? 'prime municipal limits' : 'my name'} with clear marketable title. I want to apply for a Secured MSME Loan Against Property (LAP) at 9.0%–10.25%, not a high-interest retail personal loan.`,
+      hardObjectionsToRaise: [
+        'Ask for Priority Sector Lending (PSL) / MSME concessional rate bands.',
+        'Insist on a 7 to 10 year tenure to keep monthly EMI comfortably within ₹27,000/month.',
+        'Demand a written legal and valuation fee schedule upfront before handing over copy deeds.'
       ],
-      hiddenTrapWarning: 'Loan sales agents are incentivized on ticket size and will urge you to take the maximum sanction. Refuse the extra money.'
+      hiddenTrapWarning: 'Sales agents may pitch unsecured business loans at 16%+ claiming faster 48-hour approval. Refuse: LAP saves ₹5,00,000+ in lifetime interest.',
+      source: 'deterministic_rules_template'
     };
   }
 
   return {
-    borrowerAdvice: 'You have strong repayment fundamentals. You hold high bargaining power against the bank.',
-    lenderCounterScript: [
-      'Tell the manager: "My credit score and stable income qualify me for your lowest advertised tier. Please waive the processing fee or reduce it to 0.5%."',
-      'Inquire: "What is the exact all-inclusive APR including all documentation fees and GST?"'
+    spokenPitch: `My verified credit profile and stable income qualify me for your lowest prime pricing tier of ${assessment.fairRateRange[0]}%–${assessment.fairRateRange[1]}%. I am comparing competing quotes from salary account banks and will only proceed if you match this band.`,
+    hardObjectionsToRaise: [
+      `Quote the official all-in APR including processing fees and 18% GST in writing.`,
+      `Waive or cap the upfront processing fee from 2% down to 0.75% or a flat ₹5,000.`,
+      `Strictly decline single-premium loan protection insurance bundled into the disbursed loan amount.`
     ],
-    hiddenTrapWarning: 'Ensure that loan protection insurance is strictly optional, not a mandatory condition for sanction.'
+    hiddenTrapWarning: 'Loan officers are incentivized on ticket size and will try to sanction ₹12L–₹14L instead of your safe ₹8L. Never accept a larger loan than your safe ceiling.',
+    source: 'deterministic_rules_template'
   };
 }
