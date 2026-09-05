@@ -1,6 +1,6 @@
 // ==========================================
 // Borrower Copilot Core Domain Types
-// Refined: Information-Value Adaptive Engine
+// Refined: Facts -> Derived Metrics -> Decisions Pipeline
 // ==========================================
 
 export type LoanPurpose = 
@@ -26,24 +26,20 @@ export type CreditScoreStatus =
   | 'below_650'      // High Risk Tier
   | 'unknown';       // Missing bureau history (Modeled with wider variance, NEVER treated as 300)
 
-export type JobStabilitySignal = 
-  | 'stable_2yr_plus'
-  | 'recent_switch_6m_1yr'
-  | 'frequent_switches'
-  | 'new_employment_sub_6m';
-
 export interface BorrowerProfile {
-  // Universal Baseline Inputs (Phases 1 & 2)
+  // Universal Intake
   loanPurpose: LoanPurpose;
   requestedAmount: number;
   age: number;
+  
+  // Baseline Financials
   primaryIncomeSignal: PrimaryIncomeSignal;
   netMonthlyIncome: number;          // Take-home cash credited per month
   existingMonthlyEMI: number;        // Current ongoing monthly debt servicing
   householdLivingExpenses: number;   // Food, rent, utilities, dependents, schooling
   creditScoreStatus: CreditScoreStatus;
 
-  // Dynamic Information-Value Variables (Phase 3: Asked only if they move an output)
+  // Dynamic Information-Value Variables
   coApplicantIncome?: number;        // e.g. Ravi's wife earning ₹18,000/mo
   businessVintageYears?: number;     // Operating track record for self-employed
   itrDeclaredMonthlyTaxable?: number;// Documented tax return income vs cash turnover
@@ -58,8 +54,71 @@ export interface BorrowerProfile {
   variablePayPortionPercent?: number;// Bonus/commission share of annual compensation
 }
 
+// ----------------------------------------------------------------
+// Normalized Facts & Derived Metrics
+// ----------------------------------------------------------------
+
+export interface NormalizedFacts {
+  primaryIncome: number;
+  coIncome: number;
+  totalHouseholdIncome: number;
+  effectiveIncomeAfterHaircut: number;
+  existingEMI: number;
+  statedExpenses: number;
+  effectiveExpensesWithSanityFloor: number;
+  isExpenseSanityApplied: boolean;
+  creditScoreStatus: CreditScoreStatus;
+  requestedAmount: number;
+  hasCollateral: boolean;
+  collateralValue: number;
+  hasHighCostAppDebt: boolean;
+  hasRecentBounce: boolean;
+  emergencySavingsMonths: number;
+  businessVintageYears: number;
+}
+
+export interface DerivedMetrics {
+  currentFOIR: number;               // Existing EMI / Effective Income (%)
+  disposableCash: number;            // Income - Expenses - Existing EMI
+  untouchableReserveBuffer: number;  // 10% monthly contingency
+  uncommittedCashFlowFloor: number;  // Disposable cash after 10% buffer
+  safeFOIRCapPercent: number;        // 35% standard, 25% gig/informal
+  maxAllowableDebtServicing: number; // Income * Safe FOIR%
+  foirCeiling: number;               // Max allowable debt - Existing EMI
+  isOverleveraged: boolean;          // FOIR >= 35% or Expenses+EMI >= 90%
+  debtDistressScore: number;         // 0 (Prism) to 100 (Insolvent)
+  collateralCoverageLTV: number;     // Requested / Collateral (%)
+}
+
+// ----------------------------------------------------------------
+// Reason Trace & Core Outputs
+// ----------------------------------------------------------------
+
+export interface ReasonTrace {
+  valueDescription: string;
+  drivers: string[];
+  bindingRule: string;
+  rationale: string;
+}
+
 export type Verdict = 'BORROW' | 'BORROW LESS' | 'DON\'T BORROW YET';
 export type ConfidenceLevel = 'HIGH' | 'MEDIUM' | 'LOW';
+
+export type ActionableAlternative = 
+  | 'borrow_now'
+  | 'borrow_less'
+  | 'refinance_existing_debt_first'
+  | 'use_secured_product_instead'
+  | 'wait_and_rebuild_buffer'
+  | 'increase_down_payment'
+  | 'add_co_applicant';
+
+export interface BetterAlternative {
+  action: ActionableAlternative;
+  title: string;
+  recommendation: string;
+  illustrativeScenario?: string;
+}
 
 export interface TenureOption {
   tenureMonths: number;
@@ -77,32 +136,46 @@ export interface StressScenario {
   explanation: string;
 }
 
-export interface Assessment {
-  // Output 1: Verdict
+export interface ThreeDimensionalAssessment {
+  // Dimension 1: Eligibility ("Could a lender plausibly offer this?")
+  eligibilityStatus: 'ELIGIBLE' | 'PARTIALLY_ELIGIBLE' | 'UNLIKELY';
+  estimatedLenderRange: [number, number];
+  lenderRangeTrace: ReasonTrace;
+
+  // Dimension 2: Affordability ("Can the borrower safely carry this?")
+  affordabilityStatus: 'AFFORDABLE' | 'STRETCHED' | 'UNSAFE';
+  borrowerSafeRange: [number, number];
+  recommendedMaxEMI: number;
+  safeEMITrace: ReasonTrace;
+  safeAmountTrace: ReasonTrace;
+
+  // Dimension 3: Pricing ("What should the borrower reasonably pay?")
+  pricingStatus: 'PRIME' | 'COMPETITIVE' | 'SUBPRIME' | 'UNCERTAIN';
+  fairRateRange: [number, number];
+  expectedLenderQuoteRange: [number, number];
+  effectiveAPRRange: [number, number];
+  processingFeePercent: number;
+  rateTrace: ReasonTrace;
+}
+
+export interface Assessment extends ThreeDimensionalAssessment {
+  // High-Level Verdict
   verdict: Verdict;
   verdictReason: string;
+  betterAlternative: BetterAlternative;
 
-  // Output 2: Maximum Amount
-  estimatedLenderRange: [number, number]; // Estimated lender eligibility based on public credit norms
-  borrowerSafeRange: [number, number];    // Borrower-safe borrowing limit based on cash-flow floor
-  amountExplanation: string;
-
-  // Output 3: Fair Interest Rate & Effective APR
-  fairRateRange: [number, number];        // Range based on risk profile
-  expectedLenderQuoteRange: [number, number]; // What direct sales will likely pitch initially
-  effectiveAPRRange: [number, number];    // True annualized cost including 2% fee + 18% GST
-  processingFeePercent: number;           // Standard market fee baseline (2.0%)
-  rateExplanation: string;
-
-  // Output 4: EMI Ceiling & Tenure
-  recommendedMaxEMI: number;              // Hard ceiling in ₹/month
-  tenureMatrix: TenureOption[];           // 24m, 36m, 48m, 60m amortization
+  // Tenure & Stress
+  tenureMatrix: TenureOption[];
   stressScenario: StressScenario;
 
-  // Confidence & Meta
+  // Confidence & Stopping Logic
   confidence: ConfidenceLevel;
   confidenceReasons: string[];
-  inferredProductRoute: string;           // Inferred product (Unsecured PL vs Secured LAP vs MFI Consolidate)
+  stoppingExplanation: string;
+  highestRemainingInformationGap?: string;
+
+  // Inferred Product
+  inferredProductRoute: string;
   productRouteRationale: string;
 
   // Negotiation Card Advice
@@ -110,38 +183,34 @@ export interface Assessment {
   doNotCrossRules: string[];
 }
 
-// ==========================================
-// Information-Value Adaptive Question Engine
-// ==========================================
+// ----------------------------------------------------------------
+// Quote Comparison Mode ("Bank Reality Check")
+// ----------------------------------------------------------------
 
-export type QuestionInputType = 
-  | 'choice_pill'
-  | 'currency_slider'
-  | 'number_stepper'
-  | 'boolean_toggle';
-
-export interface QuestionOption {
-  value: string;
-  label: string;
-  description?: string;
-  badge?: string;
+export interface LenderQuoteInput {
+  loanAmount: number;
+  quotedInterestRate: number;        // e.g. 14.5%
+  processingFeePercent: number;      // e.g. 2.0%
+  mandatoryInsuranceOrCharges: number; // e.g. ₹9,000
+  tenureMonths: number;              // e.g. 48
 }
 
-export interface QuizQuestion {
-  id: keyof BorrowerProfile;
-  title: string;
-  subtitle: string;
-  inputType: QuestionInputType;
-  options?: QuestionOption[];
-  min?: number;
-  max?: number;
-  step?: number;
-  defaultValue?: any;
-  // Information-Value Metadata:
-  targetOutputs: Array<'verdict' | 'amount' | 'rate' | 'emi' | 'confidence'>;
-  shouldAsk: (profile: Partial<BorrowerProfile>) => boolean;
-  informationScore: (profile: Partial<BorrowerProfile>) => number; // 0 = Do not ask, 1-10 = Priority
+export interface LenderQuoteEvaluation {
+  verdict: 'FAIR' | 'SLIGHTLY_HIGH' | 'ABOVE_FAIR_RANGE' | 'PREDATORY';
+  quotedRate: number;
+  fairRateRange: [number, number];
+  rateVarianceBps: number;           // e.g. +225 bps
+  quotedMonthlyEMI: number;
+  safeMaxEMI: number;
+  isEMIExceeded: boolean;
+  effectiveAllInAPR: number;         // True APR including fee + insurance + GST
+  totalCostOfCredit: number;         // Total Interest + Upfront Fees
+  counterOfferAdvice: string[];
 }
+
+// ----------------------------------------------------------------
+// Shared Card Payload
+// ----------------------------------------------------------------
 
 export interface SharedCardPayload {
   v: Verdict;
@@ -154,6 +223,7 @@ export interface SharedCardPayload {
   emi: number;
   conf: ConfidenceLevel;
   wh: string;
+  alt: ActionableAlternative;
   rt: string;
   ts: number;
 }

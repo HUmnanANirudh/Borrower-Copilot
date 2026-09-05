@@ -9,21 +9,21 @@ export function encodeCardPayload(assessment: Assessment, profile: BorrowerProfi
     v: assessment.verdict,
     r: profile.requestedAmount,
     p: profile.loanPurpose,
-    ls: assessment.lenderSanctionRange,
+    ls: assessment.estimatedLenderRange,
     bs: assessment.borrowerSafeRange,
     fr: assessment.fairRateRange,
     apr: assessment.effectiveAPRRange,
     emi: assessment.recommendedMaxEMI,
     conf: assessment.confidence,
     wh: assessment.verdictReason,
-    rt: assessment.productRoutingRecommendation,
+    alt: assessment.betterAlternative.action,
+    rt: assessment.inferredProductRoute,
     ts: Date.now()
   };
 
   try {
     const jsonStr = JSON.stringify(payload);
     if (typeof window !== 'undefined' && window.btoa) {
-      // URL-safe base64
       return encodeURIComponent(btoa(unescape(encodeURIComponent(jsonStr))));
     }
     return Buffer.from(jsonStr).toString('base64url');

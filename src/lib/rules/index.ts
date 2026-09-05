@@ -1,110 +1,210 @@
-import { BorrowerProfile, Assessment, Verdict } from '../types';
-import { calculateSafeAffordability } from './affordability';
+import { 
+  BorrowerProfile, 
+  Assessment, 
+  Verdict, 
+  BetterAlternative, 
+  ReasonTrace,
+  LenderQuoteInput,
+  LenderQuoteEvaluation
+} from '../types';
+import { normalizeFacts, deriveMetrics } from './pipeline';
 import { calculateEligibilityAndSanction } from './eligibility';
 import { calculateFairRates } from './rates';
 import { calculateEffectiveAPR } from './apr';
-import { generateTenureMatrix } from './emi';
+import { calculateEMI, generateTenureMatrix } from './emi';
 import { calculateStressScenario } from './stress';
 
 /**
- * Master Financial Assessment Engine.
- * 
- * Takes a completed BorrowerProfile and deterministically evaluates:
- * - O1: Verdict (BORROW, BORROW LESS, DON'T BORROW YET)
- * - O2: Maximum Amount (Estimated Lender Range vs Borrower-Safe Range)
- * - O3: Fair Interest Rate & Effective APR
- * - O4: Recommended Safe EMI Ceiling & Tenure Trade-offs
+ * MASTER FINANCIAL ASSESSMENT ENGINE
+ * Refined around: Facts -> Derived Metrics -> Decisions Pipeline
  */
 export function evaluateAssessment(profile: BorrowerProfile): Assessment {
-  // 1. Affordability & Safe EMI (Double-lock cash flow)
-  const affordability = calculateSafeAffordability(profile);
+  // Step 1: Normalize Facts
+  const facts = normalizeFacts(profile);
 
-  // 2. Fair Rates & Effective APR
+  // Step 2: Derive Metrics
+  const metrics = deriveMetrics(facts, profile);
+
+  // Step 3: Determine Pricing (Dimension 3)
   const rateAnalysis = calculateFairRates(profile);
   const midFairRate = (rateAnalysis.fairRateRange[0] + rateAnalysis.fairRateRange[1]) / 2;
   const aprAnalysis = calculateEffectiveAPR(rateAnalysis.fairRateRange, profile.requestedAmount, 36);
 
-  // 3. Estimated Lender vs Borrower Safe Amounts
-  const eligibility = calculateEligibilityAndSanction(profile, affordability.safeMaxEMI, midFairRate);
+  const rateTrace: ReasonTrace = {
+    valueDescription: `Fair Rate: ${rateAnalysis.fairRateRange[0]}%–${rateAnalysis.fairRateRange[1]}%`,
+    drivers: [
+      `Credit Status: ${profile.creditScoreStatus.toUpperCase()}`,
+      `Security: ${facts.hasCollateral ? 'Unencumbered property available' : 'Unsecured cash-flow'}`,
+      ...(profile.businessVintageYears ? [`Operating Vintage: ${profile.businessVintageYears} years (-50 bps credit)`] : []),
+      ...(facts.hasHighCostAppDebt ? ['High-cost debt distress penalty applied'] : [])
+    ],
+    bindingRule: profile.creditScoreStatus === 'unknown' ? 'uncertainty_widened_band' : 'tier_pricing_schedule',
+    rationale: rateAnalysis.rateExplanation
+  };
 
-  // 4. Safe EMI & Tenure Matrix
-  const safeLoanCeiling = eligibility.borrowerSafeRange[1];
-  const baselinePrincipal = Math.min(profile.requestedAmount, Math.max(10000, safeLoanCeiling));
-  const recommendedMaxEMI = affordability.safeMaxEMI;
+  // Step 4: Determine Affordability & Safe EMI (Dimension 2)
+  // Hard Double-Lock Decision
+  const safeMaxEMI = Math.floor(Math.min(metrics.uncommittedCashFlowFloor, metrics.foirCeiling));
+  const isCashFlowBinding = metrics.uncommittedCashFlowFloor < metrics.foirCeiling;
+
+  const safeEMITrace: ReasonTrace = {
+    valueDescription: `Safe EMI Ceiling: ₹${safeMaxEMI.toLocaleString('en-IN')}/month`,
+    drivers: [
+      `Effective Household Income: ₹${Math.round(facts.effectiveIncomeAfterHaircut).toLocaleString('en-IN')}`,
+      `Living Expenses: ₹${Math.round(facts.effectiveExpensesWithSanityFloor).toLocaleString('en-IN')}${facts.isExpenseSanityApplied ? ' (Sanity floor enforced)' : ''}`,
+      `Existing EMIs: ₹${facts.existingEMI.toLocaleString('en-IN')}`,
+      `10% Liquid Buffer: ₹${Math.round(metrics.untouchableReserveBuffer).toLocaleString('en-IN')}`,
+      `Cash-Flow Floor: ₹${Math.round(metrics.uncommittedCashFlowFloor).toLocaleString('en-IN')}`,
+      `Safe ${metrics.safeFOIRCapPercent}% FOIR Room: ₹${Math.round(metrics.foirCeiling).toLocaleString('en-IN')}`
+    ],
+    bindingRule: isCashFlowBinding ? 'cash_flow_floor' : 'safe_foir_ceiling',
+    rationale: isCashFlowBinding
+      ? `₹${safeMaxEMI.toLocaleString('en-IN')}/mo because your uncommitted living cash-flow floor (₹${Math.round(metrics.uncommittedCashFlowFloor).toLocaleString('en-IN')}) is lower than your ${metrics.safeFOIRCapPercent}% FOIR ceiling.`
+      : `₹${safeMaxEMI.toLocaleString('en-IN')}/mo because your safe ${metrics.safeFOIRCapPercent}% FOIR debt room is the tighter constraint.`
+  };
+
+  // Step 5: Determine Eligibility (Dimension 1)
+  const eligibility = calculateEligibilityAndSanction(profile, safeMaxEMI, midFairRate);
+
+  const lenderRangeTrace: ReasonTrace = {
+    valueDescription: `Estimated Lender Range: ₹${(eligibility.estimatedLenderRange[0]/100000).toFixed(1)}L–₹${(eligibility.estimatedLenderRange[1]/100000).toFixed(1)}L`,
+    drivers: [
+      `Bank 50%-60% FOIR Formula`,
+      `Assessed Income: ₹${Math.round(profile.primaryIncomeSignal === 'self_employed_business' && profile.itrDeclaredMonthlyTaxable ? profile.itrDeclaredMonthlyTaxable : facts.totalHouseholdIncome).toLocaleString('en-IN')}`,
+      `Extended 60-month tenure simulation`
+    ],
+    bindingRule: 'bank_regulatory_foir_benchmark',
+    rationale: 'Public underwriting formulas estimate eligibility based on 50%–60% of documented income, assuming long 5-year tenures.'
+  };
+
+  const safeAmountTrace: ReasonTrace = {
+    valueDescription: `Borrower-Safe Range: ₹${(eligibility.borrowerSafeRange[0]/100000).toFixed(1)}L–₹${(eligibility.borrowerSafeRange[1]/100000).toFixed(1)}L`,
+    drivers: [
+      `Safe Monthly EMI Ceiling: ₹${safeMaxEMI.toLocaleString('en-IN')}`,
+      `Conservative 36–48 month tenure (minimizes lifetime interest)`,
+      `Fair Mid-Rate: ${midFairRate.toFixed(2)}%`
+    ],
+    bindingRule: 'double_lock_repayment_capacity',
+    rationale: 'Derived strictly from your safe cash-flow EMI over conservative 3 to 4 year tenures.'
+  };
+
+  // Step 6: Determine 3-Dimensional Status
+  const eligibilityStatus = eligibility.estimatedLenderRange[1] >= profile.requestedAmount * 0.8
+    ? 'ELIGIBLE'
+    : eligibility.estimatedLenderRange[1] > 0 ? 'PARTIALLY_ELIGIBLE' : 'UNLIKELY';
+
+  const affordabilityStatus = safeMaxEMI <= 0 || metrics.isOverleveraged
+    ? 'UNSAFE'
+    : profile.requestedAmount > eligibility.borrowerSafeRange[1] ? 'STRETCHED' : 'AFFORDABLE';
+
+  const pricingStatus = profile.creditScoreStatus === '750_plus'
+    ? 'PRIME'
+    : profile.creditScoreStatus === 'unknown' ? 'UNCERTAIN' : 'COMPETITIVE';
+
+  // Step 7: Tenure Matrix & Stress Scenario
+  const baselinePrincipal = Math.min(profile.requestedAmount, Math.max(10000, eligibility.borrowerSafeRange[1]));
   const tenureMatrix = generateTenureMatrix(
     baselinePrincipal > 0 ? baselinePrincipal : profile.requestedAmount,
     midFairRate
   );
+  const stressScenario = calculateStressScenario(profile, safeMaxEMI);
 
-  // 5. Stress Scenario
-  const stressScenario = calculateStressScenario(profile, recommendedMaxEMI);
-
-  // 6. Verdict (O1) Determination with nuanced multi-factor risk:
+  // Step 8: Verdict & Actionable "Better Alternative"
   let verdict: Verdict = 'BORROW';
   let verdictReason = '';
+  let betterAlternative: BetterAlternative;
 
-  // Multi-factor Distress Check (Anita's compounded vulnerability):
+  // Anita Compounded Distress Check:
   const isCompoundedDistress = 
-    profile.hasHighCostAppLoans && 
-    profile.recentDelinquencyOrBounce && 
-    (affordability.disposableCash <= 0 || affordability.currentFOIR >= 25);
+    facts.hasHighCostAppDebt && 
+    facts.hasRecentBounce && 
+    (metrics.disposableCash <= 0 || metrics.currentFOIR >= 25);
 
-  const isPureBounceAccidental = 
-    profile.recentDelinquencyOrBounce && 
-    profile.bounceWasCuredImmediately && 
-    (profile.emergencySavingsMonths || 0) >= 3 &&
-    affordability.currentFOIR < 20;
-
-  if (isCompoundedDistress || affordability.safeMaxEMI <= 0 || affordability.isOverleveraged) {
+  if (isCompoundedDistress || safeMaxEMI <= 0 || metrics.isOverleveraged) {
     verdict = 'DON\'T BORROW YET';
     if (isCompoundedDistress) {
-      verdictReason = 'You are servicing 30%+ instant app loans with a recent bounce and zero monthly cash surplus. Adding a new loan will trigger a severe default spiral. You must consolidate and clear the high-cost app debt first.';
-    } else if (affordability.isOverleveraged) {
-      verdictReason = `Existing loan EMIs already consume ${Math.round(affordability.currentFOIR)}% of total household income. Taking new debt breaches essential living expense safety margins.`;
+      verdictReason = 'You are servicing high-cost 30%+ instant app loans with a recent bounce and zero monthly cash surplus. Adding commercial debt now guarantees a debt spiral.';
+      betterAlternative = {
+        action: 'refinance_existing_debt_first',
+        title: 'Refinance High-Cost App Loans First',
+        recommendation: 'Do not take new commercial debt today. Explore regulated lower-cost restructuring (such as self-help micro-credit or non-profit debt consolidation) to retire 30%+ app debt.',
+        illustrativeScenario: 'For illustration: Consolidating ₹35,000 at a regulated 15% rate over 24 months costs ~₹1,700/mo, instantly freeing up over ₹6,800 every month.'
+      };
+    } else if (metrics.isOverleveraged) {
+      verdictReason = `Existing loan repayments already consume ${Math.round(metrics.currentFOIR)}% of income (breaching the 35% safe ceiling).`;
+      betterAlternative = {
+        action: 'wait_and_rebuild_buffer',
+        title: 'Wait and Pay Down Existing EMIs',
+        recommendation: 'Wait until existing car/personal loans mature or pay down balances to bring your current FOIR below 25% before re-applying.'
+      };
     } else {
-      verdictReason = 'Essential living expenses and current debt leave no uncommitted cash flow to support additional monthly repayments.';
+      verdictReason = 'Household living expenses and ongoing debt leave zero uncommitted cash flow for new monthly EMIs.';
+      betterAlternative = {
+        action: 'wait_and_rebuild_buffer',
+        title: 'Rebuild a 1-Month Emergency Cash Buffer',
+        recommendation: 'Focus on establishing a 1-month liquid emergency cushion before taking on new debt obligations.'
+      };
     }
   } else if (
     profile.requestedAmount > eligibility.borrowerSafeRange[1] * 1.15 ||
     stressScenario.isBreached ||
-    (profile.inferredProductRoute !== 'Secured Loan Against Property (LAP)' && profile.requestedAmount >= 1000000 && profile.primaryIncomeSignal === 'self_employed_business')
+    (eligibility.inferredProductRoute.includes('LAP') && profile.requestedAmount >= 1000000)
   ) {
     verdict = 'BORROW LESS';
-    if (profile.requestedAmount >= 1000000 && profile.hasUnencumberedCollateral) {
-      verdictReason = `₹${(profile.requestedAmount / 100000).toFixed(0)}L as an unsecured personal loan is unsafe on documented ITR earnings. Route through a Secured Loan Against Property (LAP) to cut your interest rate in half and borrow safely.`;
+    if (eligibility.inferredProductRoute.includes('LAP') && facts.hasCollateral) {
+      verdictReason = `Borrowing ₹${(profile.requestedAmount / 100000).toFixed(0)}L as an unsecured personal loan is unsafe on documented ITR cash flow. Route through a Secured Loan Against Property (LAP) to cut your rate in half.`;
+      betterAlternative = {
+        action: 'use_secured_product_instead',
+        title: 'Pledge Unencumbered Commercial/Residential Property',
+        recommendation: 'Do not accept an unsecured personal loan quote. Ask your bank for a Secured LAP / MSME Vyapar Loan at 9.0%–10.5% for 7–10 years.',
+        illustrativeScenario: 'At 9.75% over 7 years, ₹15 Lakhs costs ~₹24,780/mo (saving ₹12,500/mo vs a 5-year unsecured loan at 17%).'
+      };
     } else if (profile.requestedAmount > eligibility.borrowerSafeRange[1]) {
       const reqL = (profile.requestedAmount / 100000).toFixed(1);
       const safeL = (eligibility.borrowerSafeRange[1] / 100000).toFixed(1);
       verdictReason = `Your requested loan of ₹${reqL}L exceeds your safe cash-flow capacity (₹${safeL}L). Trimming the principal protects your monthly living budget.`;
+      betterAlternative = {
+        action: 'borrow_less',
+        title: `Trim Loan Request to ₹${safeL} Lakhs`,
+        recommendation: `Cap your loan request at ₹${safeL}L. This keeps your monthly commitment within your safe EMI ceiling of ₹${safeMaxEMI.toLocaleString('en-IN')}/mo.`
+      };
     } else {
-      verdictReason = 'A 20% income reduction would push debt servicing into an unmanageable range. Lowering the loan amount preserves safety during economic downturns.';
+      verdictReason = 'A 20% income reduction pushes debt servicing into the danger zone. Reducing the principal amount guarantees long-term affordability.';
+      betterAlternative = {
+        action: 'borrow_less',
+        title: 'Reduce Loan to Cushion Income Shocks',
+        recommendation: 'Lower the requested principal by 15%–20% to ensure your household can comfortably survive economic downturns.'
+      };
     }
   } else {
     verdict = 'BORROW';
     verdictReason = 'Your income stability, modest existing obligations, and healthy cash-flow buffer comfortably support this requested loan.';
+    betterAlternative = {
+      action: 'borrow_now',
+      title: 'Proceed with Prime Loan Negotiation',
+      recommendation: 'Your profile qualifies for prime terms. Negotiate firmly for 10.5%–11.5% interest and request a processing fee waiver.'
+    };
   }
 
-  // Amount Explanation
-  const safeMinL = (eligibility.borrowerSafeRange[0] / 100000).toFixed(1);
-  const safeMaxL = (eligibility.borrowerSafeRange[1] / 100000).toFixed(1);
-  const lendMinL = (eligibility.estimatedLenderRange[0] / 100000).toFixed(1);
-  const lendMaxL = (eligibility.estimatedLenderRange[1] / 100000).toFixed(1);
+  // Step 9: Why We Stopped Asking Questions Explanation
+  const stoppingExplanation = 'Assessment complete. The engine stopped asking questions because remaining unanswered variables would not materially alter your safe borrowing range, rate band, or EMI ceiling.';
+  const highestRemainingInformationGap = profile.creditScoreStatus === 'unknown'
+    ? 'Verified bureau credit report (Checking actual score will narrow the fair rate band by ~200 bps).'
+    : undefined;
 
-  const amountExplanation = `Public bank underwriting formulas (50%–60% FOIR) estimate eligibility around ₹${lendMinL}L–₹${lendMaxL}L. However, your cash-flow safe borrowing range is strictly ₹${safeMinL}L–₹${safeMaxL}L. Always negotiate against your safe ceiling.`;
-
-  // Tailored Negotiation Script
+  // Step 10: Tailored Negotiation Script
   const negotiationPoints: string[] = [
-    `Ask for the All-in APR: "Please provide the official all-inclusive APR including processing fees and 18% GST in writing."`,
-    `Counter high initial quotes: Your fair rate band is ${rateAnalysis.fairRateRange[0]}%–${rateAnalysis.fairRateRange[1]}%. Decline quotes above this range.`,
-    `Negotiate upfront processing charges: Standard 2% fees can routinely be capped at 0.75%–1% for creditworthy borrowers.`
+    `Demand All-In APR Disclosure: "Please provide the official all-inclusive APR including processing fees and 18% GST in writing."`,
+    `Counter High Initial Quotes: Your fair rate band is ${rateAnalysis.fairRateRange[0]}%–${rateAnalysis.fairRateRange[1]}%. Firmly decline initial quotes above this range.`,
+    `Cap the Upfront Processing Charge: Standard 2% fees can routinely be negotiated down to 0.75%–1% for creditworthy borrowers.`
   ];
 
-  if (eligibility.inferredProductRoute === 'Secured Loan Against Property (LAP)') {
-    negotiationPoints.unshift('Do not apply for retail personal loans. Ask the bank for an MSME Loan Against Property / Vyapar Loan at 9.0%–10.5%.');
+  if (eligibility.inferredProductRoute.includes('LAP')) {
+    negotiationPoints.unshift('Do not apply for retail personal loans. Ask the bank for an MSME Loan Against Property (LAP) / Vyapar Loan at 9.0%–10.5%.');
   }
 
   const doNotCrossRules: string[] = [
-    `Never agree to an EMI higher than ₹${recommendedMaxEMI.toLocaleString('en-IN')}/month.`,
+    `Never agree to an EMI higher than ₹${safeMaxEMI.toLocaleString('en-IN')}/month (${safeEMITrace.bindingRule === 'cash_flow_floor' ? 'Hard cash-flow floor' : '35% FOIR cap'}).`,
     `Never permit single-premium loan insurance to be added into your loan principal.`,
     `Do not stretch tenure beyond 48 months for unsecured consumption loans just to artificially lower the EMI.`
   ];
@@ -112,22 +212,100 @@ export function evaluateAssessment(profile: BorrowerProfile): Assessment {
   return {
     verdict,
     verdictReason,
+    betterAlternative,
+    eligibilityStatus,
     estimatedLenderRange: eligibility.estimatedLenderRange,
+    lenderRangeTrace,
+    affordabilityStatus,
     borrowerSafeRange: eligibility.borrowerSafeRange,
-    amountExplanation,
+    recommendedMaxEMI: safeMaxEMI,
+    safeEMITrace,
+    safeAmountTrace,
+    pricingStatus,
     fairRateRange: rateAnalysis.fairRateRange,
     expectedLenderQuoteRange: rateAnalysis.expectedLenderQuoteRange,
     effectiveAPRRange: aprAnalysis.effectiveAPRRange,
     processingFeePercent: aprAnalysis.processingFeePercent,
-    rateExplanation: rateAnalysis.rateExplanation,
-    recommendedMaxEMI,
+    rateTrace,
     tenureMatrix,
     stressScenario,
     confidence: rateAnalysis.confidence,
     confidenceReasons: rateAnalysis.confidenceReasons,
+    stoppingExplanation,
+    highestRemainingInformationGap,
     inferredProductRoute: eligibility.inferredProductRoute,
     productRouteRationale: eligibility.productRouteRationale,
     negotiationPoints,
     doNotCrossRules
+  };
+}
+
+/**
+ * FEATURE 5: LENDER QUOTE COMPARISON ("BANK REALITY CHECK")
+ * Allows borrowers to input an actual quote received from a sales executive
+ * and compares it against fair market pricing and safe EMI ceilings.
+ */
+export function evaluateLenderQuote(
+  quote: LenderQuoteInput,
+  assessment: Assessment
+): LenderQuoteEvaluation {
+  const fairRateMin = assessment.fairRateRange[0];
+  const fairRateMax = assessment.fairRateRange[1];
+
+  // 1. Quoted Monthly EMI
+  const quotedMonthlyEMI = calculateEMI(quote.loanAmount, quote.quotedInterestRate, quote.tenureMonths);
+  const isEMIExceeded = quotedMonthlyEMI > assessment.recommendedMaxEMI;
+
+  // 2. Rate Variance in basis points
+  const midFairRate = (fairRateMin + fairRateMax) / 2;
+  const rateVarianceBps = Math.round((quote.quotedInterestRate - midFairRate) * 100);
+
+  // 3. Verdict on Quote
+  let verdict: 'FAIR' | 'SLIGHTLY_HIGH' | 'ABOVE_FAIR_RANGE' | 'PREDATORY' = 'FAIR';
+  if (quote.quotedInterestRate > fairRateMax + 4.0) {
+    verdict = 'PREDATORY';
+  } else if (quote.quotedInterestRate > fairRateMax) {
+    verdict = 'ABOVE_FAIR_RANGE';
+  } else if (quote.quotedInterestRate > fairRateMin + 1.0) {
+    verdict = 'SLIGHTLY_HIGH';
+  }
+
+  // 4. Effective All-In APR of Quote
+  const feeWithGST = (quote.loanAmount * quote.processingFeePercent / 100) * 1.18;
+  const totalUpfront = feeWithGST + quote.mandatoryInsuranceOrCharges;
+  const tenureYears = quote.tenureMonths / 12;
+  const upfrontAnnualPercent = (totalUpfront / quote.loanAmount) / tenureYears * 100;
+  const effectiveAllInAPR = Number((quote.quotedInterestRate + upfrontAnnualPercent).toFixed(2));
+
+  // 5. Total Cost of Credit
+  const totalInterest = (quotedMonthlyEMI * quote.tenureMonths) - quote.loanAmount;
+  const totalCostOfCredit = Math.round(totalInterest + totalUpfront);
+
+  // 6. Actionable Counter-Offer Advice
+  const counterOfferAdvice: string[] = [];
+  if (quote.quotedInterestRate > fairRateMax) {
+    counterOfferAdvice.push(`Quoted interest rate (${quote.quotedInterestRate}%) is ${rateVarianceBps} bps above your fair band (${fairRateMin}%–${fairRateMax}%). Counter with: "My verified profile qualifies for ${fairRateMin}%. Please escalate to your credit manager."`);
+  }
+  if (isEMIExceeded) {
+    counterOfferAdvice.push(`DANGER: Quoted EMI of ₹${quotedMonthlyEMI.toLocaleString('en-IN')}/mo exceeds your safe ceiling (₹${assessment.recommendedMaxEMI.toLocaleString('en-IN')}/mo) by ₹${(quotedMonthlyEMI - assessment.recommendedMaxEMI).toLocaleString('en-IN')}/mo. Do not accept without reducing loan amount.`);
+  }
+  if (quote.mandatoryInsuranceOrCharges > 0) {
+    counterOfferAdvice.push(`Insurance charges of ₹${quote.mandatoryInsuranceOrCharges.toLocaleString('en-IN')} are being bundled. Insist on opt-out: "I already hold existing life/term cover; please remove the mandatory loan protection fee."`);
+  }
+  if (quote.processingFeePercent > 1.0) {
+    counterOfferAdvice.push(`Processing fee of ${quote.processingFeePercent}% is negotiable. Request: "Please match the 0.5%–0.75% fee offered by competing banks."`);
+  }
+
+  return {
+    verdict,
+    quotedRate: quote.quotedInterestRate,
+    fairRateRange: assessment.fairRateRange,
+    rateVarianceBps,
+    quotedMonthlyEMI,
+    safeMaxEMI: assessment.recommendedMaxEMI,
+    isEMIExceeded,
+    effectiveAllInAPR,
+    totalCostOfCredit,
+    counterOfferAdvice
   };
 }

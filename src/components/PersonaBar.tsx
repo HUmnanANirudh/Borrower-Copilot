@@ -16,14 +16,14 @@ export function PersonaBar({ onSelectPersona, activePersona }: PersonaBarProps) 
       <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div className="flex items-center gap-1.5 text-xs text-[#5d5b59] font-medium">
           <FlashIcon className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-          <span className="font-semibold text-[#171717]">Evaluator One-Click Presets:</span>
+          <span className="font-semibold text-[#171717]">Evaluator Benchmarks:</span>
           <span className="hidden md:inline">Test divergent rule behaviors:</span>
         </div>
 
         <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
           <button
             onClick={() => onSelectPersona(PERSONA_PRIYA, 'Priya')}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer border ${
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer border ${
               activePersona === 'Priya'
                 ? 'bg-[#5769e7] text-white border-[#5769e7] shadow-sm'
                 : 'bg-white text-[#171717] border-[#dedcd9] hover:bg-[#f2f1f0]'
@@ -35,26 +35,26 @@ export function PersonaBar({ onSelectPersona, activePersona }: PersonaBarProps) 
 
           <button
             onClick={() => onSelectPersona(PERSONA_RAVI, 'Ravi')}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer border ${
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer border ${
               activePersona === 'Ravi'
                 ? 'bg-[#5769e7] text-white border-[#5769e7] shadow-sm'
                 : 'bg-white text-[#171717] border-[#dedcd9] hover:bg-[#f2f1f0]'
             }`}
           >
             <UserIcon className="w-3 h-3" />
-            <span>Ravi (SME / LAP Redirect)</span>
+            <span>Ravi (SME / Inferred LAP)</span>
           </button>
 
           <button
             onClick={() => onSelectPersona(PERSONA_ANITA, 'Anita')}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer border ${
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer border ${
               activePersona === 'Anita'
                 ? 'bg-[#5769e7] text-white border-[#5769e7] shadow-sm'
                 : 'bg-white text-[#171717] border-[#dedcd9] hover:bg-[#f2f1f0]'
             }`}
           >
             <UserIcon className="w-3 h-3" />
-            <span>Anita (Informal / Restructure)</span>
+            <span>Anita (Informal / Deficit)</span>
           </button>
         </div>
       </div>
