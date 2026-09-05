@@ -84,7 +84,7 @@ export default function EvaluatorDemoPage() {
               <ShieldCheckIcon className="w-4 h-4" aria-hidden="true" />
             </div>
             <div>
-              <span className="text-sm font-black text-[#171717]">Borrower Copilot · Evaluator Sandbox</span>
+              <span className="text-[14px] font-semibold text-[#171717]">Borrower Copilot · Evaluator Sandbox</span>
               <span className="text-[10px] text-[#747371] block">Isolated benchmark launcher & dynamic rule overrides</span>
             </div>
           </div>
@@ -105,7 +105,7 @@ export default function EvaluatorDemoPage() {
             <span className="text-[10px] uppercase font-bold tracking-widest text-[#5769e7] block">
               Step 1: Choose Evaluator Benchmark
             </span>
-            <h2 className="text-xl sm:text-2xl font-black text-[#171717]">
+            <h2 className="text-xl sm:text-2xl font-display font-normal leading-tight text-[#171717]">
               Inspect Divergent Underwriting Decisions
             </h2>
           </div>
@@ -122,7 +122,7 @@ export default function EvaluatorDemoPage() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-black text-[#171717]">Priya, 29</span>
+                <span className="text-[14px] font-semibold text-[#171717]">Priya, 29</span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
                   Prime Salaried
                 </span>
@@ -143,7 +143,7 @@ export default function EvaluatorDemoPage() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-black text-[#171717]">Ravi, 42</span>
+                <span className="text-[14px] font-semibold text-[#171717]">Ravi, 42</span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
                   SME Kirana Owner
                 </span>
@@ -164,7 +164,7 @@ export default function EvaluatorDemoPage() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-black text-[#171717]">Anita, 35</span>
+                <span className="text-[14px] font-semibold text-[#171717]">Anita, 35</span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800">
                   Informal / Deficit
                 </span>
@@ -180,10 +180,10 @@ export default function EvaluatorDemoPage() {
         <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-[#171717] shadow-sm space-y-4">
           <div className="flex items-start justify-between">
             <div>
-              <span className="text-[10px] uppercase font-black tracking-widest text-[#5769e7] block">
+              <span className="text-[10px] uppercase font-display font-normal leading-tight tracking-widest text-[#5769e7] block">
                 Step 2: Rule Assumption Overrides Sandbox
               </span>
-              <h3 className="text-lg font-black text-[#171717]">
+              <h3 className="text-lg font-display font-normal leading-tight text-[#171717]">
                 Tweak Engine Rules & Observe Live Recalculation
               </h3>
               <p className="text-xs text-[#5d5b59] mt-0.5">
@@ -205,7 +205,7 @@ export default function EvaluatorDemoPage() {
             <div className="p-4 bg-[#fcfbf9] rounded-2xl border border-[#ebeae8] space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-bold text-[#171717]">Safe Salaried FOIR</span>
-                <span className="text-base font-black text-[#5769e7]">{safeFOIR}%</span>
+                <span className="text-base font-display font-normal leading-tight text-[#5769e7]">{safeFOIR}%</span>
               </div>
               <input
                 type="range"
@@ -223,7 +223,7 @@ export default function EvaluatorDemoPage() {
             <div className="p-4 bg-[#fcfbf9] rounded-2xl border border-[#ebeae8] space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-bold text-[#171717]">Gig / Informal FOIR</span>
-                <span className="text-base font-black text-[#5769e7]">{gigFOIR}%</span>
+                <span className="text-base font-display font-normal leading-tight text-[#5769e7]">{gigFOIR}%</span>
               </div>
               <input
                 type="range"
@@ -241,7 +241,7 @@ export default function EvaluatorDemoPage() {
             <div className="p-4 bg-[#fcfbf9] rounded-2xl border border-[#ebeae8] space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-bold text-[#171717]">Income Shock Stress</span>
-                <span className="text-base font-black text-[#5769e7]">{stressPercent}%</span>
+                <span className="text-base font-display font-normal leading-tight text-[#5769e7]">{stressPercent}%</span>
               </div>
               <input
                 type="range"
@@ -264,7 +264,7 @@ export default function EvaluatorDemoPage() {
               <span className="text-[10px] uppercase font-bold tracking-widest text-[#747371] block">
                 Calculated Output for {activePersona.primaryIncomeSignal.replace(/_/g, ' ')}
               </span>
-              <h3 className="text-2xl font-black text-[#171717] mt-0.5">
+              <h3 className="text-2xl font-display font-normal leading-tight text-[#171717] mt-0.5">
                 Verdict: <span className="text-[#5769e7]">{assessment.verdict}</span>
               </h3>
             </div>
@@ -282,28 +282,28 @@ export default function EvaluatorDemoPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
             <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-200">
               <span className="text-[10px] uppercase font-bold text-emerald-950 block">Safe Amount</span>
-              <span className="text-lg font-black text-emerald-800 mt-1 block">
+              <span className="text-lg font-display font-normal leading-tight text-emerald-800 mt-1 block">
                 {formatLakhs(assessment.borrowerSafeRange[0])}–{formatLakhs(assessment.borrowerSafeRange[1])}
               </span>
             </div>
 
             <div className="p-3 bg-[#f7f6f4] rounded-2xl border border-[#ebeae8]">
               <span className="text-[10px] uppercase font-bold text-[#5d5b59] block">Lender Range</span>
-              <span className="text-lg font-black text-[#171717] mt-1 block">
+              <span className="text-lg font-display font-normal leading-tight text-[#171717] mt-1 block">
                 {formatLakhs(assessment.estimatedLenderRange[0])}–{formatLakhs(assessment.estimatedLenderRange[1])}
               </span>
             </div>
 
             <div className="p-3 bg-[#e5e9ff]/50 rounded-2xl border border-[#5769e7]/30">
               <span className="text-[10px] uppercase font-bold text-[#323c7c] block">Fair Rate Band</span>
-              <span className="text-lg font-black text-[#5769e7] mt-1 block">
+              <span className="text-lg font-display font-normal leading-tight text-[#5769e7] mt-1 block">
                 {assessment.fairRateRange[0]}%–{assessment.fairRateRange[1]}%
               </span>
             </div>
 
             <div className="p-3 bg-[#f2f1f0] rounded-2xl border border-[#ebeae8]">
               <span className="text-[10px] uppercase font-bold text-[#5d5b59] block">Safe EMI Ceiling</span>
-              <span className="text-lg font-black text-[#171717] mt-1 block">
+              <span className="text-lg font-display font-normal leading-tight text-[#171717] mt-1 block">
                 {formatINR(assessment.recommendedMaxEMI)}
               </span>
             </div>

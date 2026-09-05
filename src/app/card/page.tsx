@@ -43,18 +43,18 @@ export default function CardPage() {
     return (
       <div className="min-h-screen bg-[#f3ede7] text-[#171717] flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-[#ebeae8] shadow-sm text-center space-y-5">
-          <div className="w-12 h-12 rounded-full bg-[#e5e9ff] text-[#5769e7] flex items-center justify-center mx-auto">
+          <div className="w-12 h-12 rounded-full bg-[#f0f3ff] text-[#5769e7] flex items-center justify-center mx-auto">
             <ShieldCheckIcon className="w-6 h-6" aria-hidden="true" />
           </div>
-          <h1 className="text-2xl font-black text-[#171717]">
+          <h1 className="font-display text-[32px] font-normal text-[#171717] leading-tight">
             No Active Card Found
           </h1>
-          <p className="text-xs text-[#5d5b59] leading-relaxed">
+          <p className="text-[14px] text-[#5d5b59] leading-relaxed">
             Negotiation Cards are generated from your active browser assessment. Please complete the quiz to create your card.
           </p>
           <Link
             href="/assess"
-            className="inline-flex items-center justify-center gap-2 w-full py-3.5 rounded-full bg-[#5769e7] text-white text-xs sm:text-sm font-extrabold shadow-sm hover:bg-[#4958be] transition-colors"
+            className="inline-flex items-center justify-center gap-2 w-full py-3.5 rounded-full bg-[#5769e7] text-white text-[15px] font-semibold shadow-sm hover:bg-[#4958be] transition-colors"
           >
             <span>Start 2-Minute Assessment</span>
             <ArrowRight01Icon className="w-4 h-4" aria-hidden="true" />

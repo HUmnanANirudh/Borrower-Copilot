@@ -57,7 +57,7 @@ export function QuoteChecker({ assessment }: QuoteCheckerProps) {
       {/* Input Form */}
       <form onSubmit={handleEvaluate} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
-          <label className="text-xs font-bold text-[#171717] block mb-1">
+          <label className="text-[12px] font-semibold text-[#171717] block mb-1">
             Quoted Principal (₹)
           </label>
           <input
@@ -70,7 +70,7 @@ export function QuoteChecker({ assessment }: QuoteCheckerProps) {
         </div>
 
         <div>
-          <label className="text-xs font-bold text-[#171717] block mb-1">
+          <label className="text-[12px] font-semibold text-[#171717] block mb-1">
             Quoted Interest Rate (%)
           </label>
           <input
@@ -83,7 +83,7 @@ export function QuoteChecker({ assessment }: QuoteCheckerProps) {
         </div>
 
         <div>
-          <label className="text-xs font-bold text-[#171717] block mb-1">
+          <label className="text-[12px] font-semibold text-[#171717] block mb-1">
             Tenure (Months)
           </label>
           <select
@@ -99,7 +99,7 @@ export function QuoteChecker({ assessment }: QuoteCheckerProps) {
         </div>
 
         <div>
-          <label className="text-xs font-bold text-[#171717] block mb-1">
+          <label className="text-[12px] font-semibold text-[#171717] block mb-1">
             Processing Fee (%)
           </label>
           <input
@@ -112,7 +112,7 @@ export function QuoteChecker({ assessment }: QuoteCheckerProps) {
         </div>
 
         <div>
-          <label className="text-xs font-bold text-[#171717] block mb-1">
+          <label className="text-[12px] font-semibold text-[#171717] block mb-1">
             Insurance / Other Fees (₹)
           </label>
           <input
@@ -149,7 +149,7 @@ export function QuoteChecker({ assessment }: QuoteCheckerProps) {
 
             <div className="text-right">
               <span className="text-xs text-[#747371] block">Estimated All-In APR</span>
-              <span className="text-lg font-black text-[#171717]">
+              <span className="font-display text-[24px] font-normal leading-tight text-[#171717]">
                 {evaluation.effectiveAllInAPR}%
               </span>
             </div>
@@ -167,7 +167,7 @@ export function QuoteChecker({ assessment }: QuoteCheckerProps) {
           {/* Counter-Offer Advice */}
           {evaluation.counterOfferAdvice.length > 0 && (
             <div className="space-y-2">
-              <span className="text-xs font-bold text-[#171717] block">What to tell the lender:</span>
+              <span className="text-[12px] font-semibold text-[#171717] block">What to tell the lender:</span>
               <div className="space-y-1.5">
                 {evaluation.counterOfferAdvice.map((advice, i) => (
                   <p key={i} className="text-xs text-[#5d5b59] bg-[#fcfbf9] p-2.5 rounded-xl border border-[#ebeae8]">

@@ -27,15 +27,15 @@ export default function SharedCardPage({ params }: SharedCardPageProps) {
           <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
             <ShieldCheckIcon className="w-6 h-6" aria-hidden="true" />
           </div>
-          <h1 className="text-2xl font-black text-[#171717]">
+          <h1 className="font-display text-[32px] font-normal text-[#171717] leading-tight">
             Invalid or Expired Link
           </h1>
-          <p className="text-xs text-[#5d5b59] leading-relaxed">
+          <p className="text-[14px] text-[#5d5b59] leading-relaxed">
             This shared Negotiation Card link is malformed or corrupted. You can create a new personalized card in under 2 minutes.
           </p>
           <Link
             href="/assess"
-            className="inline-flex items-center justify-center gap-2 w-full py-3.5 rounded-full bg-[#5769e7] text-white text-xs sm:text-sm font-extrabold shadow-sm hover:bg-[#4958be] transition-colors"
+            className="inline-flex items-center justify-center gap-2 w-full py-3.5 rounded-full bg-[#5769e7] text-white text-[15px] font-semibold shadow-sm hover:bg-[#4958be] transition-colors"
           >
             <span>Start Free Assessment</span>
             <ArrowRight01Icon className="w-4 h-4" aria-hidden="true" />
