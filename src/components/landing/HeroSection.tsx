@@ -5,34 +5,35 @@ import { MiniatureCard } from './MiniatureCard';
 
 export function HeroSection() {
   return (
-    <section aria-labelledby="hero-title" className="w-full pt-12 pb-20 px-4 sm:px-6">
-      <div className="max-w-5xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-14">
+    <section aria-labelledby="hero-title" className="w-full py-20 lg:py-32 px-6 lg:px-16 bg-[#f3ede7]">
+      <div className="max-w-[1280px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-16 lg:gap-24">
         {/* Left Editorial Copy */}
-        <div className="w-full lg:w-7/12 text-center lg:text-left space-y-6">
+        <div className="w-full lg:w-6/12 text-center lg:text-left flex flex-col items-center lg:items-start gap-8">
           {/* Tag Pill */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#f2f1f0] border border-[#dedcd9] text-xs font-semibold text-[#171717] shadow-2xs">
-            <SecurityCheckIcon className="w-3.5 h-3.5 text-[#5769e7]" aria-hidden="true" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#f2f1f0] border border-[#dedcd9] text-sm font-semibold text-[#171717]">
+            <SecurityCheckIcon className="w-4 h-4 text-[#5769e7]" aria-hidden="true" />
             <span>Independent Borrower Decision Engine</span>
           </div>
 
           {/* Mentimeter-Style Large Headline */}
           <h1 
             id="hero-title" 
-            className="text-4xl sm:text-6xl font-black text-[#171717] tracking-tight leading-[1.04] sm:leading-[1.02]"
+            className="font-display text-[52px] sm:text-[64px] lg:text-[88px] font-medium text-[#101010] tracking-[-0.03em] leading-[0.9]"
+            style={{ fontStretch: '85%' }}
           >
             Know what you should borrow before the lender tells you what you can borrow.
           </h1>
 
           {/* Subheading */}
-          <p className="text-base sm:text-lg text-[#5d5b59] max-w-xl mx-auto lg:mx-0 leading-relaxed font-normal">
+          <p className="text-lg sm:text-[22px] text-[#5d5b59] max-w-xl leading-[1.45] font-normal">
             A private, no-login assessment that estimates your safe borrowing limit, fair interest rate and EMI — then arms you with a defensible card to negotiate with.
           </p>
 
           {/* Action CTAs */}
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 w-full sm:w-auto mt-2">
             <Link
               href="/assess"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-[#5769e7] hover:bg-[#4958be] text-white text-base font-extrabold shadow-md transition-all cursor-pointer transform active:scale-98"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full bg-[#5769e7] hover:bg-[#4958be] active:bg-[#3f4ba1] text-white text-base font-semibold transition-colors cursor-pointer"
             >
               <span>Start my assessment</span>
               <ArrowRight01Icon className="w-5 h-5" aria-hidden="true" />
@@ -40,23 +41,27 @@ export function HeroSection() {
 
             <Link
               href="#how-it-works"
-              className="text-sm font-semibold text-[#5d5b59] hover:text-[#171717] transition-colors py-2 px-3"
+              className="text-base font-semibold text-[#171717] hover:bg-[#ebeae8] bg-[#f2f1f0] transition-colors py-4 px-7 rounded-full inline-flex items-center justify-center w-full sm:w-auto"
             >
               See how it works ↓
             </Link>
           </div>
 
           {/* Micro-assurances */}
-          <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-xs font-medium text-[#747371]">
-            <span>✓ No login required</span>
-            <span>✓ Zero credit bureau pull</span>
-            <span>✓ Runs in your browser</span>
+          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-sm font-medium text-[#747371] mt-2">
+            <span className="flex items-center gap-1.5"><span className="text-[#52ad6e]">✓</span> No login required</span>
+            <span className="flex items-center gap-1.5"><span className="text-[#52ad6e]">✓</span> Zero credit bureau pull</span>
           </div>
         </div>
 
         {/* Right Hero Visual: Miniature Card */}
         <div className="w-full lg:w-5/12 flex justify-center">
-          <MiniatureCard />
+          <div className="relative w-full max-w-md" style={{ perspective: '1000px' }}>
+            {/* We apply Mentimeter's specific shadow classes here */}
+            <div className="transform rotate-y-[-5deg] rotate-x-[5deg] menti-card-shadow bg-white rounded-[20px] overflow-hidden border-[8.8px] border-black">
+              <MiniatureCard />
+            </div>
+          </div>
         </div>
       </div>
     </section>

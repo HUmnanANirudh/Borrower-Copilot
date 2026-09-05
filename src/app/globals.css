@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  --font-display: var(--font-oswald);
+  --font-sans: var(--font-inter);
+}
+
 @layer base {
   :root {
     /* Mentimeter Color System */
