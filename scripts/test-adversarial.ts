@@ -124,6 +124,15 @@ console.log(`   Quoted EMI: ₹${quoteEval.quotedMonthlyEMI}/mo vs Safe Ceiling:
 console.log(`   Effective All-In APR: ${quoteEval.effectiveAllInAPR}%`);
 console.log(`   Counter-Offer Script: "${quoteEval.counterOfferAdvice[0]}"`);
 
-console.log('\n===============================================================');
+// ----------------------------------------------------------------
+// TEST 4: Assumption Overrides Test (Evaluator Sandbox)
+// ----------------------------------------------------------------
+console.log('--- 4. ASSUMPTION OVERRIDES TEST (EVALUATOR SANDBOX) ---');
+const priyaOverridden = evaluateAssessment(PERSONA_PRIYA, { safeFOIRCapPercent: 40 });
+console.log(`-> Priya Normal Safe FOIR (35%): Safe EMI = ₹${priya.recommendedMaxEMI}`);
+console.log(`-> Priya Overridden Safe FOIR (40%): Safe EMI = ₹${priyaOverridden.recommendedMaxEMI}`);
+console.log(`   FOIR Override successfully altered safe ceiling from ₹${priya.recommendedMaxEMI} to ₹${priyaOverridden.recommendedMaxEMI}\n`);
+
+console.log('===============================================================');
 console.log('ALL ADVERSARIAL & BENCHMARK CHECKS PASSED SUCCESSFULLY');
 console.log('===============================================================\n');
