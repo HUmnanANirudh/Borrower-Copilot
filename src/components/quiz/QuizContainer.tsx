@@ -92,7 +92,7 @@ export function QuizContainer() {
   const contextMessage = getContextTransition(currentQuestion.id as string, profile);
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-4 py-8 sm:py-12 flex flex-col justify-between min-h-[85vh]">
+    <div className="w-full max-w-4xl mx-auto px-4 py-8 sm:py-6 flex flex-col justify-between min-h-[85vh]">
       <div>
         <div className="flex items-center justify-between mb-4">
           <Link 

@@ -1,10 +1,4 @@
 import { BorrowerProfile, QuizQuestion } from './types';
-
-/**
- * 1. UNIVERSAL INTAKE QUESTIONS (Phase 1)
- * Purpose, Amount, Age
- * (Loan type is purposefully NOT asked blindly; it is inferred later!)
- */
 export const UNIVERSAL_QUESTIONS: QuizQuestion[] = [
   {
     id: 'loanPurpose',
@@ -50,11 +44,6 @@ export const UNIVERSAL_QUESTIONS: QuizQuestion[] = [
     informationScore: () => 9
   }
 ];
-
-/**
- * 2. FINANCIAL BASELINE QUESTIONS (Phase 2)
- * Income signal, take-home pay, ongoing obligations, living costs, bureau status
- */
 export const BASELINE_FINANCIAL_QUESTIONS: QuizQuestion[] = [
   {
     id: 'primaryIncomeSignal',
@@ -131,16 +120,7 @@ export const BASELINE_FINANCIAL_QUESTIONS: QuizQuestion[] = [
     informationScore: () => 9
   }
 ];
-
-/**
- * 3. INFORMATION-VALUE DYNAMIC QUESTION POOL (Phase 3)
- * Every question in this pool:
- * - Has explicit criteria for when it is relevant (`shouldAsk`)
- * - Has a dynamic Information Score based on how much it reduces uncertainty in outputs
- * - Stops asking when uncertainty is resolved or information score is 0
- */
 export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
-  // 1. COLLATERAL PROPERTY CHECK (High value for business / high ticket)
   {
     id: 'hasUnencumberedCollateral',
     title: 'Do you or your family own clear-title, unencumbered property?',
@@ -155,7 +135,6 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
     defaultValue: 'false',
     targetOutputs: ['rate', 'amount', 'verdict'],
     shouldAsk: (profile) => {
-      // Ask if high ticket (>= ₹10L) OR self-employed business OR business expansion
       return (
         (profile.requestedAmount !== undefined && profile.requestedAmount >= 800000) ||
         profile.primaryIncomeSignal === 'self_employed_business' ||
@@ -163,13 +142,10 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
       );
     },
     informationScore: (profile) => {
-      // Immense value for someone requesting ₹10L+ with business background (Ravi)
       if (profile.requestedAmount && profile.requestedAmount >= 1000000) return 10;
       return 7;
     }
   },
-
-  // 1b. COLLATERAL ESTIMATED VALUE
   {
     id: 'collateralEstimatedValue',
     title: 'What is the approximate market value of this property?',
@@ -185,8 +161,6 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
     shouldAsk: (profile) => profile.hasUnencumberedCollateral === true,
     informationScore: (profile) => profile.hasUnencumberedCollateral ? 9 : 0
   },
-
-  // 2. CO-APPLICANT / SPOUSE INCOME
   {
     id: 'coApplicantIncome',
     title: 'Does your spouse or a family co-applicant have regular income?',
@@ -200,15 +174,12 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
     defaultValue: 0,
     targetOutputs: ['amount', 'emi', 'verdict'],
     shouldAsk: (profile) => {
-      // Ask if self-employed or if requested amount is high relative to primary income
       const requested = profile.requestedAmount || 0;
       const income = profile.netMonthlyIncome || 1;
       return (requested / income) > 8 || profile.primaryIncomeSignal === 'self_employed_business';
     },
     informationScore: () => 8
   },
-
-  // 3. BUSINESS OPERATING VINTAGE & ITR
   {
     id: 'businessVintageYears',
     title: 'How many continuous years has your business or shop been active?',
@@ -223,8 +194,6 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
     shouldAsk: (profile) => profile.primaryIncomeSignal === 'self_employed_business',
     informationScore: (profile) => profile.primaryIncomeSignal === 'self_employed_business' ? 9 : 0
   },
-
-  // 4. HIGH COST APP DEBT CHECK (Critical for informal / overleveraged)
   {
     id: 'hasHighCostAppLoans',
     title: 'Are any of your current loans from instant apps or private lenders at 30%+?',
@@ -238,7 +207,6 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
     defaultValue: 'false',
     targetOutputs: ['verdict', 'rate', 'confidence'],
     shouldAsk: (profile) => {
-      // Ask if gig worker OR existing EMI is high relative to income OR debt consolidation purpose
       const income = profile.netMonthlyIncome || 1;
       const emi = profile.existingMonthlyEMI || 0;
       return (
@@ -249,8 +217,6 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
     },
     informationScore: () => 10
   },
-
-  // 5. RECENT DELINQUENCY / BOUNCE CHECK
   {
     id: 'recentDelinquencyOrBounce',
     title: 'Have you had any missed due dates or bounced EMIs in the past 6 months?',
@@ -265,7 +231,6 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
     defaultValue: 'false',
     targetOutputs: ['verdict', 'confidence', 'rate'],
     shouldAsk: (profile) => {
-      // Relevant if credit score is unknown/poor, or high debt ratio
       return (
         profile.creditScoreStatus === 'unknown' ||
         profile.creditScoreStatus === 'below_650' ||
@@ -278,8 +243,6 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
       return 6;
     }
   },
-
-  // 6. VARIABLE SALARY PORTION (For Corporate Salaried)
   {
     id: 'variablePayPortionPercent',
     title: 'What percentage of your annual compensation is variable or bonus?',
@@ -297,8 +260,6 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
     shouldAsk: (profile) => profile.primaryIncomeSignal === 'salaried_corporate',
     informationScore: (profile) => profile.primaryIncomeSignal === 'salaried_corporate' ? 7 : 0
   },
-
-  // 7. EMERGENCY SAVINGS BUFFER
   {
     id: 'emergencySavingsMonths',
     title: 'How many months of essential expenses do you have in liquid savings?',
@@ -314,7 +275,6 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
     defaultValue: '3',
     targetOutputs: ['verdict', 'confidence'],
     shouldAsk: (profile) => {
-      // Ask if high debt or informal or low cash flow
       const income = profile.netMonthlyIncome || 1;
       const emi = profile.existingMonthlyEMI || 0;
       return (emi / income) >= 0.20 || profile.primaryIncomeSignal === 'gig_freelance';
@@ -322,10 +282,6 @@ export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
     informationScore: () => 7
   }
 ];
-
-/**
- * Context transition messages explaining why path adapts
- */
 export function getContextTransition(questionId: string, profile: Partial<BorrowerProfile>): string | null {
   if (questionId === 'hasUnencumberedCollateral' && profile.primaryIncomeSignal === 'self_employed_business') {
     return "Because you're self-employed and mentioned a substantial loan amount, we check if unencumbered property can unlock a lower-rate secured loan.";
@@ -342,22 +298,13 @@ export function getContextTransition(questionId: string, profile: Partial<Borrow
   return null;
 }
 
-/**
- * Deterministic Information-Value Selection Engine:
- * Evaluates the current borrower profile state, filters candidate questions,
- * scores them by information value, and returns the next prioritized question list.
- */
 export function getPrioritizedQuestions(profile: Partial<BorrowerProfile>): QuizQuestion[] {
-  // 1. Always start with Universal Questions (Phase 1)
   const universal = UNIVERSAL_QUESTIONS;
 
-  // 2. Always include Baseline Financial Questions (Phase 2)
   const baseline = BASELINE_FINANCIAL_QUESTIONS;
 
-  // 3. Evaluate Dynamic Pool (Phase 3)
   const dynamic = DYNAMIC_QUESTION_POOL.filter(q => q.shouldAsk(profile));
 
-  // Sort dynamic questions by their information value score (highest first)
   dynamic.sort((a, b) => b.informationScore(profile) - a.informationScore(profile));
 
   return [...universal, ...baseline, ...dynamic];
