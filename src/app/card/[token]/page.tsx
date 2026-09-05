@@ -19,9 +19,6 @@ export default async function SharedCardPage({ params }: SharedCardPageProps) {
     return (
       <div className="min-h-screen bg-[#f3ede7] text-[#171717] flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-[#ebeae8] shadow-sm text-center space-y-5">
-          <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
-            <ShieldCheckIcon className="w-6 h-6" aria-hidden="true" />
-          </div>
           <h1 className="font-display text-[32px] font-normal text-[#171717] leading-tight">
             Invalid or Expired Link
           </h1>
@@ -40,7 +37,6 @@ export default async function SharedCardPage({ params }: SharedCardPageProps) {
     );
   }
 
-  // Reconstruct minimal Profile and Assessment from the stateless token
   const profile: BorrowerProfile = {
     loanPurpose: data.p,
     requestedAmount: data.r,

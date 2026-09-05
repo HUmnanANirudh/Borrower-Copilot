@@ -151,21 +151,11 @@ export function QuizContainer() {
           </div>
 
           {currentQuestion.whyWeAsk && (
-            <div className="pt-2 border-t border-[#dedcd9]">
-              <button
-                type="button"
-                onClick={() => setShowWhyWeAsk(!showWhyWeAsk)}
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#5769e7] hover:underline cursor-pointer"
-              >
-                <HelpCircleIcon className="w-3.5 h-3.5" aria-hidden="true" />
-                <span>{showWhyWeAsk ? 'Hide explanation' : 'Why are we asking this?'}</span>
-              </button>
-              
-              {showWhyWeAsk && (
-                <p className="mt-2 text-xs text-[#5d5b59] bg-[#fcfbf9] p-3 rounded-xl border border-[#dedcd9] leading-relaxed">
-                  {currentQuestion.whyWeAsk}
-                </p>
-              )}
+            <div className="mt-2 pt-5 border-t border-[#ebeae8]">
+              <p className="text-[13px] text-[#747371] leading-relaxed flex gap-2">
+                <span className="font-semibold text-[#5769e7]">Why we ask:</span>
+                {currentQuestion.whyWeAsk}
+              </p>
             </div>
           )}
         </div>

@@ -23,7 +23,7 @@ export function encodeCardPayload(assessment: Assessment, profile: BorrowerProfi
 
   try {
     const jsonStr = JSON.stringify(payload);
-    if (typeof window !== 'undefined' && window.btoa) {
+    if (typeof window !== 'undefined' && typeof window.btoa === 'function') {
       return encodeURIComponent(btoa(unescape(encodeURIComponent(jsonStr))));
     }
     return Buffer.from(jsonStr).toString('base64url');
@@ -40,7 +40,7 @@ export function decodeCardPayload(encoded: string): SharedCardPayload | null {
   if (!encoded) return null;
   try {
     let jsonStr = '';
-    if (typeof window !== 'undefined' && window.atob) {
+    if (typeof window !== 'undefined' && typeof window.atob === 'function') {
       jsonStr = decodeURIComponent(escape(atob(decodeURIComponent(encoded))));
     } else {
       jsonStr = Buffer.from(encoded, 'base64url').toString('utf-8');

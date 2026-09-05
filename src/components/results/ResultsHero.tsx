@@ -38,61 +38,48 @@ export function ResultsHero({ assessment }: ResultsHeroProps) {
   const style = getVerdictStyle();
 
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#ebeae8] shadow-sm space-y-6">
-      {/* Top Tag & Confidence */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#ebeae8] pb-5">
+    <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#ebeae8] shadow-sm space-y-8">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-[#ebeae8] pb-6">
         <div>
-          <span className="text-[12px] uppercase font-bold tracking-wider text-[#5769e7] block mb-1">
-            Self-Reported Borrower Assessment
-          </span>
-          <h1 className="font-display text-[48px] sm:text-[64px] font-normal text-[#171717] tracking-tight uppercase leading-[0.9]">
+          <h1 className="text-3xl sm:text-5xl font-semibold text-[#171717] tracking-tight mb-2">
             {assessment.verdict}
           </h1>
+          <p className="text-[15px] sm:text-[17px] font-medium text-[#5d5b59] leading-relaxed max-w-xl">
+            {assessment.verdictReason}
+          </p>
         </div>
 
-        <div className="sm:text-right">
-          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase border ${style.badgeBg}`}>
+        <div className="sm:text-right shrink-0">
+          <span className={`inline-flex items-center px-3 py-1 rounded-full text-[12px] font-bold tracking-wider uppercase border ${style.badgeBg}`}>
             {assessment.confidence} CONFIDENCE
           </span>
-          <p className="text-[12px] text-[#747371] mt-1.5 sm:max-w-[240px]">
-            {assessment.confidenceReasons[0] || 'Based on your stated cash flow & commitments.'}
-          </p>
         </div>
       </div>
 
-      {/* Core Verdict Rationale */}
-      <div className="space-y-4">
-        <p className="text-base sm:text-lg font-medium text-[#171717] leading-relaxed">
-          {assessment.verdictReason}
+      {/* Actionable Next Move Recommendation */}
+      <div className="space-y-3">
+        <h3 className="text-[18px] font-semibold text-[#171717]">
+          {assessment.betterAlternative.title}
+        </h3>
+        <p className="text-[15px] text-[#5d5b59] leading-relaxed">
+          {assessment.betterAlternative.recommendation}
         </p>
-
-        {/* Actionable Next Move Recommendation */}
-        <div className="p-5 rounded-2xl bg-[#fcfbf9] border border-[#ebeae8] space-y-2">
-          <span className="text-[10px] uppercase font-extrabold px-2.5 py-0.5 rounded-full bg-[#e5e9ff] text-[#5769e7] inline-block">
-            Your Next Move
-          </span>
-          <h3 className="text-base font-bold text-[#171717]">
-            {assessment.betterAlternative.title}
-          </h3>
-          <p className="text-xs sm:text-sm text-[#5d5b59] leading-relaxed">
-            {assessment.betterAlternative.recommendation}
+        {assessment.betterAlternative.illustrativeScenario && (
+          <p className="text-[14px] font-medium text-[#323c7c] mt-2">
+            {assessment.betterAlternative.illustrativeScenario}
           </p>
-          {assessment.betterAlternative.illustrativeScenario && (
-            <p className="text-xs font-semibold text-[#323c7c] bg-[#e5e9ff]/50 p-3 rounded-xl border border-[#5769e7]/30 mt-2">
-              💡 {assessment.betterAlternative.illustrativeScenario}
-            </p>
-          )}
-        </div>
+        )}
       </div>
 
-      {/* Direct CTA to Negotiation Card */}
-      <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#ebeae8]">
-        <span className="text-[13px] font-medium text-[#747371]">
-          Take these figures into the bank or NBFC branch.
+      {/* Direct CTA */}
+      <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#ebeae8]">
+        <span className="text-[14px] font-medium text-[#747371]">
+          Use this data to negotiate with lenders.
         </span>
         <Link
           href="/card"
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-[#5769e7] hover:bg-[#4958be] text-white text-[15px] font-semibold shadow-sm transition-all cursor-pointer"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full bg-[#5769e7] hover:bg-[#4958be] text-white text-[15px] font-semibold shadow-sm transition-all"
         >
           <span>View Negotiation Card</span>
           <ArrowRight01Icon className="w-4 h-4" aria-hidden="true" />

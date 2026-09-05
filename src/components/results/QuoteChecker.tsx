@@ -149,7 +149,7 @@ export function QuoteChecker({ assessment }: QuoteCheckerProps) {
 
             <div className="text-right">
               <span className="text-xs text-[#747371] block">Estimated All-In APR</span>
-              <span className="font-display text-[24px] font-normal leading-[0.9] tracking-[-0.02em] text-[#171717]">
+              <span className="text-[24px] font-bold text-[#171717]">
                 {evaluation.effectiveAllInAPR}%
               </span>
             </div>

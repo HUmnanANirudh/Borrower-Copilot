@@ -46,7 +46,7 @@ export function CardClient() {
           <div className="w-12 h-12 rounded-full bg-[#f0f3ff] text-[#5769e7] flex items-center justify-center mx-auto">
             <ShieldCheckIcon className="w-6 h-6" aria-hidden="true" />
           </div>
-          <h1 className="font-display text-[32px] font-normal text-[#171717] leading-tight">
+          <h1 className="text-3xl font-semibold text-[#171717] leading-tight">
             No Active Card Found
           </h1>
           <p className="text-[14px] text-[#5d5b59] leading-relaxed">

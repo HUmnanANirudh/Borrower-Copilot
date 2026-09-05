@@ -53,7 +53,7 @@ export function ResultsClient() {
           <div className="w-12 h-12 rounded-full bg-[#f0f3ff] text-[#5769e7] flex items-center justify-center mx-auto">
             <ShieldCheckIcon className="w-6 h-6" aria-hidden="true" />
           </div>
-          <h1 className="font-display text-[32px] font-normal text-[#171717]">
+          <h1 className="text-[32px] font-bold text-[#171717]">
             No Active Assessment Found
           </h1>
           <p className="text-[14px] text-[#5d5b59] leading-relaxed">
@@ -101,7 +101,7 @@ export function ResultsClient() {
           </div>
         </div>
       </header>
-      <main className="flex-1 max-w-[860px] mx-auto px-4 py-10 lg:py-16 space-y-7">
+      <main className="flex-1 max-w-[860px] mx-auto px-4 py-10 space-y-7">
         <ResultsHero assessment={assessment} profile={profile} />
         <ThreeLensesRow assessment={assessment} />
         <AmountComparison assessment={assessment} profile={profile} />
@@ -120,9 +120,6 @@ export function ResultsClient() {
           </Link>
         </div>
       </main>
-      <footer className="w-full py-8 text-center text-[12px] font-semibold text-[#a09f9d] border-t border-[#ebeae8] uppercase tracking-wider">
-        <span>BorrowIQ · Self-reported borrower assessment</span>
-      </footer>
     </div>
   );
 }
