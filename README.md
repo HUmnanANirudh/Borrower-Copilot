@@ -85,26 +85,6 @@ The application does not use a backend database. It does not store personal data
 ### 4. AI Negotiation Integration
 The application integrates the Vercel AI SDK and the Groq API (Llama 3.3 model). The system securely passes the evaluated assessment parameters to the AI model. The AI operates as a localized negotiation coach. The borrower can ask contextual questions (e.g., "How do I argue if the lender adds a mandatory insurance fee?") and receive immediate, customized advice based on their specific financial profile.
 
-## Local Setup
-
-You can run this application locally in less than five minutes.
-
-### Requirements
-* Node.js (version 20 or higher)
-* Bun (Optional, but recommended for fast installation)
-
-### 1. Install Dependencies
-```bash
-bun install
-```
-
-### 2. Configure AI (Optional)
-To activate the AI negotiation coach, provide a Groq API key in a `.env.local` file at the root of the project:
-```text
-GROQ_API_KEY=your_groq_api_key_here
-```
-If you do not provide a key, the application will disable the chat widget, but the core underwriting engine and the Negotiation Card will function perfectly.
-
 ### 3. Start the Server
 ```bash
 bun run dev
