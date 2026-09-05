@@ -39,10 +39,10 @@ export function ReasonTraceAccordion({ assessment, profile }: ReasonTraceAccordi
         <div className="flex items-center gap-2.5">
           <ShieldCheckIcon className="w-5 h-5 text-[#5769e7]" aria-hidden="true" />
           <div>
-            <h3 className="text-lg font-bold text-[#171717] tracking-tight">
+            <h3 className="font-display text-[24px] font-normal text-[#171717] leading-tight tracking-tight">
               How we reached this (Deterministic Reason Trace)
             </h3>
-            <p className="text-xs text-[#747371] mt-0.5">
+            <p className="text-[13px] text-[#747371] mt-1">
               Binding rule: <span className="font-semibold text-[#171717]">{assessment.safeEMITrace.bindingRule.replace(/_/g, ' ')}</span>
             </p>
           </div>
@@ -59,34 +59,34 @@ export function ReasonTraceAccordion({ assessment, profile }: ReasonTraceAccordi
           </p>
 
           {/* Mathematical Trace Chain Table */}
-          <div className="bg-white rounded-2xl border border-[#ebeae8] divide-y divide-[#ebeae8] text-xs">
+          <div className="bg-white rounded-2xl border border-[#ebeae8] divide-y divide-[#ebeae8] text-[13px]">
             <div className="p-3 flex justify-between">
               <span className="text-[#5d5b59]">Total Household Net Income</span>
-              <span className="font-bold text-[#171717]">{formatINR(totalIncome)}/mo</span>
+              <span className="font-semibold text-[#171717]">{formatINR(totalIncome)}/mo</span>
             </div>
             <div className="p-3 flex justify-between">
               <span className="text-[#5d5b59]">Existing Ongoing EMIs</span>
-              <span className="font-bold text-[#171717]">- {formatINR(existingEMI)}</span>
+              <span className="font-semibold text-[#171717]">- {formatINR(existingEMI)}</span>
             </div>
             <div className="p-3 flex justify-between">
               <span className="text-[#5d5b59]">Essential Household Living Expenses</span>
-              <span className="font-bold text-[#171717]">- {formatINR(expenses)}</span>
+              <span className="font-semibold text-[#171717]">- {formatINR(expenses)}</span>
             </div>
             <div className="p-3 flex justify-between">
               <span className="text-[#5d5b59]">Untouchable 10% Emergency Reserve Buffer</span>
-              <span className="font-bold text-amber-700">- {formatINR(buffer10)}</span>
+              <span className="font-semibold text-amber-700">- {formatINR(buffer10)}</span>
             </div>
             <div className="p-3 flex justify-between bg-[#f7f6f4]">
-              <span className="font-bold text-[#171717]">Uncommitted Cash-Flow Ceiling (Lock 1)</span>
-              <span className="font-extrabold text-[#171717]">{formatINR(cashFlowCeiling)}</span>
+              <span className="font-semibold text-[#171717]">Uncommitted Cash-Flow Ceiling (Lock 1)</span>
+              <span className="font-semibold text-[#171717]">{formatINR(cashFlowCeiling)}</span>
             </div>
             <div className="p-3 flex justify-between bg-[#f7f6f4]">
-              <span className="font-bold text-[#171717]">Safe 35% FOIR Debt Room (Lock 2)</span>
-              <span className="font-extrabold text-[#171717]">{formatINR(foirLimit)}</span>
+              <span className="font-semibold text-[#171717]">Safe 35% FOIR Debt Room (Lock 2)</span>
+              <span className="font-semibold text-[#171717]">{formatINR(foirLimit)}</span>
             </div>
             <div className="p-3.5 flex justify-between bg-[#e5e9ff]/50">
-              <span className="font-black text-[#323c7c]">Final Recommended Safe EMI Ceiling (min of Lock 1 & 2)</span>
-              <span className="font-black text-[#5769e7] text-sm">{formatINR(assessment.recommendedMaxEMI)}/mo</span>
+              <span className="font-semibold text-[#323c7c]">Final Recommended Safe EMI Ceiling (min of Lock 1 & 2)</span>
+              <span className="font-bold text-[#5769e7] text-[15px]">{formatINR(assessment.recommendedMaxEMI)}/mo</span>
             </div>
           </div>
 

@@ -99,7 +99,7 @@ export function PrintableCard({ assessment, profile, isSharedView = false }: Pri
         {/* Card Header */}
         <div className="border-b-2 border-[#171717] pb-4 flex items-start justify-between gap-4">
           <div>
-            <div className="flex items-center gap-1.5 text-[10px] font-display font-normal uppercase tracking-widest text-[#5769e7]">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#5769e7]">
               <ShieldCheckIcon className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Borrower Copilot · Official Instrument</span>
             </div>
@@ -113,7 +113,7 @@ export function PrintableCard({ assessment, profile, isSharedView = false }: Pri
 
           <div className="text-right shrink-0">
             <span className="text-[10px] uppercase font-bold text-[#747371] block">Verdict</span>
-            <span className={`text-xs font-display font-normal px-2.5 py-1 rounded-full border inline-block mt-0.5 ${
+            <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border inline-block mt-0.5 ${
               assessment.verdict === 'BORROW'
                 ? 'bg-emerald-100 text-emerald-950 border-emerald-400'
                 : assessment.verdict === 'BORROW LESS'
@@ -128,7 +128,7 @@ export function PrintableCard({ assessment, profile, isSharedView = false }: Pri
         {/* 4 Core Quantitative Benchmarks */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
           <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-300">
-            <span className="text-[10px] font-display font-normal uppercase text-emerald-950 block">Safe Amount</span>
+            <span className="text-[10px] font-bold uppercase text-emerald-950 block">Safe Amount</span>
             <span className="text-[24px] font-display font-normal text-emerald-800 mt-1 block">
               {formatLakhs(assessment.borrowerSafeRange[0])}–{formatLakhs(assessment.borrowerSafeRange[1])}
             </span>
@@ -193,7 +193,7 @@ export function PrintableCard({ assessment, profile, isSharedView = false }: Pri
 
         {/* Do-Not-Cross Safety Rules */}
         <div className="p-3.5 rounded-2xl bg-rose-50/70 border border-rose-200 text-xs text-rose-950 space-y-1">
-          <span className="font-display font-normal text-[10px] uppercase tracking-wider block text-rose-900">
+          <span className="font-bold text-[10px] uppercase tracking-wider block text-rose-900">
             Do-Not-Cross Rules
           </span>
           <p className="font-medium">
