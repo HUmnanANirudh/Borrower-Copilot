@@ -1,5 +1,6 @@
 'use client';
 
+import { CopilotChat } from '@/components/chat/CopilotChat';
 import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { BorrowerProfile, Assessment } from '@/lib/types';
@@ -67,6 +68,7 @@ export function CardClient() {
   return (
     <main className="min-h-screen bg-[#f3ede7] text-[#171717] font-sans selection:bg-[#5769e7]/20 selection:text-[#5769e7]">
       <PrintableCard assessment={assessment} profile={profile} />
+      <CopilotChat assessment={assessment} profile={profile} />
     </main>
   );
 }

@@ -1,126 +1,65 @@
-# Borrower Copilot — Financial Rules & Model Governance (`RULES.md`)
+# Rules Engine
 
-> **Status:** Authoritative Contract for `src/lib/rules/*`  
-> **Architecture:** Deterministic Information-Value Assessment Engine (Zero-LLM Authority)  
-> **Jurisdiction:** Indian Retail, Micro-Business, and Informal Debt Underwriting (INR ₹)  
-> **Core Principle:** Lenders underwrite for their risk and profit (pushing 50%–60% FOIR and 60-month tenures). Borrower Copilot underwrites strictly for borrower solvency, double-lock cash-flow protection, and truthful negotiation leverage.
+This document lists the business rules, limits, and assumptions that control the assessment engine. The application separates these mathematical rules from the user interface logic.
 
----
 
-## 1. Master Rule Ledger
+## 1. Income and Household Data
 
-Every rule, formula, threshold, and assumption is cataloged below, explicitly categorizing whether it is derived from formal regulatory / bank sources or financial engineering judgement.
+| Rule or Metric | Value or Limit | Reason | Source |
+|---|---|---|---|
+| Variable Pay Reduction | 50% reduction on the variable portion if it exceeds 15% of total income | Lenders discount variable pay because it fluctuates. We reduce it aggressively to ensure the borrower can pay during low-earning months. | Retail credit risk mitigation practices for cyclical incomes |
+| Expense Minimum | Maximum of ₹12,000 or 20% of total household income | Borrowers often under-report expenses. This enforces a basic urban survival cost to prevent unsafe debt-to-income calculations. | Cost of living indices and urban poverty line benchmarks |
+| Assessed Income (Gig Worker) | 35% reduction on gross gig income | Lenders discount informal cash flows because they are unpredictable. | Formal underwriting norms |
 
-| Rule / Parameter | Exact Value & Formula | Why It Exists | Source vs. My Judgement |
-| :--- | :--- | :--- | :--- |
-| **Cash-Flow Floor (Lock 1)** | $\text{Floor} = \max(0, \text{Net Income} - \text{Expenses} - \text{Existing EMIs} - (0.10 \times \text{Net Income}))$ | Ensures borrower retains a 10% untouchable liquid contingency and never enters negative monthly cash flow. | **My Judgement** (Prudent financial solvency boundary). |
-| **Safe FOIR Ceiling (Lock 2)** | $\text{FOIR} = \frac{\text{Existing EMI} + \text{New EMI}}{\text{Net Monthly Income}} \le 35\%$ | Protects household from over-leverage; prevents debt servicing from cannibalizing nutrition, rent, and education. | **My Judgement** (Conservative counter-weight to bank 50%+ standards). |
-| **Gig / Informal Safe FOIR Cap** | $\text{Cap reduced to } \mathbf{25\%}$ | Gig platform earnings and informal micro-businesses fluctuate significantly; debt above 25% leads to default cascades. | **My Judgement** (Observed volatility in platform rider incomes). |
-| **Salaried Variable Pay Haircut** | $\text{Haircut} = \mathbf{50\%} \text{ deduction on variable component if } > 15\%$ | Annual bonuses and quarterly incentives are uncommitted; cannot be relied upon to service fixed monthly EMIs. | **Source-backed** (Prevailing Indian commercial bank credit policies). |
-| **Estimated Lender Range FOIR** | $\text{Lender FOIR} = \mathbf{50\%} \text{ to } \mathbf{60\%}$ | Public underwriting benchmark used by Indian private and public sector banks to size maximum sanctioned loan eligibility. | **Source-backed** (HDFC Bank / SBI / ICICI retail lending credit manuals). |
-| **Prime Credit Tier (Score 750+)** | $\mathbf{10.5\% – 12.0\% \text{ p.a.}} \quad (\text{Rate reduction } -75\text{ bps})$ | Borrowers with 750+ CIBIL score carry negligible statistical default risk; qualifies for tier-1 rack rates. | **Source-backed** (Current Indian market rates for prime unsecured personal credit). |
-| **Average Credit Tier (650–749)** | $\mathbf{12.5\% – 15.0\% \text{ p.a.}} \quad (+100 \text{ to } +250\text{ bps risk premium})$ | Sub-prime / Tier-2 NBFC risk bracket; higher cost of capital passed onto borrower. | **Source-backed** (NBFC retail unsecured lending rate schedules). |
-| **Poor Credit Tier (<650)** | $\mathbf{16.0\% – 21.0\% \text{ p.a.}} \quad (+400 \text{ to } +650\text{ bps markup})$ | High risk of near-term delinquency; forces borrower into high-cost fintech/NBFC channels. | **Source-backed** (Fintech retail loan rack cards). |
-| **Unknown Credit Score Treatment** | $\mathbf{\text{Widen fair band by } +75\text{ to }+350\text{ bps}} + \mathbf{\text{Downgrade Confidence}}$ | **UNKNOWN IS NEVER TREATED AS ZERO OR 300**. Missing bureau history means high lender underwriting variance, not automatic poor credit. | **My Judgement** (Honest uncertainty mandate). |
-| **Business Vintage Mitigation** | $\mathbf{\text{Rate credit } -50\text{ bps}} \text{ if operating vintage } \ge 10\text{ years}$ | Long survival (e.g. Ravi's 14-year kirana store) proves cash-flow resilience, offsetting the absence of a formal bureau score. | **My Judgement** (SME underwriting heuristic). |
-| **Secured LAP Rate Floor** | $\mathbf{9.0\% – 10.5\% \text{ p.a.}}$ | Unencumbered property collateral reduces lender loss-given-default to near zero; saves 600–800 bps vs unsecured personal credit. | **Source-backed** (Indian retail Loan Against Property rack rates). |
-| **All-In Processing Fee** | $\mathbf{2.0\%} \text{ of Principal} + \mathbf{18\% \text{ GST}} \quad (\text{Net } 2.36\%)$ | Headline rates omit upfront fees; processing fees are deducted at disbursement, reducing actual funds received. | **Source-backed** (RBI Fair Practices Code & prevailing bank fee structures). |
-| **Effective APR Equation** | $\text{APR} = \text{Nominal Rate} + \left( \frac{\text{Upfront Fees}}{\text{Principal} \times (\text{Tenure} / 12)} \times 100 \right)$ | Computes true annualized cost accounting for upfront processing fees, documentation, and GST. | **Source-backed** (RBI Master Direction on Regulatory Framework for Digital Lending). |
-| **Sanction Inflation Alert** | $\text{Triggered when } \text{Lender Range Maximum} > \text{Safe Amount} \times 1.25$ | Warns borrower when bank eligibility is inflated via 60-month tenures to trap the customer into excessive interest. | **My Judgement** (Anti-predatory alert trigger). |
-| **Income Shock Stress Test** | $\mathbf{20\%} \text{ reduction in net monthly household income}$ | Simulates financial stability if take-home pay or business revenue decreases by 20% (illness, business slowdown). | **My Judgement** (Macroeconomic resilience benchmark). |
-| **Compounded Distress Rejection** | $\text{Instant } \mathbf{DON'T BORROW YET} \text{ if } \text{App Debt} + \text{Bounce} + \text{Deficit}$ | A single accidental bounce with savings is manageable; but high-cost 30%+ app debt + recent bounce + deficit triggers default. | **My Judgement** (Defensive default prevention trigger). |
+## 2. Debt Burden and Affordability
 
----
+| Rule or Metric | Value or Limit | Reason | Source |
+|---|---|---|---|
+| Minimum Cash-Flow Requirement | Net Income - Expenses - Existing EMI - 10% Cash Buffer | This is the absolute limit a borrower can pay monthly without defaulting on the loan or failing to buy necessities. | Basic liquidity buffering principles |
+| Emergency Cash Buffer | 10% of Effective Net Income | Borrowers need cash for emergencies. If a borrower uses 100% of their spare cash for an EMI, a single medical bill will cause a missed payment. | Financial planning standards |
+| Maximum Safe Debt Ratio (Salaried) | 35% of income | This is a safe ceiling for debt. Lenders often allow 50% to 60%, which forces borrower distress. | Conservative household leverage caps |
+| Maximum Safe Debt Ratio (Gig Worker) | 25% of income | Variable incomes require a lower debt ceiling to protect the borrower when earnings drop. | Volatility-adjusted leverage limits for informal workers |
+| Lender Debt Ratio Assumption | 50% (Score below 750) to 60% (Score 750 or above) | Banks use these ratios to maximize loan amounts. We calculate this to contrast the bank offer with the safe borrower limit. | Bank underwriting guidelines |
+| High Debt Warning | Current Debt Ratio >= 35% OR (Expenses + EMIs) >= 90% of income | This triggers the application to advise the user not to borrow. | Pre-delinquency leading indicators |
 
-## 2. Mathematical Formulations & Exact Formulas
+## 3. Interest Rates and Pricing
 
-### 2.1 Double-Lock Borrower Affordability
-Given:
-- $I_{\text{primary}} = \text{Primary Net Monthly Income}$
-- $I_{\text{co}} = \text{Verified Co-Applicant Monthly Income}$
-- $I_{\text{total}} = I_{\text{primary}} + I_{\text{co}}$
-- $E_{\text{exist}} = \text{Ongoing Existing Monthly EMIs}$
-- $H = \text{Essential Household Living Expenses}$
-- $\text{Buffer} = I_{\text{total}} \times 0.10 \quad (\text{Untouchable } 10\% \text{ contingency reserve})$
-- $\text{Cap}_{\text{FOIR}} = 35\% \quad (\text{or } 25\% \text{ for gig / informal profiles})$
+| Rule or Metric | Value or Limit | Reason | Source |
+|---|---|---|---|
+| Base Rate (Unsecured) | 11.0% to 12.5% | This is the standard minimum rate for retail unsecured personal loans. | Current market rates |
+| Base Rate (Secured Property) | 9.0% to 10.5% | Providing property as collateral reduces lender risk and interest rates. The application recommends this when the loan exceeds ₹10L and the borrower owns property. | Current market rates |
+| Credit Score Penalty | +0.5% to +1.0% (Score 700-749)<br>+2.0% to +3.5% (Score 650-699)<br>+4.5% to +7.0% (Score <650) | Lenders add a risk premium based on past credit defaults. | Retail lending schedules |
+| Prime Credit Discount | -0.75% to -0.50% (Score 750+) | Lenders reward excellent credit history with lower pricing. | Bank promotional rates |
+| Unknown Score Penalty | +0.75% to +3.5% (Widens the rate band) | An unknown score indicates uncertainty, not a specific bad score. The application widens the rate band and lowers the confidence score. | Statistical risk pricing for unverified credit histories |
+| Business History Discount | -0.50% (10+ years operating) | A long operating history proves the business is stable. This offsets the risk of an unknown formal credit score. | SME underwriting norms |
+| Predatory Debt Penalty | +3.00% | Holding high-cost app debt (30%+) indicates severe financial distress. This increases the risk premium. | Risk management principles |
+| Lender Initial Quote Margin | Fair Rate + 1.25% to 2.50% | Sales teams start with high margins. The Negotiation Card prepares borrowers to negotiate the rate down to the fair band. | Industry observation |
 
-$$\text{Lock 1 (Cash-Flow Floor)} = \max\left(0, I_{\text{total}} - H - E_{\text{exist}} - \text{Buffer}\right)$$
+## 4. Product Selection and Eligibility
 
-$$\text{Lock 2 (Safe FOIR Ceiling)} = \max\left(0, (I_{\text{total}} \times \text{Cap}_{\text{FOIR}}) - E_{\text{exist}}\right)$$
+| Rule or Metric | Value or Limit | Reason | Source |
+|---|---|---|---|
+| Secured Loan Recommendation | Unencumbered property > ₹20L AND Request > ₹10L (or Business purpose) | This prevents the borrower from accepting high unsecured rates when they can use property to get cheaper capital. | Yield-curve optimization for borrowers |
+| Microfinance Recommendation | Existing 30%+ App Debt AND requesting Debt Consolidation | The borrower must refinance predatory debt through regulated 12-16% channels before they assume new commercial credit. | Microfinance best practices |
+| Lender Maximum Sanction | Calculated using the lender debt ratio limit over a 60-month term | Lenders extend the loan term to 60 months to maximize the total loan amount. | Bank practices |
+| Borrower Safe Sanction | Calculated using the safe EMI limit over a 36 to 48-month term | This stops borrowers from accepting 5-year debt traps for basic consumption. | Responsible consumption lending time horizons |
+| True Annual Cost (APR) | Quoted Interest Rate + Annualized Upfront Fees (including 18% GST) | Lenders often hide 2% to 3% processing fees. The true APR calculation forces these hidden costs into the annualized rate. | RBI disclosure guidelines |
 
-$$\mathbf{\text{Recommended Safe Max EMI}} = \min(\text{Lock 1}, \text{Lock 2})$$
+## 5. Confidence Levels
 
-### 2.2 Reverse Amortization Principal Equation
-To convert a monthly EMI ceiling ($E$) into a maximum safe loan amount ($P$) at annual interest rate $R$ over $n$ months:
-$$r = \frac{R}{12 \times 100}$$
-$$P = \frac{E \cdot \left[ (1 + r)^n - 1 \right]}{r \cdot (1 + r)^n}$$
-- **Estimated Lender Range:** Computed using $E_{\text{lender}} = (I_{\text{assessed}} \times 0.55) - E_{\text{exist}}$ at $n = 60\text{ months}$.
-  *(Note: For self-employed, $I_{\text{assessed}}$ is strictly documented monthly ITR taxable income, not unverified cash turnover).*
-- **Borrower Safe Range:** Computed using $E_{\text{safe}}$ at $n = 36\text{ to }48\text{ months}$.
+| Rule or Metric | Value or Limit | Reason | Source |
+|---|---|---|---|
+| High Confidence | Known Bureau Score, Stable Income | The application has verified data to calculate tight output ranges. | Actuarial certainty principles |
+| Medium Confidence | Unknown Credit Score | The application widens the fair rate band because it lacks credit history data. | Information asymmetry discounting |
+| Low Confidence | Unknown Credit Score AND (Gig Worker or Predatory Debt) | Multiple unverified variables compound the risk. The application widens ranges significantly. | High-variance probability modeling |
 
-### 2.3 RBI-Style All-In APR
-$$\text{Upfront Deductions} = (\text{Principal} \times 0.02 \times 1.18) + \text{Documentation Charges}$$
-$$\text{Annualized Fee Impact (\%)} = \frac{\text{Upfront Deductions}}{\text{Principal} \times (\text{Tenure Months} / 12)} \times 100$$
-$$\mathbf{\text{Effective All-In APR}} = \text{Nominal Fair Rate} + \text{Annualized Fee Impact}$$
+## 6. System Limits and Unknowns (What We Do Not Know)
 
----
+To ensure the borrower receives honest advice, the application explicitly defines the limits of its knowledge. The application tells the borrower when it is guessing or using a broad market proxy.
 
-## 3. Dynamic Information-Value Architecture
-
-The questioning flow avoids fixed 3-branch classification early. It operates via a **3-Phase Deterministic State Machine**:
-
-1. **Phase 1: Universal Intake (3 Questions)**: Purpose, Amount, Age. *(Loan type is purposefully inferred later)*.
-2. **Phase 2: Financial Baseline (5 Questions)**: Income signal, Take-home pay, Existing EMIs, Living costs, Bureau score.
-3. **Phase 3: Information-Value Dynamic Loop**:
-   - The engine evaluates the current profile against output uncertainties ($\Delta \text{Verdict}, \Delta \text{Amount}, \Delta \text{Rate}, \Delta \text{Confidence}$).
-   - Every candidate question has a computed **Information Score (0 to 10)**.
-   - Questions with Score $= 0$ are pruned. Questions with Score $\ge 7$ are sequenced in descending order of information gain.
-   - The engine halts when remaining questions produce zero change in outputs.
-
-### Information-Value Question Evaluation Table:
-| Dynamic Question | Target Outputs | Asking Condition (`shouldAsk`) | Information Score |
-| :--- | :--- | :--- | :---: |
-| **Collateral Property Ownership** | Amount, Rate, Verdict | Requested $\ge$ ₹8L OR Business OR Expansion | **10 / 10** |
-| **High-Cost 30%+ App Debt** | Verdict, Rate, Confidence | Debt Consolidation OR Gig Worker OR FOIR $\ge 25\%$ | **10 / 10** |
-| **Recent Delinquency / Bounce** | Verdict, Confidence, Rate | Score Unknown OR Score < 650 OR Has App Debt | **10 / 10** |
-| **Collateral Market Valuation** | Amount, Verdict | Has Unencumbered Collateral = True | **9 / 10** |
-| **Business Operating Vintage** | Rate, Confidence, Amount | Primary Income = Self-Employed Business | **9 / 10** |
-| **Co-Applicant Income** | Amount, EMI, Verdict | (Requested / Income) > 8 OR Self-Employed | **8 / 10** |
-| **Variable Bonus Share %** | Amount, EMI | Primary Income = Salaried Corporate | **7 / 10** |
-| **Emergency Savings Months** | Verdict, Confidence | Existing FOIR $\ge 20\%$ OR Gig Worker | **7 / 10** |
-
-### 3.1 Explicit Questionnaire Stopping Criteria
-
-The engine halts questioning and transitions to assessment outputs when **ALL** of the following conditions are satisfied:
-
-| Stopping Condition | Threshold | Why | Source vs. Judgement |
-| :--- | :--- | :--- | :--- |
-| **1. Universal Baseline Minimum** | All Phase 1 (3) + Phase 2 (5) questions answered (8 total) | Without purpose, amount, age, income, existing EMI, expenses, and credit status, outputs cannot be calculated. | **Product Requirement** |
-| **2. High-Impact Risk Unresolved** | Zero remaining unasked questions with Information Score $\ge 9$ | If high-cost app debt, collateral, or vintage could alter the verdict or product route, the engine must not stop prematurely. | **My Judgement** |
-| **3. Safe Amount Interval Stability** | Borrower-safe loan range width $\le 20\%$ of ceiling | When further questions would not move the safe borrowing range by $> \pm 10\%$, questioning stops. | **My Judgement** |
-| **4. Rate Band Narrowing Floor** | Fair rate band width $\le 150\text{ bps}$ (known score) or $\le 300\text{ bps}$ (unknown score) | A known score cannot be tightened further without a formal bureau pull; an unknown score honestly retains uncertainty. | **My Judgement** |
-| **5. Unanswered Questions Marginal Utility** | Expected change in safe EMI $< ₹1,500/\text{month}$ | Prevents borrower survey fatigue when remaining variables produce statistically negligible impact on cash flow. | **My Judgement** |
-
----
-
-## 4. Inferred Product Routing Decisions
-
-The engine does not allow borrowers to stumble into predatory retail loan structures:
-
-1. **Priya (Prime Salaried, 29, Bengaluru)**
-   - *Inferred Product:* Unsecured Personal Loan.
-   - *Rationale:* Verifiable corporate salary at MNC + 780 CIBIL score unlocks prime tier-1 bank pricing (10.5%–12%).
-2. **Ravi (Kirana Store Owner, 42, Mysuru)**
-   - *Inferred Product:* **Secured Loan Against Property (LAP) / MSME Vyapar Loan**.
-   - *Rationale:* ₹15L requested on ₹35k documented ITR cannot be approved as an unsecured personal loan without punitive 17%+ interest. Unencumbered ₹45L commercial shop premises unlocks a 7-year LAP at 9.0%–10.5%, cutting monthly EMI in half.
-3. **Anita (Gig Platform Rider, 35, Hubballi)**
-   - *Inferred Product:* **MFI / Women's Self-Help Group (SHG) Debt Restructuring**.
-   - *Rationale:* Servicing ₹35k across three 30%+ predatory loan apps with a recent bounce leaves negative monthly cash flow (-₹500/mo). Taking a new ₹1.5L loan guarantees default. Route to 12%–15% SHG/MFI micro-credit to extinguish 30%+ app debt first.
-
----
-
-## 5. Model Limitations & Transparency Disclaimers
-
-1. **Estimated, Not Guaranteed:** The application presents *Estimated Lender-Eligible Ranges* derived from public credit parameters; it does not represent a legally binding sanction from any commercial institution.
-2. **Tax Deductions Omitted:** Benefits under Section 24(b) (Home loan interest) and Section 80C are not modeled.
-3. **Collateral Haircuts:** LTV (Loan-to-Value) on commercial properties is conservatively capped at 50%–60% to account for distressed liquidation variance.
+| Missing Data | System Response | Why We Do Not Know It |
+|---|---|---|
+| Actual Credit Bureau Score | The application treats an unknown score as "Uncertain," not as a default low score (e.g., 300). It widens the fair interest rate band and explicitly warns the user that checking their formal score will narrow the band. | The application does not integrate with Equifax, CIBIL, or Experian APIs to protect user privacy and avoid hard inquiries. |
+| Lender Proprietary Algorithms | The application uses broad regulatory debt-to-income limits (50% to 60%). It labels the lender sanction amount as an "Estimate." | Banks protect their exact risk models and geographic exclusion lists as trade secrets. |
+| Live Market Interest Rates | The application uses static baseline rate bands (e.g., 11.0% to 12.5% for unsecured loans) rather than daily dynamic rates. | The application does not connect to live product pricing APIs or rate aggregators. |
+| Micro-Cash Flow Timing | The application uses a monthly average for income and applies a flat reduction for gig workers. It does not track daily or weekly cash deficits. | The application does not use Account Aggregator (AA) frameworks to read live banking transactions. |
