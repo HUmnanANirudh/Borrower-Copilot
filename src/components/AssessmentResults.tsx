@@ -11,7 +11,7 @@ import {
   CoinsSwapIcon,
   ArrowRight01Icon,
   HelpCircleIcon
-} from '@hugeicons/react';
+} from './icons';
 
 interface AssessmentResultsProps {
   assessment: Assessment;

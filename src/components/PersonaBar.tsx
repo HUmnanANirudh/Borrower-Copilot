@@ -3,7 +3,7 @@
 import React from 'react';
 import { BorrowerProfile } from '@/lib/types';
 import { PERSONA_PRIYA, PERSONA_RAVI, PERSONA_ANITA } from '@/lib/personas';
-import { FlashIcon, UserIcon } from '@hugeicons/react';
+import { FlashIcon, UserIcon } from './icons';
 
 interface PersonaBarProps {
   onSelectPersona: (persona: BorrowerProfile, name: string) => void;

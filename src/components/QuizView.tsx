@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { BorrowerProfile, QuizQuestion } from '@/lib/types';
-import { ArrowLeft01Icon, ArrowRight01Icon, SparklesIcon } from '@hugeicons/react';
+import { ArrowLeft01Icon, ArrowRight01Icon, SparklesIcon } from './icons';
 
 interface QuizViewProps {
   questions: QuizQuestion[];

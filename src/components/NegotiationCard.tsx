@@ -10,7 +10,7 @@ import {
   AlertCircleIcon, 
   SparklesIcon,
   CheckmarkCircle01Icon
-} from '@hugeicons/react';
+} from './icons';
 
 interface NegotiationCardProps {
   assessment: Assessment;

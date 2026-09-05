@@ -9,7 +9,7 @@ import {
   CheckmarkCircle01Icon, 
   ArrowRight01Icon, 
   CoinsSwapIcon 
-} from '@hugeicons/react';
+} from './icons';
 
 interface QuoteComparisonModalProps {
   assessment: Assessment;

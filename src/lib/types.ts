@@ -130,6 +130,7 @@ export interface TenureOption {
 export interface StressScenario {
   type: 'income_shock' | 'rate_hike';
   title: string;
+  description?: string;
   originalFOIR: number;
   stressedFOIR: number;
   isBreached: boolean;

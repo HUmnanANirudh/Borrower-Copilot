@@ -76,13 +76,13 @@ export function deriveMetrics(facts: NormalizedFacts, profile: BorrowerProfile):
   const isOverleveraged = currentFOIR >= 35 || (expenses + existingEMI) >= (facts.totalHouseholdIncome * 0.90);
 
   // 5. Debt Distress Score (0 to 100)
-  let distressScore = 0;
-  if (facts.hasHighCostAppDebt) distressScore += 35;
-  if (facts.hasRecentBounce) distressScore += 30;
-  if (currentFOIR >= 30) distressScore += 25;
-  if (disposableCash <= 0) distressScore += 30;
-  if (facts.emergencySavingsMonths === 0) distressScore += 15;
-  distressScore = Math.min(100, distressScore);
+  let debtDistressScore = 0;
+  if (facts.hasHighCostAppDebt) debtDistressScore += 35;
+  if (facts.hasRecentBounce) debtDistressScore += 30;
+  if (currentFOIR >= 30) debtDistressScore += 25;
+  if (disposableCash <= 0) debtDistressScore += 30;
+  if (facts.emergencySavingsMonths === 0) debtDistressScore += 15;
+  debtDistressScore = Math.min(100, debtDistressScore);
 
   // 6. Collateral Coverage LTV
   const collateralCoverageLTV = facts.collateralValue > 0 

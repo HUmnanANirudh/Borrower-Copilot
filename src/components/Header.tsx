@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ShieldCheckIcon, RotateLeftIcon } from '@hugeicons/react';
+import { ShieldCheckIcon, RotateLeftIcon } from './icons';
 
 interface HeaderProps {
   onReset?: () => void;

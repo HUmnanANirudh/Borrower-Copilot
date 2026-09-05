@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ArrowRight01Icon, CheckmarkCircle01Icon, SecurityCheckIcon, CoinsSwapIcon } from '@hugeicons/react';
+import { ArrowRight01Icon, CheckmarkCircle01Icon, SecurityCheckIcon, CoinsSwapIcon } from './icons';
 
 interface HeroSectionProps {
   onStartQuiz: () => void;
