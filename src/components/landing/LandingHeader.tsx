@@ -1,12 +1,14 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowRight01Icon } from '@/components/icons';
+import Avatar from 'boring-avatars';
 
 export function LandingHeader() {
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-[#ebeae8]">
       <nav className="max-w-[1280px] mx-auto px-5 lg:px-16 h-14 flex items-center justify-between">
-        <Link href="/" className="font-display text-[20px] text-[#171717] tracking-tight">
+        <Link href="/" className="flex items-center gap-2 font-display text-[20px] text-[#171717] tracking-tight">
+          <Avatar size={26} name="BorrowIQ" variant="pixel" colors={["#5769e7", "#171717", "#f3ede7", "#52ad6e", "#d5daf7"]} />
           BorrowIQ
         </Link>
 

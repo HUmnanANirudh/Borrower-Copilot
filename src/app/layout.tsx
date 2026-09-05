@@ -8,7 +8,7 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
-  title: "BorrowIQ — Know Your Loan Before The Lender Prices It",
+  title: "BorrowIQ",
   description: "Free, private loan assessment for Indian borrowers. Get your safe borrowing limit, fair interest rate, and a one-page negotiation card — no login, no credit bureau pull.",
 };
 
