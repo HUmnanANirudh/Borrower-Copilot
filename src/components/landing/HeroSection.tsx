@@ -6,9 +6,9 @@ import { MiniatureCard } from './MiniatureCard';
 export function HeroSection() {
   return (
     <section aria-labelledby="hero-title" className="w-full py-20 lg:py-32 px-6 lg:px-16 bg-[#f3ede7]">
-      <div className="max-w-[1280px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-16 lg:gap-24">
+      <div className="max-w-[1280px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-16 lg:gap-20">
         {/* Left Editorial Copy */}
-        <div className="w-full lg:w-6/12 text-center lg:text-left flex flex-col items-center lg:items-start gap-8">
+        <div className="w-full lg:w-7/12 text-center lg:text-left flex flex-col items-center lg:items-start gap-8">
           {/* Tag Pill */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#f2f1f0] border border-[#dedcd9] text-sm font-semibold text-[#171717]">
             <SecurityCheckIcon className="w-4 h-4 text-[#5769e7]" aria-hidden="true" />
