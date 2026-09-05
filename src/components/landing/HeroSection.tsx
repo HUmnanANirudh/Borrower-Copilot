@@ -13,41 +13,43 @@ function PhoneMockup() {
         {/* In-phone UI */}
         <div className="h-full flex flex-col text-[#171717]">
           {/* Status bar */}
-          <div className="h-11 bg-[#f3ede7] flex items-end justify-center pb-1">
-            <span className="text-[10px] font-semibold text-[#5d5b59]">BorrowIQ</span>
+          <div className="h-11 bg-white border-b border-[#f0eee9] flex items-end justify-center pb-1">
+            <span className="text-[11px] font-semibold text-[#171717] tracking-tight">BorrowIQ</span>
           </div>
 
           {/* Card preview content */}
-          <div className="flex-1 bg-[#f3ede7] px-4 pt-3 pb-4 flex flex-col gap-3 overflow-hidden">
-            <div className="text-[11px] font-semibold text-[#5d5b59] uppercase tracking-wider">Your Assessment</div>
+          <div className="flex-1 bg-white px-4 pt-3 pb-4 flex flex-col gap-3 overflow-hidden">
+            <div className="text-[10px] font-semibold text-[#747371] uppercase tracking-wider">Your Assessment</div>
 
             {/* Amount card */}
-            <div className="bg-white rounded-xl p-3.5 shadow-sm">
+            <div className="bg-[#f7f6f4] rounded-xl p-3.5 border border-[#ebeae8]">
               <div className="text-[10px] text-[#5d5b59] mb-1">Safe borrowing ceiling</div>
               <div className="text-[28px] font-display font-medium text-[#171717] leading-none">₹18.5L</div>
-              <div className="text-[10px] text-[#52ad6e] font-medium mt-1">Within safe FOIR range</div>
+              <div className="text-[10px] text-[#52ad6e] font-medium mt-1 flex items-center gap-1">
+                <span>●</span> Within safe FOIR range
+              </div>
             </div>
 
             {/* Rate card */}
-            <div className="bg-white rounded-xl p-3.5 shadow-sm">
+            <div className="bg-[#f7f6f4] rounded-xl p-3.5 border border-[#ebeae8]">
               <div className="text-[10px] text-[#5d5b59] mb-1">Fair interest rate</div>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-[22px] font-display font-medium text-[#171717] leading-none">8.5%</span>
                 <span className="text-[10px] text-[#5d5b59]">– 10.2%</span>
               </div>
-              <div className="mt-2 h-1.5 bg-[#f2f1f0] rounded-full overflow-hidden">
+              <div className="mt-2 h-1.5 bg-[#e5e3de] rounded-full overflow-hidden">
                 <div className="h-full w-3/5 bg-[#5769e7] rounded-full" />
               </div>
             </div>
 
             {/* EMI card */}
-            <div className="bg-white rounded-xl p-3.5 shadow-sm">
+            <div className="bg-[#f7f6f4] rounded-xl p-3.5 border border-[#ebeae8]">
               <div className="text-[10px] text-[#5d5b59] mb-1">Estimated EMI</div>
               <div className="text-[22px] font-display font-medium text-[#171717] leading-none">₹22,400<span className="text-[10px] text-[#5d5b59] ml-1">/mo</span></div>
             </div>
 
             {/* Verdict pill */}
-            <div className="flex items-center gap-2 bg-[#f0faf2] rounded-full px-3 py-2 mt-auto">
+            <div className="flex items-center gap-2 bg-[#f0faf2] border border-[#d2edd7] rounded-full px-3 py-2 mt-auto">
               <div className="w-2 h-2 rounded-full bg-[#52ad6e]" />
               <span className="text-[10px] font-semibold text-[#253e2d]">Safe to proceed · High confidence</span>
             </div>
