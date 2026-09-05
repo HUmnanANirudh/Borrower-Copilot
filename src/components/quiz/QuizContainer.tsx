@@ -137,10 +137,9 @@ export function QuizContainer() {
   const isAiSelected = currentMeta?.source === 'ai_groq';
 
   return (
-    <div className="w-full max-w-[1280px] mx-auto px-5 lg:px-16 py-8 flex flex-col justify-between min-h-[88vh]">
+    <div className="w-full max-w-4xl mx-auto px-5 py-6 sm:py-10 flex flex-col justify-between">
       <div>
-        {/* Top Navbar */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-5">
           <Link 
             href="/"
             className="flex items-center gap-2 font-display text-[20px] text-[#171717] tracking-tight"
@@ -152,7 +151,7 @@ export function QuizContainer() {
           <div className="flex items-center gap-2">
             {isAdaptivePhase && (
               <span className="text-xs font-semibold px-3 py-1 rounded-full bg-white text-[#171717] border border-[#ebeae8]">
-                {isAiSelected ? 'AI Adaptive Analysis' : 'Adaptive Assessment'}
+                {isAiSelected ? 'AI Adaptive Mode' : 'Adaptive Underwriting'}
               </span>
             )}
             <span className="text-xs font-semibold text-[#171717] px-3 py-1 rounded-full bg-white border border-[#ebeae8]">
@@ -160,22 +159,20 @@ export function QuizContainer() {
             </span>
           </div>
         </div>
-        
-        {/* Progress Bar */}
+
+        {/* Progress bar */}
         <div 
           role="progressbar" 
           aria-valuenow={progressPercent} 
           aria-valuemin={0} 
           aria-valuemax={100}
-          className="w-full h-1.5 bg-[#dedcd9] rounded-full overflow-hidden mb-8"
+          className="w-full h-1.5 bg-[#dedcd9] rounded-full overflow-hidden mb-6"
         >
           <div 
-            className="h-full bg-[#171717] transition-all duration-300 rounded-full"
+            className="h-full bg-[#5769e7] transition-all duration-300 rounded-full"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
-
-        {/* Adaptive Rationale Banner */}
         {currentMeta?.reason && (
           <div className="mb-6 p-4 rounded-2xl bg-white border border-[#ebeae8] flex items-start gap-3">
             <div className="w-2 h-2 rounded-full bg-[#5769e7] mt-1.5 shrink-0" />
@@ -190,110 +187,68 @@ export function QuizContainer() {
           </div>
         )}
 
-        {/* Flexed Bento Grid for Assessment */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Main Question Bento Card (8 Cols) */}
-          <div className="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-10 border border-[#ebeae8] shadow-sm flex flex-col justify-between min-h-[460px]">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#171717] leading-tight tracking-tight mb-2">
-                {currentQuestion.title}
-              </h1>
-
-              <div className="py-6">
-                <InputControls 
-                  currentQuestion={currentQuestion} 
-                  currentValue={currentValue} 
-                  handleAnswer={handleAnswer} 
-                  formatINR={formatINR} 
-                />
-              </div>
-            </div>
-
-            {/* Navigation inside card */}
-            <div className="pt-6 border-t border-[#ebeae8] flex items-center justify-between gap-4">
-              {currentIndex > 0 ? (
-                <button
-                  type="button"
-                  onClick={handlePrevious}
-                  className="px-5 py-2.5 rounded-full text-xs font-semibold bg-[#f7f6f4] hover:bg-[#ebeae8] text-[#171717] cursor-pointer transition-colors"
-                >
-                  Previous
-                </button>
-              ) : (
-                <div />
-              )}
-
-              <div className="flex items-center gap-3">
-                {currentQuestion.canSkip && (
-                  <button
-                    type="button"
-                    onClick={handleSkip}
-                    className="text-xs font-semibold text-[#747371] hover:text-[#171717] px-3 py-2 cursor-pointer transition-colors"
-                  >
-                    Skip
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  disabled={isSelecting}
-                  onClick={handleNext}
-                  className="px-7 py-3 rounded-full text-xs font-semibold bg-[#5769e7] hover:bg-[#4958be] text-white cursor-pointer shadow-sm active:scale-98 transition-all disabled:opacity-75"
-                >
-                  {isSelecting ? (
-                    'Evaluating...'
-                  ) : (
-                    isAdaptivePhase && currentIndex === questionQueue.length - 1 
-                      ? 'Calculate My Position' 
-                      : 'Continue'
-                  )}
-                </button>
-              </div>
-            </div>
+        {/* Main Questionnaire Card */}
+        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#ebeae8] shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#747371]">
+              {isAdaptivePhase ? 'Underwriting Deep Dive' : 'Borrower Parameters'}
+            </span>
+            <span className="text-xs font-mono text-[#747371]">
+              Q{currentIndex + 1}
+            </span>
           </div>
 
-          {/* Live Summary Bento Column (4 Cols) */}
-          <div className="lg:col-span-4 space-y-4">
-            {/* Live Parameter Tile */}
-            <div className="bg-white rounded-3xl p-6 border border-[#ebeae8] shadow-sm space-y-4">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-[#5d5b59] block">
-                Parameters Registered
-              </span>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#171717] leading-tight tracking-tight mb-2">
+            {currentQuestion.title}
+          </h1>
 
-              <div className="space-y-2.5 text-xs">
-                <div className="p-3 rounded-xl bg-[#f7f6f4] flex justify-between">
-                  <span className="text-[#747371]">Target Loan</span>
-                  <span className="font-semibold text-[#171717]">{formatINR(profile.requestedAmount || 500000)}</span>
-                </div>
+          <div className="py-4 sm:py-6">
+            <InputControls 
+              currentQuestion={currentQuestion} 
+              currentValue={currentValue} 
+              handleAnswer={handleAnswer} 
+              formatINR={formatINR} 
+            />
+          </div>
+        </div>
+        <div className="mt-6 flex items-center justify-between gap-4">
+          {currentIndex > 0 ? (
+            <button
+              type="button"
+              onClick={handlePrevious}
+              className="px-5 py-2.5 rounded-full text-xs font-semibold bg-white border border-[#ebeae8] hover:bg-[#f7f6f4] text-[#171717] cursor-pointer transition-colors shadow-xs"
+            >
+              Previous
+            </button>
+          ) : (
+            <div />
+          )}
 
-                <div className="p-3 rounded-xl bg-[#f7f6f4] flex justify-between">
-                  <span className="text-[#747371]">Monthly Income</span>
-                  <span className="font-semibold text-[#171717]">{formatINR(profile.netMonthlyIncome || 75000)}</span>
-                </div>
+          <div className="flex items-center gap-3">
+            {currentQuestion.canSkip && (
+              <button
+                type="button"
+                onClick={handleSkip}
+                className="text-xs font-semibold text-[#747371] hover:text-[#171717] px-3 py-2 cursor-pointer transition-colors"
+              >
+                Skip
+              </button>
+            )}
 
-                <div className="p-3 rounded-xl bg-[#f7f6f4] flex justify-between">
-                  <span className="text-[#747371]">Existing EMIs</span>
-                  <span className="font-semibold text-[#171717]">{formatINR(profile.existingMonthlyEMI || 0)}</span>
-                </div>
-
-                <div className="p-3 rounded-xl bg-[#f7f6f4] flex justify-between">
-                  <span className="text-[#747371]">Credit Score</span>
-                  <span className="font-semibold text-[#171717]">
-                    {profile.creditScoreStatus === '750_plus' ? '750+' : profile.creditScoreStatus === 'unknown' ? 'Unknown' : profile.creditScoreStatus || 'Evaluating'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Privacy Tile */}
-            <div className="bg-white rounded-3xl p-6 border border-[#ebeae8] shadow-sm text-xs space-y-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-[#5d5b59] block">
-                Privacy Standard
-              </span>
-              <p className="text-[#5d5b59] leading-relaxed">
-                Calculations execute entirely in your browser. No credit bureau pulls, no telephone inquiries, and zero database tracking.
-              </p>
-            </div>
+            <button
+              type="button"
+              disabled={isSelecting}
+              onClick={handleNext}
+              className="px-7 py-3 rounded-full text-xs font-semibold bg-[#5769e7] hover:bg-[#4958be] text-white cursor-pointer shadow-sm active:scale-98 transition-all disabled:opacity-75"
+            >
+              {isSelecting ? (
+                'Evaluating...'
+              ) : (
+                isAdaptivePhase && currentIndex === questionQueue.length - 1 
+                  ? 'Calculate My Position' 
+                  : 'Continue'
+              )}
+            </button>
           </div>
         </div>
       </div>

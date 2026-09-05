@@ -28,12 +28,12 @@ export function InputControls({
               onClick={() => handleAnswer(currentQuestion.id as keyof BorrowerProfile, opt.value)}
               className={`w-full p-4 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between ${
                 isSelected
-                  ? 'border-[#171717] bg-[#f7f6f4] shadow-xs'
+                  ? 'border-[#5769e7] bg-[#5769e7]/5 shadow-xs'
                   : 'border-[#ebeae8] bg-white hover:bg-[#f7f6f4]'
               }`}
             >
               <div>
-                <span className={`text-[14px] font-semibold ${isSelected ? 'text-[#171717]' : 'text-[#171717]'}`}>
+                <span className="text-[14px] font-semibold text-[#171717]">
                   {opt.label}
                 </span>
                 {opt.description && (
@@ -41,7 +41,7 @@ export function InputControls({
                 )}
               </div>
               <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ml-3 ${
-                isSelected ? 'border-[#171717] bg-[#171717]' : 'border-[#dedcd9] bg-white'
+                isSelected ? 'border-[#5769e7] bg-[#5769e7]' : 'border-[#dedcd9] bg-white'
               }`}>
                 {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
               </div>
@@ -73,7 +73,7 @@ export function InputControls({
           step={currentQuestion.step ?? 10000}
           value={Number(currentValue)}
           onChange={(e) => handleAnswer(currentQuestion.id as keyof BorrowerProfile, Number(e.target.value))}
-          className="w-full h-2 bg-[#ebeae8] rounded-lg appearance-none cursor-pointer accent-[#171717]"
+          className="w-full h-2 bg-[#ebeae8] rounded-lg appearance-none cursor-pointer accent-[#5769e7]"
         />
 
         <div className="flex justify-between text-xs text-[#747371] font-medium">
