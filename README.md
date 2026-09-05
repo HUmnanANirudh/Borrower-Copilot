@@ -84,9 +84,3 @@ The application does not use a backend database. It does not store personal data
 
 ### 4. AI Negotiation Integration
 The application integrates the Vercel AI SDK and the Groq API (Llama 3.3 model). The system securely passes the evaluated assessment parameters to the AI model. The AI operates as a localized negotiation coach. The borrower can ask contextual questions (e.g., "How do I argue if the lender adds a mandatory insurance fee?") and receive immediate, customized advice based on their specific financial profile.
-
-### 3. Start the Server
-```bash
-bun run dev
-```
-Open http://localhost:3000 in your web browser.
