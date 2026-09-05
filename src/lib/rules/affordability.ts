@@ -3,11 +3,23 @@ import { BorrowerProfile } from '../types';
 /**
  * Calculates Borrower-Safe Affordability limits.
  *
- * CORE PHILOSOPHY & RBI ALIGNMENT:
- * - Banks look at gross top-line income and stretch FOIR to 50%-60%, ignoring living realities.
- * - Borrower-Safe Affordability enforces a two-lock safety mechanism:
- *   1. Safe FOIR Lock: Capped at 35% of true net income (reduced for instability).
- *   2. Free Cash-Flow Lock: Net Income - Essential Expenses - Existing EMIs - Emergency Reserve.
+ * RIGOROUS TWO-LOCK CASH-FLOW ARCHITECTURE:
+ *
+ * Lock 1 (Cash-Flow Floor):
+ *   Disposable Cash = Net Monthly Income (including co-applicant)
+ *                   - Essential Household Living Expenses
+ *                   - Ongoing Existing EMIs
+ *   Untouchable Buffer = 10% of Net Income (liquid contingency)
+ *   Cash-Flow Ceiling = max(0, Disposable Cash - Untouchable Buffer)
+ *
+ * Lock 2 (Safe FOIR Cap):
+ *   Max Total Debt Obligation = Effective Net Income × Safe FOIR%
+ *   Safe FOIR Cap:
+ *     - Standard Salaried / Established Business: 35%
+ *     - Irregular Gig / Informal: 25% (protects from volatile platform earnings)
+ *   FOIR Ceiling = max(0, Max Total Debt Obligation - Ongoing Existing EMIs)
+ *
+ * Final Safe EMI Ceiling = min(Lock 1, Lock 2)
  */
 export function calculateSafeAffordability(profile: BorrowerProfile): {
   safeMaxEMI: number;
@@ -15,56 +27,57 @@ export function calculateSafeAffordability(profile: BorrowerProfile): {
   currentFOIR: number;
   isOverleveraged: boolean;
   safeFOIRCapPercent: number;
-  disposableIncome: number;
+  disposableCash: number;
+  totalHouseholdIncome: number;
 } {
-  const netIncome = Math.max(0, profile.netMonthlyIncome);
+  const primaryIncome = Math.max(0, profile.netMonthlyIncome);
+  const coIncome = Math.max(0, profile.coApplicantIncome || 0);
+  const totalHouseholdIncome = primaryIncome + coIncome;
+
   const existingEMI = Math.max(0, profile.existingMonthlyEMI);
-  const expenses = Math.max(0, profile.householdExpenses);
+  const expenses = Math.max(0, profile.householdLivingExpenses);
 
   // Current FOIR (Existing Debt Burden)
-  const currentFOIR = netIncome > 0 ? (existingEMI / netIncome) * 100 : 100;
+  const currentFOIR = totalHouseholdIncome > 0 ? (existingEMI / totalHouseholdIncome) * 100 : 100;
 
-  // Safe FOIR baseline: 35%
+  // Variable Pay Haircut for Salaried:
+  // If variable bonus exceeds 15% of annual compensation, haircut that portion by 50%
+  let effectiveIncome = totalHouseholdIncome;
+  if (profile.variablePayPortionPercent && profile.variablePayPortionPercent > 15) {
+    const variableAmount = (profile.variablePayPortionPercent / 100) * primaryIncome;
+    effectiveIncome = totalHouseholdIncome - (variableAmount * 0.5);
+  }
+
+  // Safe FOIR standard:
+  // 35% for regular salaried/business, 25% for gig/informal earnings
   let safeFOIRCapPercent = 35;
-  if (profile.jobStability === 'frequent_switches' || profile.incomeType === 'gig_freelance') {
-    safeFOIRCapPercent = 25; // Gig/informal cash flows fluctuate; cap debt at 25%
-  } else if (profile.jobStability === 'new_employment_sub_6m') {
-    safeFOIRCapPercent = 28;
-  } else if (profile.jobStability === 'recent_switch_6m_1yr') {
-    safeFOIRCapPercent = 30;
+  if (profile.primaryIncomeSignal === 'gig_freelance' || profile.primaryIncomeSignal === 'salaried_informal') {
+    safeFOIRCapPercent = 25;
   }
 
-  // Adjust for Variable Pay Haircut:
-  // Salaried receiving variable pay/bonus gets a 50% haircut on the variable portion
-  let adjustedNetIncome = netIncome;
-  if (profile.variablePayPercent && profile.variablePayPercent > 15) {
-    const variablePortion = (profile.variablePayPercent / 100) * netIncome;
-    adjustedNetIncome = netIncome - (variablePortion * 0.5);
-  }
+  // Lock 1: Cash-Flow Floor
+  const disposableCash = Math.max(0, effectiveIncome - expenses - existingEMI);
+  const untouchableMonthlyBuffer = effectiveIncome * 0.10; // 10% liquidity cushion
+  const cashFlowCeiling = Math.max(0, disposableCash - untouchableMonthlyBuffer);
 
-  // Lock 1: Max debt capacity under safe FOIR
-  const totalSafeDebtCapacity = (adjustedNetIncome * safeFOIRCapPercent) / 100;
-  const safeEMICapFromFOIR = Math.max(0, totalSafeDebtCapacity - existingEMI);
+  // Lock 2: FOIR Cap
+  const maxAllowableDebtServicing = (effectiveIncome * safeFOIRCapPercent) / 100;
+  const foirCeiling = Math.max(0, maxAllowableDebtServicing - existingEMI);
 
-  // Lock 2: Free Cash Flow Lock
-  // Reserve 10% of monthly income as untouchable emergency cash
-  const monthlyReserveBuffer = adjustedNetIncome * 0.10;
-  const disposableIncome = Math.max(0, adjustedNetIncome - expenses - existingEMI);
-  const uncommittedCashFlow = Math.max(0, disposableIncome - monthlyReserveBuffer);
-
-  // The borrower-safe EMI ceiling is the tighter of the two locks
-  const safeMaxEMI = Math.floor(Math.min(safeEMICapFromFOIR, uncommittedCashFlow));
+  // Safe EMI is strictly the tighter of the two locks:
+  const safeMaxEMI = Math.floor(Math.min(cashFlowCeiling, foirCeiling));
 
   // Overleveraged check:
-  // If current existing EMI alone is >= 35%, or expenses + existing EMI exceeds 90% of income
-  const isOverleveraged = currentFOIR >= 35 || (existingEMI + expenses) >= (netIncome * 0.92);
+  // Existing EMI >= 35% of income, or living costs + existing debt consumes >= 90% of income
+  const isOverleveraged = currentFOIR >= 35 || (expenses + existingEMI) >= (totalHouseholdIncome * 0.90);
 
   return {
     safeMaxEMI,
-    uncommittedCashFlow,
+    uncommittedCashFlow: cashFlowCeiling,
     currentFOIR,
     isOverleveraged,
     safeFOIRCapPercent,
-    disposableIncome
+    disposableCash,
+    totalHouseholdIncome
   };
 }

@@ -1,85 +1,114 @@
 # Borrower Copilot — Financial Rules & Model Governance (`RULES.md`)
 
-> **Status:** Authoritative Contract for `lib/rules/*`  
-> **Jurisdiction:** Indian Retail & Micro-Business Lending (INR ₹)  
-> **Design Thesis:** Lenders underwrite for their risk and profit (pushing 50%–60% FOIR and 5-year tenures). Borrower Copilot underwrites strictly for borrower solvency, disposable cash-flow preservation, and fair negotiation leverage.
+> **Status:** Authoritative Contract for `src/lib/rules/*`  
+> **Architecture:** Deterministic Information-Value Assessment Engine (Zero-LLM Authority)  
+> **Jurisdiction:** Indian Retail, Micro-Business, and Informal Debt Underwriting (INR ₹)  
+> **Core Principle:** Lenders underwrite for their risk and profit (pushing 50%–60% FOIR and 60-month tenures). Borrower Copilot underwrites strictly for borrower solvency, double-lock cash-flow protection, and truthful negotiation leverage.
 
 ---
 
 ## 1. Master Rule Ledger
 
-Every rule, threshold, band, and assumption used in the calculations is cataloged below, explicitly categorizing whether it is derived from formal regulatory / bank sources or financial engineering judgement.
+Every rule, formula, threshold, and assumption is cataloged below, explicitly categorizing whether it is derived from formal regulatory / bank sources or financial engineering judgement.
 
-| Parameter / Rule | Value / Threshold | Why It Exists | Source vs. My Judgement |
+| Rule / Parameter | Exact Value & Formula | Why It Exists | Source vs. My Judgement |
 | :--- | :--- | :--- | :--- |
-| **Borrower Safe FOIR Ceiling** | **35% of Net Monthly Income** | Protects borrower from debt distress; ensures remaining 65% handles rent, inflation, schooling, and emergencies. | **My Judgement** (Conservative counter-weight to bank 50%+ standards). |
-| **Lender Aggressive FOIR** | **50% – 60% of Net Income** | Standard Indian commercial bank & NBFC underwriting ceiling used to calculate sanctioned loan eligibility. | **Source-backed** (Standard SBI / HDFC / ICICI personal loan credit policy). |
-| **Gig / Informal FOIR Haircut** | **Cap reduced to 25%** | Irregular gig earnings and platform pay exhibit high volatility; debt burden above 25% causes default cascades. | **My Judgement** (Derived from microfinance repayment volatility observations). |
-| **Salaried Variable Pay Haircut** | **50% deduction on >15% variable pay** | Bonuses and performance incentives are uncommitted; lenders also discount annual bonuses when sizing fixed monthly liabilities. | **Source-backed** (Bank underwriting guidelines for variable compensation). |
-| **Untouchable Monthly Buffer** | **10% of Net Monthly Income** | Mandatory liquid reserve deducted before computing safe EMI to prevent cash exhaustion on salary day. | **My Judgement** (Prudent financial planning buffer). |
-| **Overleveraged Rejection Trigger** | **Current FOIR ≥ 35% OR Expenses + EMIs ≥ 92%** | If current debt already eats over a third of income, any new debt forces the household into negative cash flow. | **My Judgement** (Defensive default prevention trigger). |
-| **Prime Credit Tier (Score 750+)** | **10.5% – 12.0% p.a. (Rate reduction -75 bps)** | Borrowers with 750+ CIBIL hold maximum bargaining power; qualifies for Tier-1 private and public sector bank rates. | **Source-backed** (Current Indian market rates for prime unsecured personal loans). |
-| **Average Credit Tier (650–749)** | **12.5% – 15.0% p.a. (+100 to +250 bps markup)** | Sits in sub-prime / Tier-2 NBFC risk bracket; higher risk premium charged. | **Source-backed** (NBFC retail unsecured lending card rates). |
-| **Poor Credit Tier (<650)** | **16.0% – 21.0% p.a. (+400 to +650 bps markup)** | Borderline rejection by banks; forces reliance on high-cost NBFCs or fintech apps. | **Source-backed** (Fintech unsecured personal loan rates). |
-| **Unknown Credit Score Treatment** | **Widen band by 300 bps (11.5%–15.0%) + Downgrade Confidence** | **UNKNOWN IS NEVER TREATED AS ZERO**. Bureau absence introduces underwriting variance; widening the band transparently informs the borrower of pricing uncertainty. | **My Judgement** (Core transparency mandate). |
-| **Secured / LAP Rate Floor** | **8.75% – 10.25% p.a.** | Loans against unencumbered residential or commercial property reduce lender risk to near zero; saves 500–800 bps vs unsecured. | **Source-backed** (Indian retail Loan Against Property rack rates). |
-| **All-In Processing Fee** | **2.0% + 18% GST (Net ~2.36%)** | Headline interest ignores upfront deductions; banks deduct processing fee at disbursement, lowering effective principal received. | **Source-backed** (RBI Fair Practices Code & prevailing bank schedules). |
-| **Effective APR Equation** | **Nominal Rate + (Upfront Fees / Principal / Tenure Years)** | Computes the true annualized percentage rate factoring in processing fee, GST, and documentation charges. | **Source-backed** (RBI Master Direction on Regulatory Framework for Microfinance & Digital Lending). |
-| **Lender Sanction Inflation Ratio** | **Flag when Lender Sanction > Safe Amount × 1.25** | Warns the borrower when bank eligibility is artificially inflated via long tenure (60 months) to trap borrower in high interest. | **My Judgement** (Anti-predatory alert trigger). |
-| **Income Shock Stress Test** | **20% drop in net income** | Simulates job loss, maternity/paternity gap, illness, or SME revenue drop to verify whether FOIR breaches 50%. | **My Judgement** (Macroeconomic resilience benchmark). |
-| **Recent Delinquency / Bounce Rule** | **Instant `DON'T BORROW YET` if bounced in past 6m** | A borrower with an active bounce will be rejected by prime banks or subjected to predatory 30%+ pricing. Taking new debt accelerates default. | **Source-backed** (DPD / 30+ delinquency gating in bureau algorithms). |
-| **Informal High-Cost Debt Rule** | **Mandatory Restructure Flag if 30%+ app debt exists** | Borrowing retail personal loans while holding 30%+ payday/app debt is toxic. Borrower must route to MFI/SHG debt consolidation. | **My Judgement** (Debt counseling best practice). |
+| **Cash-Flow Floor (Lock 1)** | $\text{Floor} = \max(0, \text{Net Income} - \text{Expenses} - \text{Existing EMIs} - (0.10 \times \text{Net Income}))$ | Ensures borrower retains a 10% untouchable liquid contingency and never enters negative monthly cash flow. | **My Judgement** (Prudent financial solvency boundary). |
+| **Safe FOIR Ceiling (Lock 2)** | $\text{FOIR} = \frac{\text{Existing EMI} + \text{New EMI}}{\text{Net Monthly Income}} \le 35\%$ | Protects household from over-leverage; prevents debt servicing from cannibalizing nutrition, rent, and education. | **My Judgement** (Conservative counter-weight to bank 50%+ standards). |
+| **Gig / Informal Safe FOIR Cap** | $\text{Cap reduced to } \mathbf{25\%}$ | Gig platform earnings and informal micro-businesses fluctuate significantly; debt above 25% leads to default cascades. | **My Judgement** (Observed volatility in platform rider incomes). |
+| **Salaried Variable Pay Haircut** | $\text{Haircut} = \mathbf{50\%} \text{ deduction on variable component if } > 15\%$ | Annual bonuses and quarterly incentives are uncommitted; cannot be relied upon to service fixed monthly EMIs. | **Source-backed** (Prevailing Indian commercial bank credit policies). |
+| **Estimated Lender Range FOIR** | $\text{Lender FOIR} = \mathbf{50\%} \text{ to } \mathbf{60\%}$ | Public underwriting benchmark used by Indian private and public sector banks to size maximum sanctioned loan eligibility. | **Source-backed** (HDFC Bank / SBI / ICICI retail lending credit manuals). |
+| **Prime Credit Tier (Score 750+)** | $\mathbf{10.5\% – 12.0\% \text{ p.a.}} \quad (\text{Rate reduction } -75\text{ bps})$ | Borrowers with 750+ CIBIL score carry negligible statistical default risk; qualifies for tier-1 rack rates. | **Source-backed** (Current Indian market rates for prime unsecured personal credit). |
+| **Average Credit Tier (650–749)** | $\mathbf{12.5\% – 15.0\% \text{ p.a.}} \quad (+100 \text{ to } +250\text{ bps risk premium})$ | Sub-prime / Tier-2 NBFC risk bracket; higher cost of capital passed onto borrower. | **Source-backed** (NBFC retail unsecured lending rate schedules). |
+| **Poor Credit Tier (<650)** | $\mathbf{16.0\% – 21.0\% \text{ p.a.}} \quad (+400 \text{ to } +650\text{ bps markup})$ | High risk of near-term delinquency; forces borrower into high-cost fintech/NBFC channels. | **Source-backed** (Fintech retail loan rack cards). |
+| **Unknown Credit Score Treatment** | $\mathbf{\text{Widen fair band by } +75\text{ to }+350\text{ bps}} + \mathbf{\text{Downgrade Confidence}}$ | **UNKNOWN IS NEVER TREATED AS ZERO OR 300**. Missing bureau history means high lender underwriting variance, not automatic poor credit. | **My Judgement** (Honest uncertainty mandate). |
+| **Business Vintage Mitigation** | $\mathbf{\text{Rate credit } -50\text{ bps}} \text{ if operating vintage } \ge 10\text{ years}$ | Long survival (e.g. Ravi's 14-year kirana store) proves cash-flow resilience, offsetting the absence of a formal bureau score. | **My Judgement** (SME underwriting heuristic). |
+| **Secured LAP Rate Floor** | $\mathbf{9.0\% – 10.5\% \text{ p.a.}}$ | Unencumbered property collateral reduces lender loss-given-default to near zero; saves 600–800 bps vs unsecured personal credit. | **Source-backed** (Indian retail Loan Against Property rack rates). |
+| **All-In Processing Fee** | $\mathbf{2.0\%} \text{ of Principal} + \mathbf{18\% \text{ GST}} \quad (\text{Net } 2.36\%)$ | Headline rates omit upfront fees; processing fees are deducted at disbursement, reducing actual funds received. | **Source-backed** (RBI Fair Practices Code & prevailing bank fee structures). |
+| **Effective APR Equation** | $\text{APR} = \text{Nominal Rate} + \left( \frac{\text{Upfront Fees}}{\text{Principal} \times (\text{Tenure} / 12)} \times 100 \right)$ | Computes true annualized cost accounting for upfront processing fees, documentation, and GST. | **Source-backed** (RBI Master Direction on Regulatory Framework for Digital Lending). |
+| **Sanction Inflation Alert** | $\text{Triggered when } \text{Lender Range Maximum} > \text{Safe Amount} \times 1.25$ | Warns borrower when bank eligibility is inflated via 60-month tenures to trap the customer into excessive interest. | **My Judgement** (Anti-predatory alert trigger). |
+| **Income Shock Stress Test** | $\mathbf{20\%} \text{ reduction in net monthly household income}$ | Simulates financial stability if take-home pay or business revenue decreases by 20% (illness, business slowdown). | **My Judgement** (Macroeconomic resilience benchmark). |
+| **Compounded Distress Rejection** | $\text{Instant } \mathbf{DON'T BORROW YET} \text{ if } \text{App Debt} + \text{Bounce} + \text{Deficit}$ | A single accidental bounce with savings is manageable; but high-cost 30%+ app debt + recent bounce + deficit triggers default. | **My Judgement** (Defensive default prevention trigger). |
 
 ---
 
-## 2. Mathematical Formulations
+## 2. Mathematical Formulations & Exact Formulas
 
-### 2.1 Two-Lock Borrower Affordability
+### 2.1 Double-Lock Borrower Affordability
 Given:
-- $I = \text{Net Monthly Income}$
-- $E_{\text{exist}} = \text{Current Existing EMIs}$
-- $H = \text{Household Living Expenses}$
-- $\text{Cap}_{\text{FOIR}} = 35\%$ (or $25\%$ for gig / unstable profiles)
+- $I_{\text{primary}} = \text{Primary Net Monthly Income}$
+- $I_{\text{co}} = \text{Verified Co-Applicant Monthly Income}$
+- $I_{\text{total}} = I_{\text{primary}} + I_{\text{co}}$
+- $E_{\text{exist}} = \text{Ongoing Existing Monthly EMIs}$
+- $H = \text{Essential Household Living Expenses}$
+- $\text{Buffer} = I_{\text{total}} \times 0.10 \quad (\text{Untouchable } 10\% \text{ contingency reserve})$
+- $\text{Cap}_{\text{FOIR}} = 35\% \quad (\text{or } 25\% \text{ for gig / informal profiles})$
 
-$$\text{Lock 1 (Safe FOIR)} = \max\left(0, (I \times \text{Cap}_{\text{FOIR}}) - E_{\text{exist}}\right)$$
+$$\text{Lock 1 (Cash-Flow Floor)} = \max\left(0, I_{\text{total}} - H - E_{\text{exist}} - \text{Buffer}\right)$$
 
-$$\text{Lock 2 (Cash Flow)} = \max\left(0, I - H - E_{\text{exist}} - (I \times 0.10)\right)$$
+$$\text{Lock 2 (Safe FOIR Ceiling)} = \max\left(0, (I_{\text{total}} \times \text{Cap}_{\text{FOIR}}) - E_{\text{exist}}\right)$$
 
-$$\text{Safe Max EMI Ceiling} = \min(\text{Lock 1}, \text{Lock 2})$$
+$$\mathbf{\text{Recommended Safe Max EMI}} = \min(\text{Lock 1}, \text{Lock 2})$$
 
-### 2.2 Reverse Amortization Principal Formula
+### 2.2 Reverse Amortization Principal Equation
 To convert a monthly EMI ceiling ($E$) into a maximum safe loan amount ($P$) at annual interest rate $R$ over $n$ months:
 $$r = \frac{R}{12 \times 100}$$
 $$P = \frac{E \cdot \left[ (1 + r)^n - 1 \right]}{r \cdot (1 + r)^n}$$
-- **Lender Sanction:** Computed with $E_{\text{lender}} = (I \times 0.55) - E_{\text{exist}}$ at $n = 60\text{ months}$.
-- **Borrower Safe Amount:** Computed with $E_{\text{safe}}$ at $n = 36\text{ to }48\text{ months}$.
+- **Estimated Lender Range:** Computed using $E_{\text{lender}} = (I_{\text{assessed}} \times 0.55) - E_{\text{exist}}$ at $n = 60\text{ months}$.
+  *(Note: For self-employed, $I_{\text{assessed}}$ is strictly documented monthly ITR taxable income, not unverified cash turnover).*
+- **Borrower Safe Range:** Computed using $E_{\text{safe}}$ at $n = 36\text{ to }48\text{ months}$.
 
 ### 2.3 RBI-Style All-In APR
-$$\text{Upfront Deductions} = (\text{Principal} \times 0.02 \times 1.18) + \text{DocCharges}$$
+$$\text{Upfront Deductions} = (\text{Principal} \times 0.02 \times 1.18) + \text{Documentation Charges}$$
 $$\text{Annualized Fee Impact (\%)} = \frac{\text{Upfront Deductions}}{\text{Principal} \times (\text{Tenure Months} / 12)} \times 100$$
-$$\text{Effective APR} = \text{Nominal Fair Rate} + \text{Annualized Fee Impact}$$
+$$\mathbf{\text{Effective All-In APR}} = \text{Nominal Fair Rate} + \text{Annualized Fee Impact}$$
 
 ---
 
-## 3. Product Routing Architecture
+## 3. Dynamic Information-Value Architecture
 
-The rules engine prevents borrowers from blindly applying for the wrong loan instrument:
+The questioning flow avoids fixed 3-branch classification early. It operates via a **3-Phase Deterministic State Machine**:
 
-1. **The Prime Salaried Path (e.g., Priya)**
-   - Unsecured personal loan at prime rates (10.5%–12%).
-   - Warning issued against 60-month loan stretching.
-2. **The Small Business / Collateral Path (e.g., Ravi)**
-   - Reject/Warn against ₹15L unsecured personal loan (ITR declared income ₹35k/mo cannot support ₹15L unsecured; banks will either reject or quote predatory 18%+).
-   - **Route to Secured LAP**: Use unencumbered ₹45L shop premises to secure ₹15L at 9.0%–10.5% for 7–10 years.
-3. **The Informal Overleveraged Path (e.g., Anita)**
-   - Rejection of new debt (`DON'T BORROW YET`).
-   - Rationale: Servicing 30%+ predatory payday apps with an active bounce means a new ₹1.5L loan will cause total insolvency.
-   - Route to debt consolidation / SHG / MFI loan to retire high-cost debt first.
+1. **Phase 1: Universal Intake (3 Questions)**: Purpose, Amount, Age. *(Loan type is purposefully inferred later)*.
+2. **Phase 2: Financial Baseline (5 Questions)**: Income signal, Take-home pay, Existing EMIs, Living costs, Bureau score.
+3. **Phase 3: Information-Value Dynamic Loop**:
+   - The engine evaluates the current profile against output uncertainties ($\Delta \text{Verdict}, \Delta \text{Amount}, \Delta \text{Rate}, \Delta \text{Confidence}$).
+   - Every candidate question has a computed **Information Score (0 to 10)**.
+   - Questions with Score $= 0$ are pruned. Questions with Score $\ge 7$ are sequenced in descending order of information gain.
+   - The engine halts when remaining questions produce zero change in outputs.
+
+### Information-Value Question Evaluation Table:
+| Dynamic Question | Target Outputs | Asking Condition (`shouldAsk`) | Information Score |
+| :--- | :--- | :--- | :---: |
+| **Collateral Property Ownership** | Amount, Rate, Verdict | Requested $\ge$ ₹8L OR Business OR Expansion | **10 / 10** |
+| **High-Cost 30%+ App Debt** | Verdict, Rate, Confidence | Debt Consolidation OR Gig Worker OR FOIR $\ge 25\%$ | **10 / 10** |
+| **Recent Delinquency / Bounce** | Verdict, Confidence, Rate | Score Unknown OR Score < 650 OR Has App Debt | **10 / 10** |
+| **Collateral Market Valuation** | Amount, Verdict | Has Unencumbered Collateral = True | **9 / 10** |
+| **Business Operating Vintage** | Rate, Confidence, Amount | Primary Income = Self-Employed Business | **9 / 10** |
+| **Co-Applicant Income** | Amount, EMI, Verdict | (Requested / Income) > 8 OR Self-Employed | **8 / 10** |
+| **Variable Bonus Share %** | Amount, EMI | Primary Income = Salaried Corporate | **7 / 10** |
+| **Emergency Savings Months** | Verdict, Confidence | Existing FOIR $\ge 20\%$ OR Gig Worker | **7 / 10** |
 
 ---
 
-## 4. Model Limitations & Disclaimers
+## 4. Inferred Product Routing Decisions
 
-1. **Tax Implications:** The engine does not account for Section 24(b) or Section 80C tax deductions available on specific home or education loans.
-2. **Prepayment Penalty Variability:** Floating rate loans to individual borrowers have zero foreclosure charges under RBI mandates, but fixed rate and commercial loans may carry 2%–4% prepayment penalties.
-3. **Property Valuation Discount:** Collateral valuation is assumed at 60%–65% Loan-to-Value (LTV) for commercial premises and 75% for residential properties.
+The engine does not allow borrowers to stumble into predatory retail loan structures:
+
+1. **Priya (Prime Salaried, 29, Bengaluru)**
+   - *Inferred Product:* Unsecured Personal Loan.
+   - *Rationale:* Verifiable corporate salary at MNC + 780 CIBIL score unlocks prime tier-1 bank pricing (10.5%–12%).
+2. **Ravi (Kirana Store Owner, 42, Mysuru)**
+   - *Inferred Product:* **Secured Loan Against Property (LAP) / MSME Vyapar Loan**.
+   - *Rationale:* ₹15L requested on ₹35k documented ITR cannot be approved as an unsecured personal loan without punitive 17%+ interest. Unencumbered ₹45L commercial shop premises unlocks a 7-year LAP at 9.0%–10.5%, cutting monthly EMI in half.
+3. **Anita (Gig Platform Rider, 35, Hubballi)**
+   - *Inferred Product:* **MFI / Women's Self-Help Group (SHG) Debt Restructuring**.
+   - *Rationale:* Servicing ₹35k across three 30%+ predatory loan apps with a recent bounce leaves negative monthly cash flow (-₹500/mo). Taking a new ₹1.5L loan guarantees default. Route to 12%–15% SHG/MFI micro-credit to extinguish 30%+ app debt first.
+
+---
+
+## 5. Model Limitations & Transparency Disclaimers
+
+1. **Estimated, Not Guaranteed:** The application presents *Estimated Lender-Eligible Ranges* derived from public credit parameters; it does not represent a legally binding sanction from any commercial institution.
+2. **Tax Deductions Omitted:** Benefits under Section 24(b) (Home loan interest) and Section 80C are not modeled.
+3. **Collateral Haircuts:** LTV (Loan-to-Value) on commercial properties is conservatively capped at 50%–60% to account for distressed liquidation variance.

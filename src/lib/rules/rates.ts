@@ -3,9 +3,10 @@ import { BorrowerProfile, ConfidenceLevel } from '../types';
 /**
  * Calculates fair market interest rate bands and expected lender quotes.
  * 
- * CORE RULE:
- * Credit Score = Unknown must NEVER be converted to 0 or treated as a rejection.
- * Instead, it widens the fair-rate band and flags Low/Medium confidence.
+ * CORE PRINCIPLE:
+ * - Credit Score = Unknown is NOT modeled as 300.
+ * - Unknown bureau history transparently widens the fair-rate band and downgrades confidence.
+ * - Business vintage / stability provides measurable mitigating impact.
  */
 export function calculateFairRates(profile: BorrowerProfile): {
   fairRateRange: [number, number];
@@ -16,91 +17,83 @@ export function calculateFairRates(profile: BorrowerProfile): {
 } {
   const confidenceReasons: string[] = [];
 
-  // Base rate by loan type
+  // 1. Base rate by inferred security
   let baseMin = 11.0;
   let baseMax = 12.5;
 
-  if (profile.loanType === 'secured_property_lap' || profile.hasCollateralProperty) {
-    baseMin = 8.75;
-    baseMax = 10.25;
-  } else if (profile.loanType === 'business_working_capital') {
-    baseMin = 13.0;
-    baseMax = 16.0;
-  } else if (profile.loanType === 'gold_asset_loan') {
-    baseMin = 8.5;
-    baseMax = 10.0;
+  if (profile.hasUnencumberedCollateral && (profile.collateralEstimatedValue || 0) >= 2000000) {
+    baseMin = 9.0;
+    baseMax = 10.5;
+    confidenceReasons.push('Unencumbered property collateral unlocks prime secured LAP pricing.');
   }
 
-  // Adjust by Credit Score Band
+  // 2. Adjust by Credit Bureau Status
   let scoreAdjustmentMin = 0;
   let scoreAdjustmentMax = 0;
-  let scoreConfidencePenalty = false;
 
-  switch (profile.creditScoreBand) {
+  switch (profile.creditScoreStatus) {
     case '750_plus':
       scoreAdjustmentMin = -0.75;
       scoreAdjustmentMax = -0.50;
-      confidenceReasons.push('Strong credit score (750+) secures prime bank pricing tier.');
+      confidenceReasons.push('Strong credit score (750+) qualifies for tier-1 prime bank rates.');
       break;
     case '700_749':
       scoreAdjustmentMin = 0.5;
       scoreAdjustmentMax = 1.0;
-      confidenceReasons.push('Good credit profile (700-749) qualifies for competitive rates.');
+      confidenceReasons.push('Good credit score (700–749) qualifies for competitive pricing.');
       break;
     case '650_699':
       scoreAdjustmentMin = 2.0;
       scoreAdjustmentMax = 3.5;
-      confidenceReasons.push('Average credit (650-699) attracts sub-prime risk premium from NBFCs.');
+      confidenceReasons.push('Sub-prime credit score (650–699) incurs standard NBFC risk premium.');
       break;
     case 'below_650':
-      scoreAdjustmentMin = 4.0;
-      scoreAdjustmentMax = 6.5;
-      confidenceReasons.push('Low credit score (<650) risks punitive pricing or rejection.');
+      scoreAdjustmentMin = 4.5;
+      scoreAdjustmentMax = 7.0;
+      confidenceReasons.push('Low credit score (<650) incurs high risk pricing from fintech/NBFCs.');
       break;
     case 'unknown':
     default:
-      // Unknown credit score: Widen band!
-      scoreAdjustmentMin = 0.5;
+      // Unknown credit score: Widen band without pretending a score exists
+      scoreAdjustmentMin = 0.75;
       scoreAdjustmentMax = 3.5;
-      scoreConfidencePenalty = true;
-      confidenceReasons.push('Credit score is unknown; rate band is widened by 300 bps to account for bureau risk.');
+      confidenceReasons.push('Credit bureau history is unknown; fair rate band is widened to reflect underwriting uncertainty.');
       break;
   }
 
-  // Adjust by Employment & Stability
-  let employmentAdjustment = 0;
-  if (profile.incomeType === 'salaried_corporate') {
-    employmentAdjustment = 0;
-  } else if (profile.incomeType === 'self_employed_professional') {
-    employmentAdjustment = 0.5;
-  } else if (profile.incomeType === 'self_employed_business') {
-    employmentAdjustment = 1.5;
-  } else if (profile.incomeType === 'salaried_informal' || profile.incomeType === 'gig_freelance') {
-    employmentAdjustment = 2.5;
-    confidenceReasons.push('Informal or gig earnings have wider lender underwriting variance.');
+  // 3. Vintage & Track Record Mitigation
+  let stabilityAdjustment = 0;
+  if (profile.businessVintageYears && profile.businessVintageYears >= 10) {
+    // 10+ years operating history provides deterministic proof of cash-flow resilience
+    stabilityAdjustment -= 0.5;
+    confidenceReasons.push('Long business operating vintage (10+ years) mitigates lack of formal bureau score.');
+  } else if (profile.primaryIncomeSignal === 'gig_freelance') {
+    stabilityAdjustment += 2.0;
   }
 
-  if (profile.jobStability === 'frequent_switches' || profile.jobStability === 'new_employment_sub_6m') {
-    employmentAdjustment += 1.0;
+  // 4. High-cost debt risk penalty
+  if (profile.hasHighCostAppLoans) {
+    stabilityAdjustment += 3.0;
+    confidenceReasons.push('Active 30%+ app debt indicates high credit distress.');
   }
 
-  const fairMin = Number((baseMin + scoreAdjustmentMin + employmentAdjustment).toFixed(2));
-  const fairMax = Number((baseMax + scoreAdjustmentMax + employmentAdjustment).toFixed(2));
+  const fairMin = Number((baseMin + scoreAdjustmentMin + stabilityAdjustment).toFixed(2));
+  const fairMax = Number((baseMax + scoreAdjustmentMax + stabilityAdjustment).toFixed(2));
 
-  // Lenders typically quote 1.5% to 3.0% higher in direct sales before negotiation
+  // Initial sales pitches quote 1.5% to 2.5% higher before counter-offer
   const lenderQuoteMin = Number((fairMin + 1.25).toFixed(2));
   const lenderQuoteMax = Number((fairMax + 2.50).toFixed(2));
 
-  // Determine confidence level
+  // Determine Confidence
   let confidence: ConfidenceLevel = 'HIGH';
-  if (scoreConfidencePenalty || profile.jobStability === 'new_employment_sub_6m') {
+  if (profile.creditScoreStatus === 'unknown') {
     confidence = 'MEDIUM';
   }
-  if (scoreConfidencePenalty && (profile.incomeType === 'salaried_informal' || profile.incomeType === 'gig_freelance')) {
+  if (profile.creditScoreStatus === 'unknown' && (profile.primaryIncomeSignal === 'gig_freelance' || profile.hasHighCostAppLoans)) {
     confidence = 'LOW';
   }
 
-  const rateExplanation = `Fair interest for your profile is ${fairMin}%–${fairMax}%. Lenders will likely open negotiations quoting ${lenderQuoteMin}%–${lenderQuoteMax}%. Counter-quote within the fair band using your safe borrowing metrics.`;
+  const rateExplanation = `Fair market interest for this profile is ${fairMin}%–${fairMax}%. Lenders typically pitch initial quotes at ${lenderQuoteMin}%–${lenderQuoteMax}%. Use your safe metrics to negotiate down into the fair range.`;
 
   return {
     fairRateRange: [fairMin, fairMax],

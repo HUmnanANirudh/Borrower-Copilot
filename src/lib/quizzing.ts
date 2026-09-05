@@ -1,235 +1,328 @@
 import { BorrowerProfile, QuizQuestion } from './types';
 
 /**
- * 10 Must-Have Baseline Questions + Adaptive Branching Pool.
+ * 1. UNIVERSAL INTAKE QUESTIONS (Phase 1)
+ * Purpose, Amount, Age
+ * (Loan type is purposefully NOT asked blindly; it is inferred later!)
  */
-export const BASELINE_QUESTIONS: QuizQuestion[] = [
+export const UNIVERSAL_QUESTIONS: QuizQuestion[] = [
   {
     id: 'loanPurpose',
-    category: 'loan_basics',
-    title: 'What is the purpose of this loan?',
-    subtitle: 'Lenders evaluate risk differently depending on productive vs consumption borrowing.',
+    title: 'What will you use this money for?',
+    subtitle: 'Lenders and risk models evaluate productive investments differently from lifestyle consumption.',
     inputType: 'choice_pill',
     options: [
-      { value: 'personal', label: 'Personal & Lifestyle', description: 'General personal expenses or wedding' },
-      { value: 'home_renovation', label: 'Home Renovation', description: 'Upgrades, repairs, or interiors' },
-      { value: 'business_expansion', label: 'Business Growth', description: 'Inventory, equipment, or working capital' },
-      { value: 'debt_consolidation', label: 'Debt Consolidation', description: 'Combine credit cards or high-cost loans' },
-      { value: 'medical_emergency', label: 'Medical or Emergency', description: 'Unplanned hospital or urgent expenses' },
+      { value: 'wedding_personal', label: 'Wedding or Family Event', description: 'One-off personal consumption' },
+      { value: 'home_renovation', label: 'Home Renovation or Repair', description: 'Interiors, structural work, or upgrades' },
+      { value: 'business_expansion', label: 'Business Growth / Stock', description: 'Inventory, equipment, or working capital' },
+      { value: 'debt_consolidation', label: 'Consolidating Existing Debts', description: 'Paying off high-cost apps or cards' },
+      { value: 'asset_vehicle', label: 'Vehicle or Machinery Purchase', description: 'Delivery scooter, car, or tools' },
+      { value: 'medical_emergency', label: 'Medical / Urgent Need', description: 'Unplanned medical expenses' },
     ],
-    defaultValue: 'personal'
-  },
-  {
-    id: 'loanType',
-    category: 'loan_basics',
-    title: 'What type of loan are you exploring?',
-    subtitle: 'Secured loans (property/gold) have dramatically lower rates than unsecured loans.',
-    inputType: 'choice_pill',
-    options: [
-      { value: 'unsecured_personal', label: 'Unsecured Personal Loan', description: 'No collateral needed (Higher rates 11-18%)' },
-      { value: 'secured_property_lap', label: 'Loan Against Property (LAP)', description: 'Pledge house/shop (Lowest rates 8.5-10.5%)' },
-      { value: 'business_working_capital', label: 'Business Loan', description: 'For registered business turnover' },
-      { value: 'gold_asset_loan', label: 'Gold Loan', description: 'Quick liquidity against physical gold' },
-    ],
-    defaultValue: 'unsecured_personal'
+    defaultValue: 'wedding_personal',
+    targetOutputs: ['verdict', 'rate'],
+    shouldAsk: () => true,
+    informationScore: () => 10
   },
   {
     id: 'requestedAmount',
-    category: 'loan_basics',
     title: 'How much money are you looking to borrow?',
-    subtitle: 'We will compare what you want against what you can safely repay.',
+    subtitle: 'We will contrast your target amount against your cash-flow safe repayment ceiling.',
     inputType: 'currency_slider',
     min: 50000,
     max: 5000000,
     step: 50000,
-    defaultValue: 500000
+    defaultValue: 500000,
+    targetOutputs: ['amount', 'emi', 'verdict'],
+    shouldAsk: () => true,
+    informationScore: () => 10
   },
   {
     id: 'age',
-    category: 'loan_basics',
     title: 'What is your current age?',
-    subtitle: 'Banks cap maximum tenure if the borrower is close to retirement (typically age 58-60).',
+    subtitle: 'Banks cap loan tenure if the term approaches retirement (age 58–60).',
     inputType: 'number_stepper',
     min: 21,
     max: 65,
-    defaultValue: 30
-  },
+    defaultValue: 30,
+    targetOutputs: ['amount', 'emi'],
+    shouldAsk: () => true,
+    informationScore: () => 9
+  }
+];
+
+/**
+ * 2. FINANCIAL BASELINE QUESTIONS (Phase 2)
+ * Income signal, take-home pay, ongoing obligations, living costs, bureau status
+ */
+export const BASELINE_FINANCIAL_QUESTIONS: QuizQuestion[] = [
   {
-    id: 'incomeType',
-    category: 'income_obligations',
-    title: 'How do you earn your primary income?',
-    subtitle: 'Underwriting models differ between corporate salaried, business owners, and gig workers.',
+    id: 'primaryIncomeSignal',
+    title: 'What is your primary income stream?',
+    subtitle: 'This is an initial routing signal to determine underwriting risk rules.',
     inputType: 'choice_pill',
     options: [
-      { value: 'salaried_corporate', label: 'Salaried (Private / MNC / Govt)', description: 'Bank credit every month with salary slips' },
-      { value: 'self_employed_business', label: 'Business Owner / Trader', description: 'Sole proprietorship, partnership, or private firm' },
-      { value: 'self_employed_professional', label: 'Doctor / CA / Architect', description: 'Licensed professional practice' },
-      { value: 'gig_freelance', label: 'Gig / Freelancer / Informal', description: 'Platform earnings, variable contract invoices' },
+      { value: 'salaried_corporate', label: 'Salaried (MNC / Corporate / Govt)', description: 'Consistent monthly payslips and PF' },
+      { value: 'self_employed_business', label: 'Business Owner / Kirana / Trader', description: 'Sole proprietorship, shop, or firm' },
+      { value: 'self_employed_professional', label: 'Doctor / CA / Architect', description: 'Independent licensed practice' },
+      { value: 'gig_freelance', label: 'Gig Platform / Informal / Freelancer', description: 'Delivery rider, driver, home business' },
     ],
-    defaultValue: 'salaried_corporate'
+    defaultValue: 'salaried_corporate',
+    targetOutputs: ['verdict', 'rate', 'confidence'],
+    shouldAsk: () => true,
+    informationScore: () => 10
   },
   {
     id: 'netMonthlyIncome',
-    category: 'income_obligations',
-    title: 'What is your net in-hand monthly income?',
-    subtitle: 'Actual amount credited into your bank account after all taxes and deductions.',
+    title: 'What is your net monthly take-home income?',
+    subtitle: 'Actual cash credited into your bank account after all deductions and taxes.',
     inputType: 'currency_slider',
     min: 15000,
     max: 1000000,
     step: 5000,
-    defaultValue: 75000
+    defaultValue: 75000,
+    targetOutputs: ['amount', 'emi', 'verdict'],
+    shouldAsk: () => true,
+    informationScore: () => 10
   },
   {
     id: 'existingMonthlyEMI',
-    category: 'income_obligations',
-    title: 'Total existing monthly EMIs currently paying?',
-    subtitle: 'Include home loans, car loans, two-wheelers, consumer durables, and BNPL dues.',
+    title: 'Total existing monthly EMIs you currently pay?',
+    subtitle: 'Include vehicle loans, personal loans, consumer durables, and app installments.',
     inputType: 'currency_slider',
     min: 0,
     max: 500000,
     step: 1000,
-    defaultValue: 0
+    defaultValue: 0,
+    targetOutputs: ['emi', 'verdict', 'amount'],
+    shouldAsk: () => true,
+    informationScore: () => 10
   },
   {
-    id: 'householdExpenses',
-    category: 'income_obligations',
-    title: 'Essential monthly household living expenses?',
-    subtitle: 'Rent, groceries, utility bills, school fees, and medical essentials.',
+    id: 'householdLivingExpenses',
+    title: 'Essential monthly living expenses for the household?',
+    subtitle: 'Rent, groceries, utilities, school fees, and dependent medical needs.',
     inputType: 'currency_slider',
     min: 10000,
     max: 500000,
     step: 2500,
-    defaultValue: 30000
+    defaultValue: 30000,
+    targetOutputs: ['emi', 'verdict'],
+    shouldAsk: () => true,
+    informationScore: () => 10
   },
   {
-    id: 'creditScoreBand',
-    category: 'income_obligations',
-    title: 'What is your approximate CIBIL / Experian credit score?',
-    subtitle: 'If you are unsure, select Unknown. We never penalize unknowns as zero.',
+    id: 'creditScoreStatus',
+    title: 'What is your approximate credit bureau score?',
+    subtitle: 'If unsure, pick Unknown. We never penalize unknowns as zero or 300.',
     inputType: 'choice_pill',
     options: [
-      { value: '750_plus', label: '750+ (Excellent)', badge: 'Lowest Rates' },
-      { value: '700_749', label: '700 – 749 (Good)', badge: 'Competitive' },
-      { value: '650_699', label: '650 – 699 (Fair / Average)', badge: 'Sub-prime NBFC' },
-      { value: 'below_650', label: 'Below 650 (Poor)', badge: 'High Risk' },
-      { value: 'unknown', label: 'I do not know / No score yet', badge: 'Widened Band' },
+      { value: '750_plus', label: '750+ (Prime Tier)', badge: 'Lowest Rates' },
+      { value: '700_749', label: '700 – 749 (Good Tier)', badge: 'Competitive' },
+      { value: '650_699', label: '650 – 699 (Fair / Sub-prime)', badge: 'NBFC Pricing' },
+      { value: 'below_650', label: 'Below 650 (High Risk)', badge: 'Punitive' },
+      { value: 'unknown', label: 'I do not know / No formal bureau file', badge: 'Honest Widened Band' },
     ],
-    defaultValue: 'unknown'
-  },
-  {
-    id: 'jobStability',
-    category: 'income_obligations',
-    title: 'How stable is your current employment or business?',
-    subtitle: 'Lenders check vintage: longer continuous tenure grants superior rate pricing.',
-    inputType: 'choice_pill',
-    options: [
-      { value: 'stable_2yr_plus', label: 'Over 2 years in current role / business', description: 'Established stability' },
-      { value: 'recent_switch_6m_1yr', label: 'Switched job in past 6–12 months', description: 'Passed probation' },
-      { value: 'new_employment_sub_6m', label: 'Under 6 months in current job', description: 'Still in probation' },
-      { value: 'frequent_switches', label: 'Frequent job changes or irregular contracts', description: 'Variable cash flow' },
-    ],
-    defaultValue: 'stable_2yr_plus'
+    defaultValue: 'unknown',
+    targetOutputs: ['rate', 'confidence'],
+    shouldAsk: () => true,
+    informationScore: () => 9
   }
 ];
 
 /**
- * Adaptive questions triggered based on answers to previous questions.
+ * 3. INFORMATION-VALUE DYNAMIC QUESTION POOL (Phase 3)
+ * Every question in this pool:
+ * - Has explicit criteria for when it is relevant (`shouldAsk`)
+ * - Has a dynamic Information Score based on how much it reduces uncertainty in outputs
+ * - Stops asking when uncertainty is resolved or information score is 0
  */
-export const ADAPTIVE_QUESTIONS: QuizQuestion[] = [
-  // Triggered for salaried with high requested loans:
+export const DYNAMIC_QUESTION_POOL: QuizQuestion[] = [
+  // 1. COLLATERAL PROPERTY CHECK (High value for business / high ticket)
   {
-    id: 'variablePayPercent',
-    category: 'adaptive_deep_dive',
-    isAdaptive: true,
-    title: 'What percentage of your annual pay is variable or bonus?',
-    subtitle: 'Lenders discount variable income by 50% when computing your borrowing capacity.',
+    id: 'hasUnencumberedCollateral',
+    title: 'Do you or your family own clear-title, unencumbered property?',
+    subtitle: 'Pledging a residential or commercial premises unlocks Loan Against Property (LAP) at 9%–10.5% instead of 16%+.',
     inputType: 'choice_pill',
     options: [
-      { value: '0', label: '0% – 100% Fixed Salary', description: 'Guaranteed monthly paycheck' },
-      { value: '15', label: '10% – 20% Annual Bonus', description: 'Standard corporate structure' },
-      { value: '35', label: '30%+ High Variable / Sales Incentives', description: 'Income fluctuates heavily' },
+      { value: 'true', label: 'Yes, own clear property (shop / house / plot)', description: 'Can unlock LAP at half the rate' },
+      { value: 'false', label: 'No property available', description: 'Must rely strictly on unsecured cash flow' },
     ],
-    defaultValue: '0'
+    defaultValue: 'false',
+    targetOutputs: ['rate', 'amount', 'verdict'],
+    shouldAsk: (profile) => {
+      // Ask if high ticket (>= ₹10L) OR self-employed business OR business expansion
+      return (
+        (profile.requestedAmount !== undefined && profile.requestedAmount >= 800000) ||
+        profile.primaryIncomeSignal === 'self_employed_business' ||
+        profile.loanPurpose === 'business_expansion'
+      );
+    },
+    informationScore: (profile) => {
+      // Immense value for someone requesting ₹10L+ with business background (Ravi)
+      if (profile.requestedAmount && profile.requestedAmount >= 1000000) return 10;
+      return 7;
+    }
   },
-  // Triggered for self-employed / business owners (like Ravi):
+
+  // 1b. COLLATERAL ESTIMATED VALUE
   {
-    id: 'hasCollateralProperty',
-    category: 'adaptive_deep_dive',
-    isAdaptive: true,
-    title: 'Do you own any residential or commercial property that could be pledged?',
-    subtitle: 'For business financing above ₹10 Lakhs, a Loan Against Property saves you 5%–7% in interest.',
+    id: 'collateralEstimatedValue',
+    title: 'What is the approximate market value of this property?',
+    subtitle: 'Lenders cap Secured LAP at 50%–65% Loan-to-Value (LTV) of unencumbered market price.',
+    inputType: 'currency_slider',
+    min: 500000,
+    max: 20000000,
+    step: 250000,
+    defaultValue: 4000000,
+    targetOutputs: ['amount', 'verdict'],
+    shouldAsk: (profile) => profile.hasUnencumberedCollateral === true,
+    informationScore: (profile) => profile.hasUnencumberedCollateral ? 9 : 0
+  },
+
+  // 2. CO-APPLICANT / SPOUSE INCOME
+  {
+    id: 'coApplicantIncome',
+    title: 'Does your spouse or a family co-applicant have regular income?',
+    subtitle: 'Adding verifiable co-applicant income expands household cash flow and lowers debt risk.',
+    inputType: 'currency_slider',
+    min: 0,
+    max: 500000,
+    step: 2000,
+    defaultValue: 0,
+    targetOutputs: ['amount', 'emi', 'verdict'],
+    shouldAsk: (profile) => {
+      // Ask if self-employed or if requested amount is high relative to primary income
+      const requested = profile.requestedAmount || 0;
+      const income = profile.netMonthlyIncome || 1;
+      return (requested / income) > 8 || profile.primaryIncomeSignal === 'self_employed_business';
+    },
+    informationScore: () => 8
+  },
+
+  // 3. BUSINESS OPERATING VINTAGE & ITR
+  {
+    id: 'businessVintageYears',
+    title: 'How many continuous years has your business or shop been active?',
+    subtitle: '10+ years operating vintage proves cash-flow resilience and offsets missing bureau records.',
+    inputType: 'number_stepper',
+    min: 1,
+    max: 40,
+    defaultValue: 5,
+    targetOutputs: ['confidence', 'rate', 'amount'],
+    shouldAsk: (profile) => profile.primaryIncomeSignal === 'self_employed_business',
+    informationScore: (profile) => profile.primaryIncomeSignal === 'self_employed_business' ? 9 : 0
+  },
+
+  // 4. HIGH COST APP DEBT CHECK (Critical for informal / overleveraged)
+  {
+    id: 'hasHighCostAppLoans',
+    title: 'Are any of your current loans from instant apps or private lenders at 30%+?',
+    subtitle: 'Predatory digital apps drain cash flow with weekly or high-frequency interest.',
     inputType: 'choice_pill',
     options: [
-      { value: 'true', label: 'Yes, own clear-title property', description: 'Can unlock LAP at 8.75%–10.25%' },
-      { value: 'false', label: 'No property available', description: 'Must rely on unsecured business lines' },
+      { value: 'false', label: 'No – Only standard bank / NBFC loans', description: 'Normal interest rates' },
+      { value: 'true', label: 'Yes – Servicing instant app loans at 30%+', description: 'Draining monthly budget' },
     ],
-    defaultValue: 'false'
+    defaultValue: 'false',
+    targetOutputs: ['verdict', 'rate', 'confidence'],
+    shouldAsk: (profile) => {
+      // Ask if gig worker OR existing EMI is high relative to income OR debt consolidation purpose
+      const income = profile.netMonthlyIncome || 1;
+      const emi = profile.existingMonthlyEMI || 0;
+      return (
+        profile.primaryIncomeSignal === 'gig_freelance' ||
+        profile.loanPurpose === 'debt_consolidation' ||
+        (emi / income) >= 0.25
+      );
+    },
+    informationScore: () => 10
   },
-  // Triggered for informal or high-debt profiles (like Anita):
+
+  // 5. RECENT DELINQUENCY / BOUNCE CHECK
   {
     id: 'recentDelinquencyOrBounce',
-    category: 'adaptive_deep_dive',
-    isAdaptive: true,
-    title: 'Have you had any EMI bounce or delayed payment in the last 6 months?',
-    subtitle: 'An active bounce will cause instant algorithmic rejection at prime banks.',
+    title: 'Have you had any missed due dates or bounced EMIs in the past 6 months?',
+    subtitle: 'Active bounces cause instant automated rejection at tier-1 banks and signal credit distress.',
     inputType: 'choice_pill',
     options: [
-      { value: 'false', label: 'Clean Record – Zero bounces', description: 'All EMIs paid on time' },
-      { value: 'true', label: 'Yes, 1 or more bounces', description: 'Missed or delayed due date' },
+      { value: 'false', label: 'Clean Record – Zero bounces', description: 'All repayments on time' },
+      { value: 'true', label: 'Yes, 1 or more bounces', description: 'Missed payment occurred' },
     ],
-    defaultValue: 'false'
+    defaultValue: 'false',
+    targetOutputs: ['verdict', 'confidence', 'rate'],
+    shouldAsk: (profile) => {
+      // Relevant if credit score is unknown/poor, or high debt ratio
+      return (
+        profile.creditScoreStatus === 'unknown' ||
+        profile.creditScoreStatus === 'below_650' ||
+        profile.hasHighCostAppLoans === true ||
+        profile.primaryIncomeSignal === 'gig_freelance'
+      );
+    },
+    informationScore: (profile) => {
+      if (profile.hasHighCostAppLoans || profile.creditScoreStatus === 'unknown') return 10;
+      return 6;
+    }
   },
+
+  // 6. VARIABLE SALARY PORTION (For Corporate Salaried)
+  {
+    id: 'variablePayPortionPercent',
+    title: 'What percentage of your annual compensation is variable or bonus?',
+    subtitle: 'Lenders haircut annual bonus components by 50% when calculating fixed monthly EMI limits.',
+    inputType: 'choice_pill',
+    options: [
+      { value: '0', label: '0% – 100% Fixed Base Salary', description: 'Stable monthly paycheck' },
+      { value: '15', label: '10% – 20% Annual Variable Bonus', description: 'Standard corporate bonus' },
+      { value: '35', label: '30%+ High Variable / Sales Incentives', description: 'Earnings fluctuate' },
+    ],
+    defaultValue: '0',
+    targetOutputs: ['amount', 'emi'],
+    shouldAsk: (profile) => profile.primaryIncomeSignal === 'salaried_corporate',
+    informationScore: (profile) => profile.primaryIncomeSignal === 'salaried_corporate' ? 7 : 0
+  },
+
+  // 7. EMERGENCY SAVINGS BUFFER
   {
     id: 'emergencySavingsMonths',
-    category: 'adaptive_deep_dive',
-    isAdaptive: true,
-    title: 'How many months of emergency savings do you have?',
-    subtitle: 'Liquid funds in savings accounts or fixed deposits to handle surprises.',
+    title: 'How many months of essential expenses do you have in liquid savings?',
+    subtitle: 'Having a 3+ month buffer prevents unexpected emergencies from causing loan default.',
     inputType: 'choice_pill',
     options: [
-      { value: '0', label: 'Less than 1 month', description: 'Living month-to-month' },
-      { value: '3', label: '2 – 4 months', description: 'Moderate safety cushion' },
-      { value: '6', label: '6+ months of expenses', description: 'Strong financial buffer' },
+      { value: '0', label: 'Zero / Under 1 Month', description: 'Living paycheck to paycheck' },
+      { value: '3', label: '2 to 4 Months Buffer', description: 'Moderate safety cushion' },
+      { value: '6', label: '6+ Months Reserve', description: 'Excellent safety cushion' },
     ],
-    defaultValue: '3'
+    defaultValue: '3',
+    targetOutputs: ['verdict', 'confidence'],
+    shouldAsk: (profile) => {
+      // Ask if high debt or informal or low cash flow
+      const income = profile.netMonthlyIncome || 1;
+      const emi = profile.existingMonthlyEMI || 0;
+      return (emi / income) >= 0.20 || profile.primaryIncomeSignal === 'gig_freelance';
+    },
+    informationScore: () => 7
   }
 ];
 
 /**
- * Determines which adaptive questions should be asked next based on current profile.
+ * Deterministic Information-Value Selection Engine:
+ * Evaluates the current borrower profile state, filters candidate questions,
+ * scores them by information value, and returns the next prioritized question list.
  */
-export function getNextAdaptiveQuestions(profile: Partial<BorrowerProfile>): QuizQuestion[] {
-  const result: QuizQuestion[] = [];
+export function getPrioritizedQuestions(profile: Partial<BorrowerProfile>): QuizQuestion[] {
+  // 1. Always start with Universal Questions (Phase 1)
+  const universal = UNIVERSAL_QUESTIONS;
 
-  if (profile.incomeType === 'salaried_corporate' && profile.variablePayPercent === undefined) {
-    const q = ADAPTIVE_QUESTIONS.find(item => item.id === 'variablePayPercent');
-    if (q) result.push(q);
-  }
+  // 2. Always include Baseline Financial Questions (Phase 2)
+  const baseline = BASELINE_FINANCIAL_QUESTIONS;
 
-  if (
-    (profile.incomeType === 'self_employed_business' || (profile.requestedAmount && profile.requestedAmount >= 1000000)) &&
-    profile.hasCollateralProperty === undefined
-  ) {
-    const q = ADAPTIVE_QUESTIONS.find(item => item.id === 'hasCollateralProperty');
-    if (q) result.push(q);
-  }
+  // 3. Evaluate Dynamic Pool (Phase 3)
+  const dynamic = DYNAMIC_QUESTION_POOL.filter(q => q.shouldAsk(profile));
 
-  const isDebtBurdenHigh = profile.netMonthlyIncome && profile.existingMonthlyEMI 
-    ? (profile.existingMonthlyEMI / profile.netMonthlyIncome) >= 0.35 
-    : false;
+  // Sort dynamic questions by their information value score (highest first)
+  dynamic.sort((a, b) => b.informationScore(profile) - a.informationScore(profile));
 
-  if (
-    (profile.incomeType === 'gig_freelance' || isDebtBurdenHigh || profile.creditScoreBand === 'unknown' || profile.creditScoreBand === 'below_650') &&
-    profile.recentDelinquencyOrBounce === undefined
-  ) {
-    const q = ADAPTIVE_QUESTIONS.find(item => item.id === 'recentDelinquencyOrBounce');
-    if (q) result.push(q);
-  }
-
-  if (profile.emergencySavingsMonths === undefined) {
-    const q = ADAPTIVE_QUESTIONS.find(item => item.id === 'emergencySavingsMonths');
-    if (q) result.push(q);
-  }
-
-  return result;
+  return [...universal, ...baseline, ...dynamic];
 }

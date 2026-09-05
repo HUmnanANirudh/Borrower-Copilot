@@ -1,9 +1,9 @@
-import { BorrowerProfile, Assessment, Verdict, ConfidenceLevel } from '../types';
+import { BorrowerProfile, Assessment, Verdict } from '../types';
 import { calculateSafeAffordability } from './affordability';
 import { calculateEligibilityAndSanction } from './eligibility';
 import { calculateFairRates } from './rates';
 import { calculateEffectiveAPR } from './apr';
-import { calculateEMI, generateTenureMatrix } from './emi';
+import { generateTenureMatrix } from './emi';
 import { calculateStressScenario } from './stress';
 
 /**
@@ -11,101 +11,108 @@ import { calculateStressScenario } from './stress';
  * 
  * Takes a completed BorrowerProfile and deterministically evaluates:
  * - O1: Verdict (BORROW, BORROW LESS, DON'T BORROW YET)
- * - O2: Maximum Amount (Lender Sanction vs Borrower-Safe)
+ * - O2: Maximum Amount (Estimated Lender Range vs Borrower-Safe Range)
  * - O3: Fair Interest Rate & Effective APR
  * - O4: Recommended Safe EMI Ceiling & Tenure Trade-offs
  */
 export function evaluateAssessment(profile: BorrowerProfile): Assessment {
-  // 1. Affordability & Safe EMI
+  // 1. Affordability & Safe EMI (Double-lock cash flow)
   const affordability = calculateSafeAffordability(profile);
 
-  // 2. Fair Rates & APR
+  // 2. Fair Rates & Effective APR
   const rateAnalysis = calculateFairRates(profile);
   const midFairRate = (rateAnalysis.fairRateRange[0] + rateAnalysis.fairRateRange[1]) / 2;
   const aprAnalysis = calculateEffectiveAPR(rateAnalysis.fairRateRange, profile.requestedAmount, 36);
 
-  // 3. Eligibility & Amounts
+  // 3. Estimated Lender vs Borrower Safe Amounts
   const eligibility = calculateEligibilityAndSanction(profile, affordability.safeMaxEMI, midFairRate);
 
   // 4. Safe EMI & Tenure Matrix
   const safeLoanCeiling = eligibility.borrowerSafeRange[1];
   const baselinePrincipal = Math.min(profile.requestedAmount, Math.max(10000, safeLoanCeiling));
   const recommendedMaxEMI = affordability.safeMaxEMI;
-  const tenureMatrix = generateTenureMatrix(baselinePrincipal > 0 ? baselinePrincipal : profile.requestedAmount, midFairRate);
+  const tenureMatrix = generateTenureMatrix(
+    baselinePrincipal > 0 ? baselinePrincipal : profile.requestedAmount,
+    midFairRate
+  );
 
   // 5. Stress Scenario
   const stressScenario = calculateStressScenario(profile, recommendedMaxEMI);
 
-  // 6. Verdict (O1) Determination:
+  // 6. Verdict (O1) Determination with nuanced multi-factor risk:
   let verdict: Verdict = 'BORROW';
   let verdictReason = '';
 
-  // Red-flag rejection criteria:
-  if (
-    affordability.isOverleveraged ||
-    profile.recentDelinquencyOrBounce ||
-    (profile.hasInformalHighCostDebt && affordability.currentFOIR >= 30) ||
-    affordability.safeMaxEMI <= 0
-  ) {
+  // Multi-factor Distress Check (Anita's compounded vulnerability):
+  const isCompoundedDistress = 
+    profile.hasHighCostAppLoans && 
+    profile.recentDelinquencyOrBounce && 
+    (affordability.disposableCash <= 0 || affordability.currentFOIR >= 25);
+
+  const isPureBounceAccidental = 
+    profile.recentDelinquencyOrBounce && 
+    profile.bounceWasCuredImmediately && 
+    (profile.emergencySavingsMonths || 0) >= 3 &&
+    affordability.currentFOIR < 20;
+
+  if (isCompoundedDistress || affordability.safeMaxEMI <= 0 || affordability.isOverleveraged) {
     verdict = 'DON\'T BORROW YET';
-    if (profile.recentDelinquencyOrBounce && profile.hasInformalHighCostDebt) {
-      verdictReason = `Active delinquency detected with high-cost 30%+ app loans. Adding new debt now guarantees a debt spiral. Prioritize consolidating existing debt into an MFI / SHG loan first.`;
-    } else if (profile.recentDelinquencyOrBounce) {
-      verdictReason = 'Recent loan bounce or delinquency detected; taking additional debt now risks rapid default and severe credit score impairment.';
+    if (isCompoundedDistress) {
+      verdictReason = 'You are servicing 30%+ instant app loans with a recent bounce and zero monthly cash surplus. Adding a new loan will trigger a severe default spiral. You must consolidate and clear the high-cost app debt first.';
     } else if (affordability.isOverleveraged) {
-      verdictReason = `Existing loan repayments already consume ${Math.round(affordability.currentFOIR)}% of your monthly income. Additional borrowing will breach safe living expense buffers.`;
+      verdictReason = `Existing loan EMIs already consume ${Math.round(affordability.currentFOIR)}% of total household income. Taking new debt breaches essential living expense safety margins.`;
     } else {
-      verdictReason = 'Current debt obligations and essential expenses leave insufficient cash flow to safely support any new monthly EMI.';
+      verdictReason = 'Essential living expenses and current debt leave no uncommitted cash flow to support additional monthly repayments.';
     }
   } else if (
     profile.requestedAmount > eligibility.borrowerSafeRange[1] * 1.15 ||
     stressScenario.isBreached ||
-    (profile.loanType === 'unsecured_personal' && profile.requestedAmount >= 1000000 && profile.incomeType === 'self_employed_business')
+    (profile.inferredProductRoute !== 'Secured Loan Against Property (LAP)' && profile.requestedAmount >= 1000000 && profile.primaryIncomeSignal === 'self_employed_business')
   ) {
     verdict = 'BORROW LESS';
-    if (profile.loanType === 'unsecured_personal' && profile.requestedAmount >= 1000000 && profile.hasCollateralProperty) {
-      verdictReason = `₹15L as an unsecured personal loan is unsafe on documented ITR cash flow. Shift to a Secured Loan Against Property (LAP) to borrow safely at half the interest rate.`;
+    if (profile.requestedAmount >= 1000000 && profile.hasUnencumberedCollateral) {
+      verdictReason = `₹${(profile.requestedAmount / 100000).toFixed(0)}L as an unsecured personal loan is unsafe on documented ITR earnings. Route through a Secured Loan Against Property (LAP) to cut your interest rate in half and borrow safely.`;
     } else if (profile.requestedAmount > eligibility.borrowerSafeRange[1]) {
-      const requestedLakhs = (profile.requestedAmount / 100000).toFixed(1);
-      const safeMaxLakhs = (eligibility.borrowerSafeRange[1] / 100000).toFixed(1);
-      verdictReason = `Your requested amount (₹${requestedLakhs}L) exceeds your safe repayment capacity (₹${safeMaxLakhs}L). Trimming the loan amount protects you from unmanageable future EMIs.`;
+      const reqL = (profile.requestedAmount / 100000).toFixed(1);
+      const safeL = (eligibility.borrowerSafeRange[1] / 100000).toFixed(1);
+      verdictReason = `Your requested loan of ₹${reqL}L exceeds your safe cash-flow capacity (₹${safeL}L). Trimming the principal protects your monthly living budget.`;
     } else {
-      verdictReason = 'A 20% income reduction would push your debt servicing into the danger zone. Reducing the principal amount guarantees long-term affordability.';
+      verdictReason = 'A 20% income reduction would push debt servicing into an unmanageable range. Lowering the loan amount preserves safety during economic downturns.';
     }
   } else {
     verdict = 'BORROW';
-    verdictReason = 'Your income stability, current low debt-to-income ratio, and healthy cash-flow buffer comfortably support this requested loan.';
+    verdictReason = 'Your income stability, modest existing obligations, and healthy cash-flow buffer comfortably support this requested loan.';
   }
 
   // Amount Explanation
   const safeMinL = (eligibility.borrowerSafeRange[0] / 100000).toFixed(1);
   const safeMaxL = (eligibility.borrowerSafeRange[1] / 100000).toFixed(1);
-  const lendMinL = (eligibility.lenderSanctionRange[0] / 100000).toFixed(1);
-  const lendMaxL = (eligibility.lenderSanctionRange[1] / 100000).toFixed(1);
+  const lendMinL = (eligibility.estimatedLenderRange[0] / 100000).toFixed(1);
+  const lendMaxL = (eligibility.estimatedLenderRange[1] / 100000).toFixed(1);
 
-  const amountExplanation = `Banks will likely offer ₹${lendMinL}L–₹${lendMaxL}L based on aggressive 50-60% income formulas. However, your safe borrowing limit is strictly ₹${safeMinL}L–₹${safeMaxL}L. Always negotiate against the safe number to avoid overleverage.`;
+  const amountExplanation = `Public bank underwriting formulas (50%–60% FOIR) estimate eligibility around ₹${lendMinL}L–₹${lendMaxL}L. However, your cash-flow safe borrowing range is strictly ₹${safeMinL}L–₹${safeMaxL}L. Always negotiate against your safe ceiling.`;
 
-  // Negotiation Card Advice:
+  // Tailored Negotiation Script
   const negotiationPoints: string[] = [
-    `Ask for the All-in APR: "Please quote the effective APR including processing fee and all mandatory add-ons, not just headline interest."`,
-    `Counter high quotes: Your target fair rate is ${rateAnalysis.fairRateRange[0]}%–${rateAnalysis.fairRateRange[1]}%. If quoted higher, point to your verified stability.`,
-    `Waive or cap the processing fee: Banks routinely reduce processing fees from 2% to 0.75%-1% upon firm borrower request.`
+    `Ask for the All-in APR: "Please provide the official all-inclusive APR including processing fees and 18% GST in writing."`,
+    `Counter high initial quotes: Your fair rate band is ${rateAnalysis.fairRateRange[0]}%–${rateAnalysis.fairRateRange[1]}%. Decline quotes above this range.`,
+    `Negotiate upfront processing charges: Standard 2% fees can routinely be capped at 0.75%–1% for creditworthy borrowers.`
   ];
 
-  if (eligibility.productRoutingHint) {
-    negotiationPoints.unshift(eligibility.productRoutingHint);
+  if (eligibility.inferredProductRoute === 'Secured Loan Against Property (LAP)') {
+    negotiationPoints.unshift('Do not apply for retail personal loans. Ask the bank for an MSME Loan Against Property / Vyapar Loan at 9.0%–10.5%.');
   }
 
   const doNotCrossRules: string[] = [
-    `Never agree to an EMI above ₹${recommendedMaxEMI.toLocaleString('en-IN')}/month.`,
-    `Never accept loan insurance bundled silently into the sanctioned loan principal.`,
-    `Do not stretch tenure beyond 48 months for an unsecured loan merely to lower monthly EMI.`
+    `Never agree to an EMI higher than ₹${recommendedMaxEMI.toLocaleString('en-IN')}/month.`,
+    `Never permit single-premium loan insurance to be added into your loan principal.`,
+    `Do not stretch tenure beyond 48 months for unsecured consumption loans just to artificially lower the EMI.`
   ];
 
   return {
     verdict,
     verdictReason,
-    lenderSanctionRange: eligibility.lenderSanctionRange,
+    estimatedLenderRange: eligibility.estimatedLenderRange,
     borrowerSafeRange: eligibility.borrowerSafeRange,
     amountExplanation,
     fairRateRange: rateAnalysis.fairRateRange,
@@ -118,7 +125,8 @@ export function evaluateAssessment(profile: BorrowerProfile): Assessment {
     stressScenario,
     confidence: rateAnalysis.confidence,
     confidenceReasons: rateAnalysis.confidenceReasons,
-    productRoutingRecommendation: eligibility.productRoutingHint,
+    inferredProductRoute: eligibility.inferredProductRoute,
+    productRouteRationale: eligibility.productRouteRationale,
     negotiationPoints,
     doNotCrossRules
   };

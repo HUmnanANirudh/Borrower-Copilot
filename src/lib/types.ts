@@ -1,64 +1,61 @@
 // ==========================================
 // Borrower Copilot Core Domain Types
+// Refined: Information-Value Adaptive Engine
 // ==========================================
 
 export type LoanPurpose = 
-  | 'personal'
+  | 'wedding_personal'
   | 'business_expansion'
   | 'debt_consolidation'
   | 'medical_emergency'
   | 'home_renovation'
-  | 'education'
+  | 'asset_vehicle'
   | 'other';
 
-export type LoanType = 
-  | 'unsecured_personal'
-  | 'secured_property_lap'
-  | 'business_working_capital'
-  | 'gold_asset_loan';
-
-export type IncomeType = 
+export type PrimaryIncomeSignal = 
   | 'salaried_corporate'
   | 'salaried_informal'
-  | 'self_employed_professional'
   | 'self_employed_business'
+  | 'self_employed_professional'
   | 'gig_freelance';
 
-export type CreditScoreBand = 
-  | '750_plus'       // Excellent
-  | '700_749'        // Good
-  | '650_699'        // Fair / Average
-  | 'below_650'      // Poor
-  | 'unknown';       // Unknown bureau history (never zero!)
+export type CreditScoreStatus = 
+  | '750_plus'       // Prime Tier (750-900)
+  | '700_749'        // Good Tier
+  | '650_699'        // Fair / Sub-prime Tier
+  | 'below_650'      // High Risk Tier
+  | 'unknown';       // Missing bureau history (Modeled with wider variance, NEVER treated as 300)
 
-export type JobStability = 
+export type JobStabilitySignal = 
   | 'stable_2yr_plus'
   | 'recent_switch_6m_1yr'
   | 'frequent_switches'
   | 'new_employment_sub_6m';
 
 export interface BorrowerProfile {
-  // 10 Must-have initial inputs
+  // Universal Baseline Inputs (Phases 1 & 2)
   loanPurpose: LoanPurpose;
-  loanType: LoanType;
   requestedAmount: number;
   age: number;
-  incomeType: IncomeType;
-  netMonthlyIncome: number;
-  existingMonthlyEMI: number;
-  householdExpenses: number;
-  creditScoreBand: CreditScoreBand;
-  jobStability: JobStability;
+  primaryIncomeSignal: PrimaryIncomeSignal;
+  netMonthlyIncome: number;          // Take-home cash credited per month
+  existingMonthlyEMI: number;        // Current ongoing monthly debt servicing
+  householdLivingExpenses: number;   // Food, rent, utilities, dependents, schooling
+  creditScoreStatus: CreditScoreStatus;
 
-  // Adaptive / Contextual inputs
-  variablePayPercent?: number;       // Salaried: % of monthly income that is bonus/variable
-  businessVintageYears?: number;     // Self-employed: years in current business
-  itrDeclaredNetMonthly?: number;    // Self-employed: actual declared taxable income
-  hasCollateralProperty?: boolean;   // Business/LAP: owns shop/house to pledge
-  collateralValue?: number;          // Estimated collateral worth
-  hasInformalHighCostDebt?: boolean; // Informal: moneylender/payday app borrowing
-  recentDelinquencyOrBounce?: boolean; // Has bounced an EMI in last 6 months
-  emergencySavingsMonths?: number;   // Months of living expenses saved
+  // Dynamic Information-Value Variables (Phase 3: Asked only if they move an output)
+  coApplicantIncome?: number;        // e.g. Ravi's wife earning ₹18,000/mo
+  businessVintageYears?: number;     // Operating track record for self-employed
+  itrDeclaredMonthlyTaxable?: number;// Documented tax return income vs cash turnover
+  hasUnencumberedCollateral?: boolean; // Property/premises ownership (e.g. Ravi's shop)
+  collateralEstimatedValue?: number; // Estimated value of property/asset
+  hasHighCostAppLoans?: boolean;     // 30%+ predatory digital/payday apps
+  totalHighCostDebtOutstanding?: number; // Balance of toxic debt
+  recentDelinquencyOrBounce?: boolean; // Any missed/bounced EMI in past 6 months
+  bounceRecencyMonths?: number;      // 1 month ago vs 5 months ago
+  bounceWasCuredImmediately?: boolean;// Accidental bank typo vs structural insolvency
+  emergencySavingsMonths?: number;   // Liquid cash buffer in months of living expenses
+  variablePayPortionPercent?: number;// Bonus/commission share of annual compensation
 }
 
 export type Verdict = 'BORROW' | 'BORROW LESS' | 'DON\'T BORROW YET';
@@ -74,7 +71,6 @@ export interface TenureOption {
 export interface StressScenario {
   type: 'income_shock' | 'rate_hike';
   title: string;
-  description: string;
   originalFOIR: number;
   stressedFOIR: number;
   isBreached: boolean;
@@ -87,34 +83,35 @@ export interface Assessment {
   verdictReason: string;
 
   // Output 2: Maximum Amount
-  lenderSanctionRange: [number, number]; // e.g. [800000, 1000000]
-  borrowerSafeRange: [number, number];   // e.g. [650000, 750000]
+  estimatedLenderRange: [number, number]; // Estimated lender eligibility based on public credit norms
+  borrowerSafeRange: [number, number];    // Borrower-safe borrowing limit based on cash-flow floor
   amountExplanation: string;
 
-  // Output 3: Fair Interest Rate & APR
-  fairRateRange: [number, number];       // e.g. [11.0, 12.5]
-  expectedLenderQuoteRange: [number, number]; // e.g. [13.5, 16.0]
-  effectiveAPRRange: [number, number];   // e.g. [12.2, 13.8] (includes fees + GST)
-  processingFeePercent: number;          // Standard 1.5% - 2.5%
+  // Output 3: Fair Interest Rate & Effective APR
+  fairRateRange: [number, number];        // Range based on risk profile
+  expectedLenderQuoteRange: [number, number]; // What direct sales will likely pitch initially
+  effectiveAPRRange: [number, number];    // True annualized cost including 2% fee + 18% GST
+  processingFeePercent: number;           // Standard market fee baseline (2.0%)
   rateExplanation: string;
 
   // Output 4: EMI Ceiling & Tenure
-  recommendedMaxEMI: number;             // Hard ceiling e.g. 22000
-  tenureMatrix: TenureOption[];          // 24m, 36m, 48m, 60m
+  recommendedMaxEMI: number;              // Hard ceiling in ₹/month
+  tenureMatrix: TenureOption[];           // 24m, 36m, 48m, 60m amortization
   stressScenario: StressScenario;
 
   // Confidence & Meta
   confidence: ConfidenceLevel;
   confidenceReasons: string[];
-  productRoutingRecommendation?: string; // e.g. "Redirect to Secured LAP"
+  inferredProductRoute: string;           // Inferred product (Unsecured PL vs Secured LAP vs MFI Consolidate)
+  productRouteRationale: string;
 
-  // Negotiation Card Guidance
+  // Negotiation Card Advice
   negotiationPoints: string[];
   doNotCrossRules: string[];
 }
 
 // ==========================================
-// Quiz Question System Types
+// Information-Value Adaptive Question Engine
 // ==========================================
 
 export type QuestionInputType = 
@@ -131,35 +128,32 @@ export interface QuestionOption {
 }
 
 export interface QuizQuestion {
-  id: keyof BorrowerProfile | string;
+  id: keyof BorrowerProfile;
   title: string;
-  subtitle?: string;
-  explanation?: string;
+  subtitle: string;
   inputType: QuestionInputType;
   options?: QuestionOption[];
   min?: number;
   max?: number;
   step?: number;
   defaultValue?: any;
-  category: 'loan_basics' | 'income_obligations' | 'adaptive_deep_dive';
-  isAdaptive?: boolean;
+  // Information-Value Metadata:
+  targetOutputs: Array<'verdict' | 'amount' | 'rate' | 'emi' | 'confidence'>;
+  shouldAsk: (profile: Partial<BorrowerProfile>) => boolean;
+  informationScore: (profile: Partial<BorrowerProfile>) => number; // 0 = Do not ask, 1-10 = Priority
 }
-
-// ==========================================
-// Stateless URL Share Payload
-// ==========================================
 
 export interface SharedCardPayload {
   v: Verdict;
-  r: number;             // Requested amount
+  r: number;
   p: LoanPurpose;
-  ls: [number, number];  // Lender sanction min/max
-  bs: [number, number];  // Borrower safe min/max
-  fr: [number, number];  // Fair rate min/max
-  apr: [number, number]; // Effective APR min/max
-  emi: number;           // Recommended max EMI
+  ls: [number, number];
+  bs: [number, number];
+  fr: [number, number];
+  apr: [number, number];
+  emi: number;
   conf: ConfidenceLevel;
-  wh: string;            // Why / rationale
-  rt?: string;           // Routing hint
-  ts: number;            // Timestamp
+  wh: string;
+  rt: string;
+  ts: number;
 }
