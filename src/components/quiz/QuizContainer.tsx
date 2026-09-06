@@ -17,11 +17,7 @@ interface QuestionMeta {
 export function QuizContainer() {
   const router = useRouter();
 
-  const [profile, setProfile] = useState<Partial<BorrowerProfile>>({
-    loanPurpose: 'wedding_personal',
-    requestedAmount: 500000,
-    primaryIncomeSignal: 'salaried_corporate',
-  });
+  const [profile, setProfile] = useState<Partial<BorrowerProfile>>({});
 
   const [questionQueue, setQuestionQueue] = useState<RegisteredQuestion[]>(() => {
     return BASE_QUESTION_IDS.map(id => QUESTION_REGISTRY[id]).filter(Boolean);
@@ -30,15 +26,13 @@ export function QuizContainer() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [questionMetaMap, setQuestionMetaMap] = useState<Record<string, QuestionMeta>>({});
   const [isSelecting, setIsSelecting] = useState(false);
-  const [prefetched, setPrefetched] = useState<{ key: string; decision: NextQuestionResult } | null>(null);
-  const prefetchingRef = useRef(false);
 
   const currentQuestion = questionQueue[currentIndex];
   const totalBaseQuestions = BASE_QUESTION_IDS.length;
   const isAdaptivePhase = currentIndex >= totalBaseQuestions;
   const currentMeta = currentQuestion ? questionMetaMap[currentQuestion.id] : undefined;
 
-  const PROGRESS_MAP = [12, 24, 36, 48, 60, 72, 84, 92, 96, 98, 100];
+  const PROGRESS_MAP = [12, 25, 38, 50, 62, 75, 87, 92, 96, 100];
   const progressPercent = isSelecting
     ? Math.min(99, (PROGRESS_MAP[Math.min(currentIndex, PROGRESS_MAP.length - 1)] || 50) + 4)
     : (PROGRESS_MAP[Math.min(currentIndex, PROGRESS_MAP.length - 1)] || 95);
@@ -51,24 +45,6 @@ export function QuizContainer() {
     }).format(amt);
   };
 
-  const prefetchNextQuestion = async (currProfile: Partial<BorrowerProfile>, currQueue: RegisteredQuestion[]) => {
-    if (currQueue.length < totalBaseQuestions) return;
-    const answeredIds = currQueue.map(q => q.id as string);
-    const key = JSON.stringify(currProfile);
-    if (prefetchingRef.current) return;
-    prefetchingRef.current = true;
-    try {
-      const decision = await determineNextQuestion(currProfile, answeredIds);
-      if (decision && decision.question) {
-        setPrefetched({ key, decision });
-      }
-    } catch {
-      // silent fallback
-    } finally {
-      prefetchingRef.current = false;
-    }
-  };
-
   const handleAnswer = (field: keyof BorrowerProfile, value: any) => {
     let parsedValue = value;
     if (value === 'true') parsedValue = true;
@@ -76,16 +52,10 @@ export function QuizContainer() {
     if (field === 'variablePayPortionPercent' || field === 'emergencySavingsMonths' || field === 'businessVintageYears') {
       parsedValue = Number(value);
     }
-    const updated = {
-      ...profile,
+    setProfile(prev => ({
+      ...prev,
       [field]: parsedValue
-    };
-    setProfile(updated);
-
-    // Trigger non-blocking background prefetch for near-zero click latency
-    if (currentIndex >= totalBaseQuestions - 1) {
-      prefetchNextQuestion(updated, questionQueue);
-    }
+    }));
   };
 
   const finishAssessment = (finalProfile: Partial<BorrowerProfile>) => {
@@ -94,9 +64,9 @@ export function QuizContainer() {
       requestedAmount: finalProfile.requestedAmount || 500000,
       age: finalProfile.age || 30,
       primaryIncomeSignal: finalProfile.primaryIncomeSignal || 'salaried_corporate',
-      netMonthlyIncome: finalProfile.netMonthlyIncome || 50000,
-      existingMonthlyEMI: finalProfile.existingMonthlyEMI || 0,
-      householdLivingExpenses: finalProfile.householdLivingExpenses || 25000,
+      netMonthlyIncome: finalProfile.netMonthlyIncome || 75000,
+      existingMonthlyEMI: finalProfile.existingMonthlyEMI ?? 0,
+      householdLivingExpenses: finalProfile.householdLivingExpenses || 30000,
       creditScoreStatus: finalProfile.creditScoreStatus || 'unknown',
       ...finalProfile,
     } as BorrowerProfile;
@@ -108,7 +78,10 @@ export function QuizContainer() {
   };
 
   const handleNext = async () => {
-    const answeredValue = profile[currentQuestion.id as keyof BorrowerProfile] ?? currentQuestion.defaultValue;
+    const answeredValue = currentQuestion.inputType === 'choice_pill'
+      ? profile[currentQuestion.id as keyof BorrowerProfile]
+      : (profile[currentQuestion.id as keyof BorrowerProfile] ?? currentQuestion.defaultValue);
+    
     const updatedProfile = {
       ...profile,
       [currentQuestion.id]: answeredValue,
@@ -121,28 +94,11 @@ export function QuizContainer() {
     }
 
     const answeredIds = questionQueue.map(q => q.id as string);
-    const maxAdaptiveQuestions = 5;
+    const maxAdaptiveQuestions = 2;
     const adaptiveQuestionsAsked = questionQueue.length - totalBaseQuestions;
 
     if (adaptiveQuestionsAsked >= maxAdaptiveQuestions) {
       finishAssessment(updatedProfile);
-      return;
-    }
-
-    // Check if prefetch resolved for instantaneous transition
-    const profileKey = JSON.stringify(updatedProfile);
-    if (prefetched && prefetched.key === profileKey && prefetched.decision.question) {
-      const decision = prefetched.decision;
-      setQuestionQueue(prev => [...prev, decision.question!]);
-      setQuestionMetaMap(prev => ({
-        ...prev,
-        [decision.question!.id]: {
-          reason: decision.reason,
-          source: decision.source,
-        }
-      }));
-      setPrefetched(null);
-      setCurrentIndex(prev => prev + 1);
       return;
     }
 
@@ -194,11 +150,18 @@ export function QuizContainer() {
 
   if (!currentQuestion) return null;
 
-  const currentValue = profile[currentQuestion.id as keyof BorrowerProfile] ?? currentQuestion.defaultValue;
+  // Deliberate input: choice questions must NOT pre-select unless the user has chosen
+  const currentValue = currentQuestion.inputType === 'choice_pill'
+    ? profile[currentQuestion.id as keyof BorrowerProfile]
+    : (profile[currentQuestion.id as keyof BorrowerProfile] ?? currentQuestion.defaultValue);
+
   const isAiSelected = currentMeta?.source === 'ai_groq';
+  const isChoiceAnswered = currentQuestion.inputType === 'choice_pill'
+    ? (currentValue !== undefined && currentValue !== null)
+    : true;
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-5 py-6 sm:py-10 flex flex-col justify-between">
+    <div className="w-full max-w-4xl mx-auto px-5 py-6 sm:py-10 flex flex-col justify-between">
       <div>
         <div className="flex items-center justify-between mb-5">
           <Link 
@@ -263,19 +226,12 @@ export function QuizContainer() {
                 <div className="w-16 h-16 rounded-2xl bg-[#f7f6f4] border border-[#ebeae8] flex items-center justify-center shadow-xs">
                   <Avatar size={40} name="BorrowIQ" variant="pixel" colors={["#5769e7", "#171717", "#f3ede7", "#52ad6e", "#d5daf7"]} />
                 </div>
-                <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#5769e7] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#5769e7]"></span>
-                </span>
               </div>
 
               <h2 className="text-xl font-bold text-[#171717] tracking-tight mb-2">
                 Analyzing Risk Signals
               </h2>
-              <p className="text-xs text-[#5d5b59] max-w-sm leading-relaxed mb-6">
-                BorrowIQ underwriter is evaluating your profile with openai/gpt-oss-120b to select the most impactful risk question...
-              </p>
-
+            
               {/* Animated progress bar */}
               <div className="w-56 h-1.5 bg-[#ebeae8] rounded-full overflow-hidden">
                 <div className="h-full bg-[#5769e7] rounded-full animate-pulse w-full" />
@@ -338,8 +294,13 @@ export function QuizContainer() {
 
               <button
                 type="button"
+                disabled={!isChoiceAnswered || isSelecting}
                 onClick={handleNext}
-                className="px-7 py-3 rounded-full text-xs font-semibold bg-[#5769e7] hover:bg-[#4958be] text-white cursor-pointer shadow-sm active:scale-98 transition-all"
+                className={`px-7 py-3 rounded-full text-xs font-semibold shadow-sm transition-all ${
+                  !isChoiceAnswered || isSelecting
+                    ? 'bg-[#dedcd9] text-[#747371] cursor-not-allowed opacity-60'
+                    : 'bg-[#5769e7] hover:bg-[#4958be] text-white cursor-pointer active:scale-98'
+                }`}
               >
                 {isAdaptivePhase && currentIndex === questionQueue.length - 1 
                   ? 'Calculate My Position' 

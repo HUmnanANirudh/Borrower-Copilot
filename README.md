@@ -48,12 +48,12 @@ flowchart TD
 ```
 
 ### 1. AI: "What should I ask this borrower next?"
-The AI acts as an **adaptive interviewer**. It receives the borrower's current profile, the remaining candidate questions from the **Question Registry**, and the uncertainty in current outputs. It determines whether more information is needed and selects the single question with the highest marginal impact:
-* For **Priya** (Salaried engineer, ₹1.1L income, ₹8L wedding loan), the AI prioritizes variable bonus compensation to ensure the safe EMI holds during low bonus cycles.
-* For **Ravi** (Kirana store owner, unencumbered shop, ₹15L business loan), the AI prioritizes collateral ownership and business vintage to unlock a 9%–10.5% LAP instead of a 16%+ personal loan.
-* For **Anita** (Gig delivery rider, ₹28K income, ₹35K app debt), the AI prioritizes 30%+ instant app loans and recent bounce history to catch debt-spiral risk before sanctioning any new debt.
+The AI acts as an **adaptive interviewer**. It receives the borrower's current profile, the remaining candidate questions from the **Question Registry**, and the uncertainty in current outputs. It selects the single question with the highest marginal impact to tighten the rate and EMI bands:
+* For **Priya** (Salaried engineer, ₹1.1L income, ₹8L wedding loan), the AI prioritizes `variablePayPortionPercent` to haircut bonus volatility and protect the safe EMI ceiling.
+* For **Ravi** (Kirana store owner, unencumbered shop, ₹15L business loan), the AI prioritizes `hasUnencumberedCollateral` and `businessVintageYears` to unlock a 9%–10.5% LAP instead of a 16%+ personal loan.
+* For **Anita** (Gig delivery rider, ₹28K income, ₹35K app debt), the AI prioritizes `hasHighCostAppLoans` (30%+ instant apps) and `recentDelinquencyOrBounce` to catch debt-spiral risk before sanctioning any new debt.
 
-The AI cannot invent arbitrary questions. It can only select from the pre-vetted **Question Registry**.
+The AI cannot invent arbitrary questions. It selects strictly from the pre-vetted, type-safe **Question Registry** (`src/lib/questions/registry.ts`).
 
 ### 2. Rules Engine: "Given the answers, what are the numbers?"
 The core mathematical logic resides in an isolated TypeScript library (`src/lib/rules`). It calculates:
@@ -112,4 +112,31 @@ flowchart LR
     I4 --> O2
     O1 --> O3
     O1 --> O4
+```
+---
+
+## Codebase Structure
+
+```
+src/
+├── app/
+│   ├── page.tsx                    # Consumer marketing landing page
+│   ├── assess/page.tsx             # Dedicated 2-tier presentation assessment
+│   ├── results/page.tsx            # Personal assessment report & quote check
+│   ├── card/page.tsx               # Printable official borrower negotiation brief
+│   ├── card/[token]/page.tsx       # Stateless URL-shared negotiation brief
+│   ├── demo/page.tsx               # Hidden evaluator sandbox (Priya, Ravi, Anita)
+│   └── api/select-question/route.ts# Groq openai/gpt-oss-120b underwriter route
+├── components/
+│   ├── landing/                    # Landing page hero, value props, process, trust
+│   ├── quiz/                       # QuizContainer (max-w-4xl) & InputControls
+│   ├── results/                    # Bento grid report, stress test, quote checker
+│   ├── card/                       # PrintableCard & CardClient
+│   └── demo/                       # Live assumption overrides sandbox
+└── lib/
+    ├── questions/                  # Type-safe Question Registry & AI Selector
+    ├── rules/                      # Pure TypeScript deterministic underwriter
+    ├── personas.ts                 # Canonical benchmark profiles
+    ├── share.ts                    # Stateless URL token compression
+    └── types.ts                    # Core TypeScript domain models
 ```

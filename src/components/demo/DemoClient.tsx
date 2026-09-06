@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import { BorrowerProfile, Assessment, AssumptionOverrides } from '@/lib/types';
 import { PERSONA_PRIYA, PERSONA_RAVI, PERSONA_ANITA } from '@/lib/personas';
 import { evaluateAssessment } from '@/lib/rules/index';
-import { getPrioritizedQuestions } from '@/lib/quizzing';
+import { BASE_QUESTION_IDS, QUESTION_REGISTRY } from '@/lib/questions/registry';
+import { getEligibleAdaptiveQuestions } from '@/lib/questions/eligibility';
 import { 
   ShieldCheckIcon, 
   ArrowRight01Icon, 
@@ -48,7 +49,9 @@ export function DemoClient() {
 
   // Questions asked for this profile
   const questionsAsked = useMemo(() => {
-    return getPrioritizedQuestions(activePersona);
+    const base = BASE_QUESTION_IDS.map(id => QUESTION_REGISTRY[id]).filter(Boolean);
+    const adaptive = getEligibleAdaptiveQuestions(activePersona, BASE_QUESTION_IDS as string[]);
+    return [...base, ...adaptive];
   }, [activePersona]);
 
   const formatINR = (amt: number) => {

@@ -195,7 +195,7 @@ export const QUESTION_REGISTRY: Record<string, RegisteredQuestion> = {
     appliesWhen: (profile) => {
       const requested = profile.requestedAmount || 0;
       return (
-        requested >= 700000 ||
+        requested >= 1000000 ||
         profile.primaryIncomeSignal === 'self_employed_business' ||
         profile.loanPurpose === 'business_expansion'
       );
@@ -203,7 +203,7 @@ export const QUESTION_REGISTRY: Record<string, RegisteredQuestion> = {
     basePriority: 9,
     shouldAsk: (profile) => {
       return (
-        (profile.requestedAmount !== undefined && profile.requestedAmount >= 800000) ||
+        (profile.requestedAmount !== undefined && profile.requestedAmount >= 1000000) ||
         profile.primaryIncomeSignal === 'self_employed_business' ||
         profile.loanPurpose === 'business_expansion'
       );
@@ -247,7 +247,10 @@ export const QUESTION_REGISTRY: Record<string, RegisteredQuestion> = {
     max: 40,
     defaultValue: 5,
     targetOutputs: ['confidence', 'rate', 'amount'],
-    appliesWhen: (profile) => profile.primaryIncomeSignal === 'self_employed_business',
+    appliesWhen: (profile) => (
+      profile.primaryIncomeSignal === 'self_employed_business' ||
+      profile.primaryIncomeSignal === 'self_employed_professional'
+    ),
     basePriority: 8,
     shouldAsk: (profile) => profile.primaryIncomeSignal === 'self_employed_business',
     informationScore: (profile) => profile.primaryIncomeSignal === 'self_employed_business' ? 9 : 0,
@@ -268,20 +271,21 @@ export const QUESTION_REGISTRY: Record<string, RegisteredQuestion> = {
     defaultValue: 'false',
     targetOutputs: ['verdict', 'rate', 'confidence'],
     appliesWhen: (profile) => {
-      const income = profile.netMonthlyIncome || 1;
       const emi = profile.existingMonthlyEMI || 0;
+      if (emi <= 0 && profile.loanPurpose !== 'debt_consolidation') return false;
+      const income = profile.netMonthlyIncome || 1;
       return (
         profile.primaryIncomeSignal === 'gig_freelance' ||
         profile.loanPurpose === 'debt_consolidation' ||
-        (emi / income) >= 0.20 ||
-        profile.creditScoreStatus === 'below_650' ||
-        profile.creditScoreStatus === 'unknown'
+        (emi / income) >= 0.15 ||
+        profile.creditScoreStatus === 'below_650'
       );
     },
     basePriority: 10,
     shouldAsk: (profile) => {
-      const income = profile.netMonthlyIncome || 1;
       const emi = profile.existingMonthlyEMI || 0;
+      if (emi <= 0 && profile.loanPurpose !== 'debt_consolidation') return false;
+      const income = profile.netMonthlyIncome || 1;
       return (
         profile.primaryIncomeSignal === 'gig_freelance' ||
         profile.loanPurpose === 'debt_consolidation' ||
@@ -307,19 +311,21 @@ export const QUESTION_REGISTRY: Record<string, RegisteredQuestion> = {
     defaultValue: 'false',
     targetOutputs: ['verdict', 'confidence', 'rate'],
     appliesWhen: (profile) => {
+      const emi = profile.existingMonthlyEMI || 0;
+      if (emi <= 0 && profile.hasHighCostAppLoans !== true) return false;
       return (
         profile.creditScoreStatus === 'unknown' ||
         profile.creditScoreStatus === 'below_650' ||
-        profile.hasHighCostAppLoans === true ||
         profile.primaryIncomeSignal === 'gig_freelance'
       );
     },
     basePriority: 10,
     shouldAsk: (profile) => {
+      const emi = profile.existingMonthlyEMI || 0;
+      if (emi <= 0 && profile.hasHighCostAppLoans !== true) return false;
       return (
         profile.creditScoreStatus === 'unknown' ||
         profile.creditScoreStatus === 'below_650' ||
-        profile.hasHighCostAppLoans === true ||
         profile.primaryIncomeSignal === 'gig_freelance'
       );
     },

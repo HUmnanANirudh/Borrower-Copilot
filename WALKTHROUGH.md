@@ -1,27 +1,42 @@
-# BorrowIQ
+# BorrowIQ — Technical Walkthrough & Implementation Details
 
-## Application Design
+## Application Architecture & Philosophy
 
-I built **BorrowIQ**, a client-side application that protects user privacy and adapts to the risk profile of each borrower. 
+**BorrowIQ** is a zero-footprint borrower advisory copilot that levels the information asymmetry between Indian retail borrowers and commercial lenders.
 
-The application generates a **Negotiation Card**. This document provides the borrower with four clear data points:
-1. **The decision to borrow:** Whether they should take a loan, and what to do instead if they should not.
-2. **The maximum safe EMI:** A limit based on their actual cash flow, not on bank maximums.
-3. **The fair interest rate:** A defined rate band and the reasons why they qualify for it.
-4. **The safe loan size:** The amount they should ask for, compared to the larger amount the bank will offer.
+It generates an official **Borrower Negotiation Brief** providing four definitive outputs:
+1. **The Decision to Borrow:** Grounded in a conservative 35% safe FOIR (Fixed Obligation to Income Ratio) and non-discretionary living cost floors.
+2. **The Safe Repayment Ceiling:** An absolute monthly limit protecting a 10% emergency buffer, contrasting against aggressive 50%–60% bank maximums.
+3. **The Fair Rate Band & All-In APR:** Disclosing true borrowing costs with statutory 18% GST and upfront processing fees.
+4. **The Safe Loan Size vs. Sanction:** Demonstrating why a 36–48 month loan avoids a 5-year debt trap.
 
-### Core Functions
-* **Adaptive Question Engine:** The interface removes unnecessary questions. A salaried worker with an excellent credit score does not see questions about business history or loan defaults. A gig worker with an unknown credit score sees detailed behavioral questions. 
-* **Zero Backend Data Storage:** The application processes all inputs in the browser. It compresses the final mathematical output into a secure URL hash. The user can share or save this URL without a database.
-* **AI Question Selector:** I integrated the Vercel AI SDK with Groq (Llama-3.3-70b). The AI does not calculate financial numbers. Instead, it inspects the borrower's preliminary profile and selects the single most impactful question from a pre-vetted Question Registry, or decides that enough information exists to produce a reliable assessment.
+---
 
-## Future Additions
+## Core System Modules
 
-1. **Account Aggregator Integration:** Allow the user to link their bank securely instead of entering income and expenses manually. The application can analyze transactions to determine exact cash-flow volatility and find hidden loan payments.
-2. **Direct Credit Bureau Access:** Add an option to retrieve a credit score via OTP. This removes the uncertainty of the "Unknown" credit score category and narrows the fair rate bands significantly.
-3. **Product Matching Engine:** The application currently recommends generic categories like "Secured Property Loan" or "Personal Loan". I would add real market products and live API-driven interest rates.
+### 1. Two-Tier Dynamic Question Engine
+- **Tier 1: Core Must Questions (8 Baseline)**: Sizing, Purpose, Employment Category, Net Inflow, Debt Servicing, Living Expenses, Age, Bureau Tier. Answering these alone produces all four outputs with wider, honest confidence bands.
+- **Tier 2: Targeted Adaptive Tightening (Max 1–2 Questions)**:
+  - Salaried Corporate: Evaluates `variablePayPortionPercent` (bonus discount haircuts) and `emergencySavingsMonths`.
+  - Kirana / SME: Evaluates `businessVintageYears` (10+ year operating longevity offsets missing bureau score) and `hasUnencumberedCollateral` (unlocks 9.0%–10.5% LAP).
+  - Gig / High Debt: Evaluates `hasHighCostAppLoans` (30%+ predatory apps) and `recentDelinquencyOrBounce`.
 
-## Features to Remove
+### 2. AI Question Selector`.
+- Operates under strict JSON mode (`response_format: { type: "json_object" }`) with `reasoning_effort: "low"` and `max_completion_tokens: 400`.
+- The AI never calculates financial math or sanction amounts; its sole responsibility is selecting the single most informative question from `src/lib/questions/registry.ts` to tighten output ranges.
+- If the AI request times out or is offline, the system seamlessly falls back to local heuristic ranking without interrupting the user experience.
 
-1. **Unnecessary Inputs:** If usage data shows that borrowers skip the "Emergency Savings Months" question, I will remove it. It rarely changes the final debt distress score unless the borrower is already failing.
-2. **Complex Animations:** The quiz uses smooth transitions that may reduce performance on older mobile devices. I will replace these with standard HTML forms to ensure the application works on all devices.
+### 3. Pure TypeScript Rules Engine (`src/lib/rules/`)
+- Fully isolated from the React UI layer for deterministic financial auditing.
+- Modules:
+  - `affordability.ts`: 35% safe FOIR, 20% living expense floor, 10% cash buffer.
+  - `apr.ts`: RBI-style all-in APR calculation factoring processing fees and statutory 18% GST.
+  - `rates.ts`: Market baseline rates, credit tier adjustments, secured collateral routing.
+  - `stress.ts`: 20% income reduction stress testing.
+  - `pipeline.ts`: Composes all lenses into the unified assessment object.
+
+### 4. Zero Backend Data Storage & Stateless URLs
+- All assessment calculations execute client-side.
+- Shareable cards use URL-safe Base64 encoding (`/card/[token]`) enabling frictionless sharing and printing with zero database persistence.
+
+---

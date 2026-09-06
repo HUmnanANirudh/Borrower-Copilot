@@ -20,7 +20,7 @@ export function InputControls({
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {currentQuestion.options.map((opt: QuizOption) => {
-          const isSelected = String(currentValue) === String(opt.value);
+          const isSelected = currentValue !== undefined && currentValue !== null && String(currentValue) === String(opt.value);
           return (
             <button
               key={String(opt.value)}

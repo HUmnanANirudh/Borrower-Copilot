@@ -42,7 +42,6 @@ export async function POST(req: Request) {
     // 3. Fallback Heuristic
     const fallback = rankCandidatesHeuristically(candidates, profile);
 
-    // If Groq API key is not present, use deterministic ranking
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
       return Response.json({
@@ -53,7 +52,6 @@ export async function POST(req: Request) {
       });
     }
 
-    // 4. Invoke Groq AI Question Selector with openai/gpt-oss-120b
     const candidatePromptList = candidates.map(c => ({
       id: c.id,
       title: c.title,
@@ -62,15 +60,24 @@ export async function POST(req: Request) {
     }));
 
     const systemPrompt = `You are the AI Adaptive Underwriter for BorrowIQ, an Indian borrower advisory system.
-The borrower has already completed Tier 1 (the 8 core Must Questions: Purpose, Amount, Employment, Income, EMIs, Expenses, Age, Credit Tier).
+The borrower has completed Tier 1 (the 8 core Must Questions: Purpose, Amount, Employment, Income, EMIs, Expenses, Age, Credit Tier).
 Your SOLE responsibility is to select ONE additional question from the eligible candidate list that will TIGHTEN their numbers the most, OR return "shouldStop": true.
 
 ARCHETYPE TIGHTENING RULES:
 1. "A salaried IT employee and a kirana owner should not see the same questions. Skip what does not apply."
-2. Salaried Corporate / IT employee: Prioritize "variablePayPortionPercent" (to haircut bonus volatility and protect safe EMI) or "emergencySavingsMonths" (to narrow confidence band). NEVER ask about business shop vintage!
-3. Kirana Owner / Self-Employed: Prioritize "hasUnencumberedCollateral" (to test if ₹7L+ can switch to 9.0%–10.5% LAP instead of 16%+ unsecured business loan) or "businessVintageYears" (10+ years mitigates lack of credit bureau score). NEVER ask about corporate variable bonuses!
-4. Gig / High Debt: Prioritize "hasHighCostAppLoans" (identifies predatory 30%+ apps) or "recentDelinquencyOrBounce" (identifies bank rejection hard-stops).
-5. If the remaining candidate questions will not materially move the rate band, safe EMI ceiling, or product route, return "shouldStop": true.
+2. Salaried Corporate / IT employee:
+   - Primary: "variablePayPortionPercent". If present in candidate list, you MUST select this question to calculate bonus discount haircuts and protect safe EMI ceiling.
+   - Secondary: "emergencySavingsMonths" (measures buffer against job loss).
+   - NEVER select "businessVintageYears"!
+   - DO NOT select "hasHighCostAppLoans" or "recentDelinquencyOrBounce" if existingMonthlyEMI is 0.
+3. Kirana Owner / Self-Employed Business:
+   - Primary: "businessVintageYears" (10+ years operating history mitigates lack of credit bureau score).
+   - Secondary: "hasUnencumberedCollateral" (to test if ₹10L+ can switch to 9.0%–10.5% LAP instead of 16%+ unsecured business loan).
+   - NEVER select "variablePayPortionPercent"!
+4. Gig / High Debt:
+   - Primary: "hasHighCostAppLoans" (if debt > 0) or "emergencySavingsMonths".
+5. IMPORTANT: DO NOT return "shouldStop": true if the borrower's archetype primary question (e.g. "variablePayPortionPercent" for salaried corporate, "businessVintageYears" for kirana) is in the candidate list. Always prioritize that question first!
+6. Only return "shouldStop": true if all relevant archetype questions have already been answered or none of the remaining candidates apply to this borrower.
 
 Return ONLY valid JSON matching this schema:
 {
@@ -92,9 +99,6 @@ ELIGIBLE CANDIDATE QUESTIONS:
 ${JSON.stringify(candidatePromptList, null, 2)}
 
 Select next question id or stop. Return JSON only:`;
-
-    // Direct fetch to Groq API with openai/gpt-oss-120b
-    // Timeout set to 20s to allow full model inference without aborting
     const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
