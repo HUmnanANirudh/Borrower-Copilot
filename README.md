@@ -6,6 +6,8 @@ Every lender uses a credit model to determine what a borrower receives. The borr
 
 **BorrowIQ** eliminates that information gap. It is not a credit model; it is a **borrower self-assessment engine** that equips the borrower to negotiate from a position of informed strength.
 
+<img width="1405" height="832" alt="image" src="https://github.com/user-attachments/assets/477f1fc2-cbd0-4d50-9b32-85af60f0c22f" />
+
 > **Core Architectural Principle:**  
 > BorrowIQ uses AI to decide what information to ask for, but never uses AI to decide what the borrower should borrow.
 
