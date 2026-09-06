@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BorrowerProfile } from '@/lib/types';
@@ -26,16 +26,41 @@ export function QuizContainer() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [questionMetaMap, setQuestionMetaMap] = useState<Record<string, QuestionMeta>>({});
   const [isSelecting, setIsSelecting] = useState(false);
+  const [analysisProgress, setAnalysisProgress] = useState(15);
+  const [analysisStage, setAnalysisStage] = useState('Analyzing debt-to-income and cash-flow stability...');
+
+  React.useEffect(() => {
+    if (!isSelecting) return;
+
+    const interval = setInterval(() => {
+      setAnalysisProgress(prev => {
+        if (prev < 45) {
+          setAnalysisStage('Checking debt-to-income ratio and interest rate sensitivity...');
+          return prev + 6;
+        } else if (prev < 72) {
+          setAnalysisStage('Evaluating archetype risk factors with AI underwriter...');
+          return prev + 4;
+        } else if (prev < 90) {
+          setAnalysisStage('Formulating tailored range-tightening questions...');
+          return prev + 2;
+        }
+        return prev;
+      });
+    }, 110);
+
+    return () => clearInterval(interval);
+  }, [isSelecting]);
 
   const currentQuestion = questionQueue[currentIndex];
   const totalBaseQuestions = BASE_QUESTION_IDS.length;
   const isAdaptivePhase = currentIndex >= totalBaseQuestions;
   const currentMeta = currentQuestion ? questionMetaMap[currentQuestion.id] : undefined;
 
-  const PROGRESS_MAP = [12, 25, 38, 50, 62, 75, 87, 92, 96, 100];
   const progressPercent = isSelecting
-    ? Math.min(99, (PROGRESS_MAP[Math.min(currentIndex, PROGRESS_MAP.length - 1)] || 50) + 4)
-    : (PROGRESS_MAP[Math.min(currentIndex, PROGRESS_MAP.length - 1)] || 95);
+    ? Math.min(98, Math.round(((currentIndex + 1) / (totalBaseQuestions + 1)) * 100) + 5)
+    : isAdaptivePhase
+      ? 95
+      : Math.min(90, Math.round(((currentIndex + 1) / (totalBaseQuestions + 1)) * 100));
 
   const formatINR = (amt: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -45,11 +70,11 @@ export function QuizContainer() {
     }).format(amt);
   };
 
-  const handleAnswer = (field: keyof BorrowerProfile, value: any) => {
-    let parsedValue = value;
+  const handleAnswer = (field: keyof BorrowerProfile, value: string | number | boolean) => {
+    let parsedValue: string | number | boolean = value;
     if (value === 'true') parsedValue = true;
     if (value === 'false') parsedValue = false;
-    if (field === 'variablePayPortionPercent' || field === 'emergencySavingsMonths' || field === 'businessVintageYears') {
+    if (field === 'variablePayPortionPercent' || field === 'emergencySavingsMonths' || field === 'businessVintageYears' || field === 'professionalPracticeYears') {
       parsedValue = Number(value);
     }
     setProfile(prev => ({
@@ -66,7 +91,7 @@ export function QuizContainer() {
       primaryIncomeSignal: finalProfile.primaryIncomeSignal || 'salaried_corporate',
       netMonthlyIncome: finalProfile.netMonthlyIncome || 75000,
       existingMonthlyEMI: finalProfile.existingMonthlyEMI ?? 0,
-      householdLivingExpenses: finalProfile.householdLivingExpenses || 30000,
+      householdLivingExpenses: finalProfile.householdLivingExpenses || Math.round((finalProfile.netMonthlyIncome || 75000) * 0.35),
       creditScoreStatus: finalProfile.creditScoreStatus || 'unknown',
       ...finalProfile,
     } as BorrowerProfile;
@@ -102,6 +127,8 @@ export function QuizContainer() {
       return;
     }
 
+    setAnalysisProgress(20);
+    setAnalysisStage('Evaluating cash-flow stability and living cost floors...');
     setIsSelecting(true);
 
     try {
@@ -136,12 +163,7 @@ export function QuizContainer() {
   };
 
   const handleSkip = () => {
-    if (currentQuestion?.id === 'creditScoreStatus') {
-      handleAnswer('creditScoreStatus', 'unknown');
-      handleNext();
-      return;
-    }
-    if (isAdaptivePhase) {
+    if (isAdaptivePhase || currentIndex >= totalBaseQuestions - 1) {
       finishAssessment(profile);
       return;
     }
@@ -155,7 +177,6 @@ export function QuizContainer() {
     ? profile[currentQuestion.id as keyof BorrowerProfile]
     : (profile[currentQuestion.id as keyof BorrowerProfile] ?? currentQuestion.defaultValue);
 
-  const isAiSelected = currentMeta?.source === 'ai_groq';
   const isChoiceAnswered = currentQuestion.inputType === 'choice_pill'
     ? (currentValue !== undefined && currentValue !== null)
     : true;
@@ -173,18 +194,9 @@ export function QuizContainer() {
           </Link>
 
           <div className="flex items-center gap-2">
-            {isAdaptivePhase ? (
-              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-white text-[#171717] border border-[#ebeae8]">
-                {isAiSelected ? 'Adaptive Tightening (Groq gpt-oss-120b)' : 'Adaptive Tightening'}
-              </span>
-            ) : (
-              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-white text-[#5d5b59] border border-[#ebeae8]">
-                Must Question
-              </span>
-            )}
-            <span className="text-xs font-semibold text-[#171717] px-3 py-1 rounded-full bg-white border border-[#ebeae8]">
+            <span className="text-xs font-semibold text-[#171717] px-3.5 py-1 rounded-full bg-white border border-[#ebeae8] shadow-xs">
               {isAdaptivePhase 
-                ? `Tightening Q${currentIndex - totalBaseQuestions + 1}` 
+                ? 'Adaptive Range Check' 
                 : `Step ${currentIndex + 1} of ${totalBaseQuestions}`}
             </span>
           </div>
@@ -209,7 +221,7 @@ export function QuizContainer() {
             <div className="w-2 h-2 rounded-full bg-[#5769e7] mt-1.5 shrink-0" />
             <div>
               <span className="text-[11px] font-bold uppercase tracking-wider block text-[#5d5b59]">
-                {isAiSelected ? 'Prioritized by Groq gpt-oss-120b' : 'Adaptive Underwriting Check'}
+                Adaptive Underwriting Check
               </span>
               <p className="text-xs text-[#171717] font-medium leading-relaxed mt-0.5">
                 {currentMeta.reason}
@@ -231,26 +243,36 @@ export function QuizContainer() {
               <h2 className="text-xl font-bold text-[#171717] tracking-tight mb-2">
                 Analyzing Risk Signals
               </h2>
-            
-              {/* Animated progress bar */}
-              <div className="w-56 h-1.5 bg-[#ebeae8] rounded-full overflow-hidden">
-                <div className="h-full bg-[#5769e7] rounded-full animate-pulse w-full" />
+
+              {/* Real animated progress bar */}
+              <div className="w-64 sm:w-80 h-2 bg-[#ebeae8] rounded-full overflow-hidden mb-3">
+                <div 
+                  className="h-full bg-[#5769e7] rounded-full transition-all duration-200 ease-out" 
+                  style={{ width: `${Math.min(95, Math.round(analysisProgress))}%` }}
+                />
               </div>
+
+              <p className="text-xs text-[#747371] font-medium max-w-sm transition-all">
+                {analysisStage}
+              </p>
             </div>
           ) : (
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-3">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#747371]">
-                  {isAdaptivePhase ? 'Adaptive Question · Range Tightening' : `Must Question ${currentIndex + 1} of ${totalBaseQuestions}`}
-                </span>
-                <span className="text-xs font-mono text-[#747371]">
-                  Q{currentIndex + 1}
+                  {isAdaptivePhase ? 'Adaptive Range Tightening' : 'Essential Intake'}
                 </span>
               </div>
 
               <h1 className="text-2xl sm:text-3xl font-bold text-[#171717] leading-tight tracking-tight mb-2">
                 {currentQuestion.title}
               </h1>
+
+              {currentQuestion.subtitle && (
+                <p className="text-xs sm:text-sm text-[#747371] leading-relaxed mb-4">
+                  {currentQuestion.subtitle}
+                </p>
+              )}
 
               <div className="py-4 sm:py-6">
                 <InputControls 
@@ -279,16 +301,14 @@ export function QuizContainer() {
               <div />
             )}
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {(currentQuestion.canSkip || isAdaptivePhase || currentIndex === totalBaseQuestions - 1) && (
                 <button
                   type="button"
                   onClick={handleSkip}
-                  className="text-xs font-semibold text-[#747371] hover:text-[#171717] px-3 py-2 cursor-pointer transition-colors"
+                  className="text-xs font-semibold text-[#747371] hover:text-[#171717] px-2.5 sm:px-3 py-2 cursor-pointer transition-colors"
                 >
-                  {isAdaptivePhase || currentIndex === totalBaseQuestions - 1 
-                    ? 'Calculate My Position (Wide Band)' 
-                    : 'Skip'}
+                  Skip
                 </button>
               )}
 
@@ -296,15 +316,13 @@ export function QuizContainer() {
                 type="button"
                 disabled={!isChoiceAnswered || isSelecting}
                 onClick={handleNext}
-                className={`px-7 py-3 rounded-full text-xs font-semibold shadow-sm transition-all ${
+                className={`px-5 sm:px-7 py-2.5 sm:py-3 rounded-full text-xs font-semibold shadow-sm transition-all ${
                   !isChoiceAnswered || isSelecting
                     ? 'bg-[#dedcd9] text-[#747371] cursor-not-allowed opacity-60'
                     : 'bg-[#5769e7] hover:bg-[#4958be] text-white cursor-pointer active:scale-98'
                 }`}
               >
-                {isAdaptivePhase && currentIndex === questionQueue.length - 1 
-                  ? 'Calculate My Position' 
-                  : (currentIndex === totalBaseQuestions - 1 ? 'Tighten My Range' : 'Continue')}
+                Continue
               </button>
             </div>
           </div>

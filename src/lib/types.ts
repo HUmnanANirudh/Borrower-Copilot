@@ -42,6 +42,7 @@ export interface BorrowerProfile {
   // Dynamic Information-Value Variables
   coApplicantIncome?: number;        // e.g. Ravi's wife earning ₹18,000/mo
   businessVintageYears?: number;     // Operating track record for self-employed
+  professionalPracticeYears?: number;// Active practice vintage for doctors, CAs, architects
   itrDeclaredMonthlyTaxable?: number;// Documented tax return income vs cash turnover
   hasUnencumberedCollateral?: boolean; // Property/premises ownership (e.g. Ravi's shop)
   collateralEstimatedValue?: number; // Estimated value of property/asset
@@ -55,7 +56,7 @@ export interface BorrowerProfile {
 }
 
 export interface QuizOption {
-  value: any;
+  value: string | number | boolean;
   label: string;
   description?: string;
   badge?: string;
@@ -72,7 +73,7 @@ export interface QuizQuestion {
   min?: number;
   max?: number;
   step?: number;
-  defaultValue: any;
+  defaultValue: string | number | boolean;
   targetOutputs: string[];
   shouldAsk: (profile: Partial<BorrowerProfile>) => boolean;
   informationScore: (profile: Partial<BorrowerProfile>) => number;
@@ -240,6 +241,7 @@ export interface LenderQuoteEvaluation {
   safeMaxEMI: number;
   isEMIExceeded: boolean;
   effectiveAllInAPR: number;         // True APR including fee + insurance + GST
+  totalOutflow: number;              // Total cash outflow = Principal + Interest + Fees
   totalCostOfCredit: number;         // Total Interest + Upfront Fees
   counterOfferAdvice: string[];
 }

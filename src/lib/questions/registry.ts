@@ -247,13 +247,29 @@ export const QUESTION_REGISTRY: Record<string, RegisteredQuestion> = {
     max: 40,
     defaultValue: 5,
     targetOutputs: ['confidence', 'rate', 'amount'],
-    appliesWhen: (profile) => (
-      profile.primaryIncomeSignal === 'self_employed_business' ||
-      profile.primaryIncomeSignal === 'self_employed_professional'
-    ),
+    appliesWhen: (profile) => profile.primaryIncomeSignal === 'self_employed_business',
     basePriority: 8,
     shouldAsk: (profile) => profile.primaryIncomeSignal === 'self_employed_business',
     informationScore: (profile) => profile.primaryIncomeSignal === 'self_employed_business' ? 9 : 0,
+  },
+
+  professionalPracticeYears: {
+    id: 'professionalPracticeYears',
+    title: 'How many continuous years have you been in active licensed practice?',
+    subtitle: 'Banks offer specialized professional loan rates (10.5%–11.5%) for doctors, CAs, and architects with 3+ years in practice.',
+    whyWeAsk: 'A 3+ year professional track record proves stable practice cash flow and qualifies for prime doctor/CA tiers.',
+    aiDescription: 'Professional practice vintage for doctors/CAs/architects. 3+ years qualifies for specialized low-rate professional loans.',
+    affects: ['confidence', 'rate', 'amount'],
+    canSkip: true,
+    inputType: 'number_stepper',
+    min: 1,
+    max: 40,
+    defaultValue: 5,
+    targetOutputs: ['confidence', 'rate', 'amount'],
+    appliesWhen: (profile) => profile.primaryIncomeSignal === 'self_employed_professional',
+    basePriority: 9,
+    shouldAsk: (profile) => profile.primaryIncomeSignal === 'self_employed_professional',
+    informationScore: (profile) => profile.primaryIncomeSignal === 'self_employed_professional' ? 9 : 0,
   },
 
   hasHighCostAppLoans: {

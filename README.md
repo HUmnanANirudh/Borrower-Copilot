@@ -17,7 +17,7 @@ Every lender uses a credit model to determine what a borrower receives. The borr
 flowchart TD
     subgraph Borrower["Borrower Flow"]
         Start["Borrower opens /assess"]
-        Base["Answers 8 Base Questions"]
+        Base["Answers 8 Core Baseline Intake Questions"]
     end
 
     subgraph AISelector["AI Question Selector"]

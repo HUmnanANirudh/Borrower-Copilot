@@ -11,10 +11,7 @@ import { getEligibleAdaptiveQuestions } from '@/lib/questions/eligibility';
 import { 
   ShieldCheckIcon, 
   ArrowRight01Icon, 
-  RotateLeftIcon,
-  CheckmarkCircle01Icon,
-  AlertCircleIcon,
-  CancelCircleIcon
+  RotateLeftIcon
 } from '@/components/icons';
 
 export function DemoClient() {

@@ -1,13 +1,12 @@
 import React from 'react';
 import { Assessment, BorrowerProfile } from '@/lib/types';
-import { ShieldCheckIcon, InfoCircleIcon } from '@/components/icons';
 
 interface AmountComparisonProps {
   assessment: Assessment;
-  profile: BorrowerProfile;
+  profile?: BorrowerProfile;
 }
 
-export function AmountComparison({ assessment, profile }: AmountComparisonProps) {
+export function AmountComparison({ assessment }: AmountComparisonProps) {
   const formatLakhs = (amt: number) => `₹${(amt / 100000).toFixed(1)} Lakhs`;
 
   return (

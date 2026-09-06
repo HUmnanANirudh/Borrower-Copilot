@@ -67,6 +67,10 @@ export function calculateFairRates(profile: BorrowerProfile): {
     // 10+ years operating history provides deterministic proof of cash-flow resilience
     stabilityAdjustment -= 0.5;
     confidenceReasons.push('Long business operating vintage (10+ years) mitigates lack of formal bureau score.');
+  } else if (profile.professionalPracticeYears && profile.professionalPracticeYears >= 3) {
+    // 3+ years active licensed practice qualifies for prime professional rates
+    stabilityAdjustment -= 0.5;
+    confidenceReasons.push('Verified professional practice vintage (3+ years) qualifies for specialized low-rate doctor/CA loan tiers.');
   } else if (profile.primaryIncomeSignal === 'gig_freelance') {
     stabilityAdjustment += 2.0;
   }

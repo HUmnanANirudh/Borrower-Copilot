@@ -197,11 +197,11 @@ export function QuoteChecker({ assessment }: QuoteCheckerProps) {
                 Total Outflow Over Tenure
               </span>
               <span className="text-2xl font-bold text-[#171717] block">
-                {formatINR(evaluation.totalCostOfCredit)}
+                {formatINR(evaluation.totalOutflow)}
               </span>
               <div className="pt-3 mt-3 border-t border-[#ebeae8] flex items-center justify-between text-xs text-[#5d5b59]">
                 <span>Principal: {formatINR(loanAmount)}</span>
-                <span>Interest + Fees: {formatINR(evaluation.totalCostOfCredit - loanAmount)}</span>
+                <span>Interest + Fees: {formatINR(evaluation.totalCostOfCredit)}</span>
               </div>
             </div>
 

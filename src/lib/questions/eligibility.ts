@@ -55,8 +55,12 @@ export function rankCandidatesHeuristically(
     }
 
     if (q.id === 'businessVintageYears' && profile.primaryIncomeSignal === 'self_employed_business') {
-      score += 8;
+      score += 15;
       rationale = 'Tests operating track record to compensate for lack of credit bureau score.';
+    }
+    if (q.id === 'professionalPracticeYears' && profile.primaryIncomeSignal === 'self_employed_professional') {
+      score += 15;
+      rationale = 'Tests professional practice vintage for doctors/CAs/architects to qualify for specialized low-rate professional loans.';
     }
     if (q.id === 'hasHighCostAppLoans' && (profile.primaryIncomeSignal === 'gig_freelance' || profile.loanPurpose === 'debt_consolidation' || ((profile.existingMonthlyEMI || 0) / (profile.netMonthlyIncome || 1)) >= 0.20)) {
       score += 14;

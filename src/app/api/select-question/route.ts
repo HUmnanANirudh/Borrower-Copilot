@@ -1,7 +1,6 @@
-import { createGroq } from '@ai-sdk/groq';
-import { generateText } from 'ai';
 import { BorrowerProfile } from '@/lib/types';
 import { getEligibleAdaptiveQuestions, rankCandidatesHeuristically } from '@/lib/questions/eligibility';
+import { BASE_QUESTION_IDS } from '@/lib/questions/registry';
 import { evaluateAssessment } from '@/lib/rules';
 
 interface SelectQuestionRequest {
@@ -27,6 +26,18 @@ export async function POST(req: Request) {
         shouldStop: true,
         questionId: null,
         reason: 'All applicable risk variables have been resolved.',
+        mode: 'deterministic',
+      });
+    }
+
+    // If already asked 2 adaptive questions, stop immediately
+    const baseIdsSet = new Set<string>(BASE_QUESTION_IDS as string[]);
+    const adaptiveCount = answeredIds.filter(id => !baseIdsSet.has(id)).length;
+    if (adaptiveCount >= 2) {
+      return Response.json({
+        shouldStop: true,
+        questionId: null,
+        reason: 'Sufficient adaptive risk variables have been resolved.',
         mode: 'deterministic',
       });
     }
@@ -60,30 +71,40 @@ export async function POST(req: Request) {
     }));
 
     const systemPrompt = `You are the AI Adaptive Underwriter for BorrowIQ, an Indian borrower advisory system.
-The borrower has completed Tier 1 (the 8 core Must Questions: Purpose, Amount, Employment, Income, EMIs, Expenses, Age, Credit Tier).
-Your SOLE responsibility is to select ONE additional question from the eligible candidate list that will TIGHTEN their numbers the most, OR return "shouldStop": true.
+The borrower has already completed the 8 core baseline intake questions (Purpose, Amount, Employment Signal, Net Inflow, Debt EMIs, Living Expenses, Age, Bureau Score).
+Your SOLE responsibility is to select ONE targeted question from the eligible candidate list that will TIGHTEN their numbers the most for their specific borrower archetype, OR return "shouldStop": true if no remaining candidate materially tightens their terms.
 
 ARCHETYPE TIGHTENING RULES:
 1. "A salaried IT employee and a kirana owner should not see the same questions. Skip what does not apply."
 2. Salaried Corporate / IT employee:
    - Primary: "variablePayPortionPercent". If present in candidate list, you MUST select this question to calculate bonus discount haircuts and protect safe EMI ceiling.
-   - Secondary: "emergencySavingsMonths" (measures buffer against job loss).
+   - If "variablePayPortionPercent" is already answered or not in list, return "shouldStop": true.
    - NEVER select "businessVintageYears"!
-   - DO NOT select "hasHighCostAppLoans" or "recentDelinquencyOrBounce" if existingMonthlyEMI is 0.
 3. Kirana Owner / Self-Employed Business:
    - Primary: "businessVintageYears" (10+ years operating history mitigates lack of credit bureau score).
    - Secondary: "hasUnencumberedCollateral" (to test if ₹10L+ can switch to 9.0%–10.5% LAP instead of 16%+ unsecured business loan).
+   - NEVER select "variablePayPortionPercent" or "professionalPracticeYears"!
+4. Self-Employed Professional (Doctor / CA / Architect):
+   - Primary: "professionalPracticeYears" (3+ years active licensed practice qualifies for prime doctor/CA loan tiers at 10.5%–11.5%).
+   - If "professionalPracticeYears" is already answered or not in list, return "shouldStop": true.
+   - NEVER select "businessVintageYears" (they do not operate retail shops)!
    - NEVER select "variablePayPortionPercent"!
-4. Gig / High Debt:
+5. Gig Platform / Freelancer / High Debt:
    - Primary: "hasHighCostAppLoans" (if debt > 0) or "emergencySavingsMonths".
-5. IMPORTANT: DO NOT return "shouldStop": true if the borrower's archetype primary question (e.g. "variablePayPortionPercent" for salaried corporate, "businessVintageYears" for kirana) is in the candidate list. Always prioritize that question first!
-6. Only return "shouldStop": true if all relevant archetype questions have already been answered or none of the remaining candidates apply to this borrower.
+6. CRITICAL STOPPING RULE:
+   - If the borrower's archetype primary question has already been answered, or if no remaining candidate will materially alter the rate band or safe EMI, you MUST return "shouldStop": true with questionId: null.
+   - Do NOT ask more than 1 (at most 2) adaptive questions total!
+7. DYNAMIC QUESTION FORMULATION:
+   - Generate "dynamicTitle": A natural question title contextualized specifically to this borrower's profession, income, or requested amount.
+   - Generate "dynamicSubtitle": A clear explanation of the underwriting consequence in Indian banking terms.
 
 Return ONLY valid JSON matching this schema:
 {
   "shouldStop": boolean,
   "questionId": string | null,
-  "reason": "One direct sentence explaining why this question is being prioritized to tighten this borrower's specific terms."
+  "reason": "One direct sentence explaining why this question is being prioritized to tighten this borrower's specific terms.",
+  "dynamicTitle": "Tailored, natural question title customized for this specific borrower",
+  "dynamicSubtitle": "Contextual subtitle explaining the financial underwriting impact"
 }`;
 
     const userPrompt = `CURRENT BORROWER PROFILE:
@@ -140,6 +161,8 @@ Select next question id or stop. Return JSON only:`;
             shouldStop: false,
             questionId: parsed.questionId,
             reason: parsed.reason || fallback.reason,
+            dynamicTitle: parsed.dynamicTitle || null,
+            dynamicSubtitle: parsed.dynamicSubtitle || null,
             mode: 'ai_groq',
           });
         }

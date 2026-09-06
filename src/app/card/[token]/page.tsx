@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { decodeCardPayload } from '@/lib/share';
 import { PrintableCard } from '@/components/card/PrintableCard';
 import { BorrowerProfile, Assessment } from '@/lib/types';
-import { ShieldCheckIcon, ArrowRight01Icon } from '@/components/icons';
+import { ArrowRight01Icon } from '@/components/icons';
 
 interface SharedCardPageProps {
   params: Promise<{ token: string }>;

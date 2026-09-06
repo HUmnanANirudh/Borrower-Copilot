@@ -48,8 +48,14 @@ export async function determineNextQuestion(
       }
 
       if (data.questionId && QUESTION_REGISTRY[data.questionId]) {
+        const baseQuestion = QUESTION_REGISTRY[data.questionId];
+        const dynamicQuestion: RegisteredQuestion = {
+          ...baseQuestion,
+          title: data.dynamicTitle || baseQuestion.title,
+          subtitle: data.dynamicSubtitle || baseQuestion.subtitle,
+        };
         return {
-          question: QUESTION_REGISTRY[data.questionId],
+          question: dynamicQuestion,
           shouldStop: false,
           reason: data.reason,
           source: data.mode || 'ai_groq',

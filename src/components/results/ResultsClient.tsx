@@ -12,18 +12,21 @@ export function ResultsClient() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('borrower_profile');
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          setProfile(parsed);
-        } catch {
-          setProfile(null);
+    const timer = setTimeout(() => {
+      if (typeof window !== 'undefined') {
+        const stored = sessionStorage.getItem('borrower_profile');
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            setProfile(parsed);
+          } catch {
+            setProfile(null);
+          }
         }
+        setLoading(false);
       }
-      setLoading(false);
-    }
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const assessment: Assessment | null = useMemo(() => {

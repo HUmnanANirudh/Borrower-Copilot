@@ -5,8 +5,8 @@ import { BorrowerProfile, QuizQuestion, QuizOption } from '@/lib/types';
 
 interface InputControlsProps {
   currentQuestion: QuizQuestion;
-  currentValue: any;
-  handleAnswer: (field: keyof BorrowerProfile, value: any) => void;
+  currentValue: string | number | boolean | undefined;
+  handleAnswer: (field: keyof BorrowerProfile, value: string | number | boolean) => void;
   formatINR: (amt: number) => string;
 }
 
@@ -106,7 +106,9 @@ export function InputControls({
             {currentValue}
           </span>
           <span className="text-xs font-medium text-[#747371] block mt-1">
-            {currentQuestion.id === 'age' ? 'Years Old' : 'Years Active'}
+            {currentQuestion.id === 'age' 
+              ? 'Years Old' 
+              : (currentQuestion.id === 'professionalPracticeYears' ? 'Years in Practice' : 'Years Active')}
           </span>
         </div>
 

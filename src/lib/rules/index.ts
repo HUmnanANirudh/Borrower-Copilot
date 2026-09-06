@@ -296,9 +296,10 @@ export function evaluateLenderQuote(
     effectiveAllInAPR = Number((r * 12 * 100).toFixed(2));
   }
 
-  // 5. Total Cost of Credit
-  const totalInterest = (quotedMonthlyEMI * quote.tenureMonths) - quote.loanAmount;
+  // 5. Total Cost of Credit and Total Outflow
+  const totalInterest = Math.max(0, (quotedMonthlyEMI * quote.tenureMonths) - quote.loanAmount);
   const totalCostOfCredit = Math.round(totalInterest + totalUpfront);
+  const totalOutflow = Math.round(quote.loanAmount + totalCostOfCredit);
 
   // 6. Verdict Determination
   let verdict: 'FAIR' | 'SLIGHTLY_HIGH' | 'ABOVE_FAIR_RANGE' | 'PREDATORY' = 'FAIR';
@@ -336,6 +337,7 @@ export function evaluateLenderQuote(
     safeMaxEMI: assessment.recommendedMaxEMI,
     isEMIExceeded,
     effectiveAllInAPR,
+    totalOutflow,
     totalCostOfCredit,
     counterOfferAdvice
   };
