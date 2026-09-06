@@ -132,7 +132,11 @@ export function PrintableCard({ assessment, profile, isSharedView = false }: Pri
             Direct Statement for Sales Officer
           </span>
           <p className="text-sm sm:text-base font-medium text-[#171717] leading-relaxed">
-            &quot;Based on my verified profile, I am targeting an interest rate of {assessment.fairRateRange[0]}%–{assessment.fairRateRange[1]}%. Disclose the full all-inclusive APR in writing with all upfront fees and 18% statutory GST. I will not accept an agreement where monthly EMI exceeds {formatINR(assessment.recommendedMaxEMI)}/month.&quot;
+            {assessment.recommendedMaxEMI > 0 ? (
+              <>&quot;Based on my verified profile, I am targeting an interest rate of {assessment.fairRateRange[0]}%–{assessment.fairRateRange[1]}%. Disclose the full all-inclusive APR in writing with all upfront fees and 18% statutory GST. I will not accept an agreement where monthly EMI exceeds {formatINR(assessment.recommendedMaxEMI)}/month.&quot;</>
+            ) : (
+              <>&quot;Based on my verified profile and current living cost requirements, I cannot safely service new monthly debt obligations today without risking default. I request all terms and written APR disclosures to review with an independent advisor before proceeding.&quot;</>
+            )}
           </p>
         </div>
 

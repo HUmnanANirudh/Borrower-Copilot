@@ -215,7 +215,9 @@ export function evaluateAssessment(
   }
 
   const doNotCrossRules: string[] = [
-    `Never agree to an EMI higher than ₹${safeMaxEMI.toLocaleString('en-IN')}/month (${safeEMITrace.bindingRule === 'cash_flow_floor' ? 'Hard cash-flow floor' : '35% FOIR cap'}).`,
+    safeMaxEMI > 0
+      ? `Never agree to an EMI higher than ₹${safeMaxEMI.toLocaleString('en-IN')}/month (${safeEMITrace.bindingRule === 'cash_flow_floor' ? 'Hard cash-flow floor' : '35% FOIR cap'}).`
+      : 'Do not take on any monthly loan repayment until monthly cash surplus is established.',
     `Never permit single-premium loan insurance to be added into your loan principal.`,
     `Do not stretch tenure beyond 48 months for unsecured consumption loans just to artificially lower the EMI.`
   ];
@@ -322,7 +324,11 @@ export function evaluateLenderQuote(
     counterOfferAdvice.push(`Quoted interest rate (${quote.quotedInterestRate}%) is ${rateVarianceBps} bps above your fair band (${fairRateMin}%–${fairRateMax}%). Counter with: "My verified profile qualifies for ${fairRateMin}%. Please escalate to your credit manager."`);
   }
   if (isEMIExceeded) {
-    counterOfferAdvice.push(`Quoted monthly EMI of ₹${quotedMonthlyEMI.toLocaleString('en-IN')}/mo exceeds your safe ceiling of ₹${assessment.recommendedMaxEMI.toLocaleString('en-IN')}/mo by ₹${(quotedMonthlyEMI - assessment.recommendedMaxEMI).toLocaleString('en-IN')}/mo. Reduce the loan principal to match your cash flow.`);
+    if (assessment.recommendedMaxEMI <= 0) {
+      counterOfferAdvice.push(`Quoted monthly EMI of ₹${quotedMonthlyEMI.toLocaleString('en-IN')}/mo cannot be safely carried because your current safe borrowing capacity is ₹0/mo. Taking this loan would immediately force cuts to non-discretionary living costs.`);
+    } else {
+      counterOfferAdvice.push(`Quoted monthly EMI of ₹${quotedMonthlyEMI.toLocaleString('en-IN')}/mo exceeds your safe ceiling of ₹${assessment.recommendedMaxEMI.toLocaleString('en-IN')}/mo by ₹${(quotedMonthlyEMI - assessment.recommendedMaxEMI).toLocaleString('en-IN')}/mo. Reduce the loan principal to match your cash flow.`);
+    }
   }
   if (quote.mandatoryInsuranceOrCharges > 0) {
     counterOfferAdvice.push(`Insurance charges of ₹${quote.mandatoryInsuranceOrCharges.toLocaleString('en-IN')} are bundled into the quote. Request: "I already hold existing term life cover; remove the mandatory loan protection charge."`);

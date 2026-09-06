@@ -26,7 +26,7 @@ export function ReasonTraceAccordion({ assessment, profile }: ReasonTraceAccordi
   const expenses = profile.householdLivingExpenses || 0;
   const buffer10 = Math.round(totalIncome * 0.10);
   const cashFlowCeiling = Math.max(0, totalIncome - expenses - existingEMI - buffer10);
-  const foirLimit = Math.round((totalIncome * 0.35) - existingEMI);
+  const foirLimit = Math.max(0, Math.round((totalIncome * 0.35) - existingEMI));
 
   return (
     <div className="w-full bg-white rounded-3xl border border-[#ebeae8] shadow-sm overflow-hidden">

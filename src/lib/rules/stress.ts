@@ -27,20 +27,29 @@ export function calculateStressScenario(
   const stressedIncome = netIncome * stressMultiplier;
   const stressedFOIR = Math.round((totalOriginalObligation / stressedIncome) * 100);
 
+  const livingExpenses = Math.max(0, profile.householdLivingExpenses);
+  const isBudgetDeficit = recommendedMaxEMI <= 0 && (livingExpenses >= netIncome * 0.85);
+
   let consequenceStatus: ConsequenceStatus = 'Still manageable';
-  if (stressedFOIR > 50) {
+  if (stressedFOIR > 50 || (isBudgetDeficit && stressedIncome < livingExpenses)) {
     consequenceStatus = 'Unsafe';
-  } else if (stressedFOIR > 38) {
+  } else if (stressedFOIR > 38 || isBudgetDeficit) {
     consequenceStatus = 'Uncomfortable';
   }
 
   const isBreached = consequenceStatus === 'Unsafe';
 
-  const explanation = consequenceStatus === 'Unsafe'
-    ? `If monthly income drops by ${incomeStressPercent}%, your total debt servicing jumps from ${originalFOIR}% to ${stressedFOIR}% of income. This breaches the safe 50% crisis ceiling, threatening essential living expenses.`
-    : consequenceStatus === 'Uncomfortable'
-    ? `If monthly income drops by ${incomeStressPercent}%, your total debt burden climbs from ${originalFOIR}% to ${stressedFOIR}%. This leaves little room for discretionary spending, though essential bills remain covered.`
-    : `Even with a ${incomeStressPercent}% drop in monthly earnings, your total debt obligations remain at ${stressedFOIR}% of income, leaving a comfortable cushion for living expenses.`;
+  let explanation: string;
+  if (isBudgetDeficit) {
+    const deficitAmount = Math.max(0, Math.round(livingExpenses - stressedIncome));
+    explanation = `With zero room for new debt, your debt ratio is 0%. However, because essential living expenses (₹${livingExpenses.toLocaleString('en-IN')}) already consume almost all income, a ${incomeStressPercent}% drop creates an immediate monthly household deficit of ₹${deficitAmount.toLocaleString('en-IN')}.`;
+  } else if (consequenceStatus === 'Unsafe') {
+    explanation = `If monthly income drops by ${incomeStressPercent}%, your total debt servicing jumps from ${originalFOIR}% to ${stressedFOIR}% of income. This breaches the safe 50% crisis ceiling, threatening essential living expenses.`;
+  } else if (consequenceStatus === 'Uncomfortable') {
+    explanation = `If monthly income drops by ${incomeStressPercent}%, your total debt burden climbs from ${originalFOIR}% to ${stressedFOIR}%. This leaves little room for discretionary spending, though essential bills remain covered.`;
+  } else {
+    explanation = `Even with a ${incomeStressPercent}% drop in monthly earnings, your total debt obligations remain at ${stressedFOIR}% of income, leaving a comfortable cushion for living expenses.`;
+  }
 
   return {
     type: 'income_shock',

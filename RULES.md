@@ -20,7 +20,8 @@ This document lists the business rules, limits, and assumptions that control the
 | Maximum Safe Debt Ratio (Salaried) | 35% of income | This is a safe ceiling for debt. Lenders often allow 50% to 60%, which forces borrower distress. | Conservative household leverage caps |
 | Maximum Safe Debt Ratio (Gig Worker) | 25% of income | Variable incomes require a lower debt ceiling to protect the borrower when earnings drop. | Volatility-adjusted leverage limits for informal workers |
 | Lender Debt Ratio Assumption | 50% (Score below 750) to 60% (Score 750 or above) | Banks use these ratios to maximize loan amounts. We calculate this to contrast the bank offer with the safe borrower limit. | Bank underwriting guidelines |
-| High Debt Warning | Current Debt Ratio >= 35% OR (Expenses + EMIs) >= 90% of income | This triggers the application to advise the user not to borrow. | Pre-delinquency leading indicators |
+| Existing Debt Overburden | Current Debt Ratio >= 35% | Existing loan commitments already exceed the safe leverage threshold, risking debt distress. Triggers recommendation to pay down existing debt before taking new loans. | Pre-delinquency leading indicators |
+| Living Expense Deficit | (Essential Expenses + EMIs) >= 90% of income | Non-discretionary living costs leave less than the 10% emergency reserve buffer, producing ₹0 uncommitted cash flow. Triggers advice to build liquid surplus rather than taking on unserviceable debt. | Household budget solvency standards |
 
 ## 3. Interest Rates and Pricing
 
