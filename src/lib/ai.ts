@@ -1,18 +1,5 @@
 import { BorrowerProfile, Assessment } from './types';
 
-/**
- * AI SDK integration module supporting AI_GATEWAY_API_KEY.
- *
- * ARCHITECTURAL CONTRACT:
- * 1. The core financial truth (all numbers, FOIR, safe ceilings, rate bands) is 100% deterministic
- *    and evaluated offline without any external LLM dependencies.
- * 2. The AI layer is an optional conversational and presentation amplifier:
- *    - It turns the borrower's deterministic negotiation card into natural, punchy spoken vernacular
- *      (e.g., local branch manager roleplay script).
- *    - If AI_GATEWAY_API_KEY is unset, an instant in-repo deterministic template runs seamlessly
- *      with zero latency and zero evaluator friction.
- */
-
 export interface AIAdviceResponse {
   spokenPitch: string;
   hardObjectionsToRaise: string[];
@@ -24,21 +11,36 @@ export async function getEnhancedNegotiationAdvice(
   profile: BorrowerProfile,
   assessment: Assessment
 ): Promise<AIAdviceResponse> {
-  const apiKey = process.env.AI_GATEWAY_API_KEY;
+  const aiGatewayKey = process.env.AI_GATEWAY_API_KEY;
+  const groqKey = process.env.GROQ_API_KEY;
 
-  if (!apiKey) {
+  if (!aiGatewayKey && !groqKey) {
     return getDeterministicAdviceTemplate(profile, assessment);
   }
 
+  const endpoint = aiGatewayKey
+    ? 'https://ai-gateway.vercel.sh/v1/chat/completions'
+    : 'https://api.groq.com/openai/v1/chat/completions';
+
+  const authHeader = aiGatewayKey
+    ? `Bearer ${aiGatewayKey}`
+    : `Bearer ${groqKey}`;
+
+  const modelName = aiGatewayKey
+    ? 'google/gemini-2.5-flash'
+    : 'openai/gpt-oss-120b';
+
   try {
-    const response = await fetch('https://ai-gateway.vercel.sh/v1/chat/completions', {
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Authorization': authHeader
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: modelName,
+        reasoning_effort: 'low',
+        max_completion_tokens: 400,
         messages: [
           {
             role: 'system',

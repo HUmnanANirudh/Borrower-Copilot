@@ -16,11 +16,11 @@ export interface RegisteredQuestion extends QuizQuestion {
 export const BASE_QUESTION_IDS: (keyof BorrowerProfile)[] = [
   'loanPurpose',
   'requestedAmount',
-  'age',
   'primaryIncomeSignal',
   'netMonthlyIncome',
   'existingMonthlyEMI',
   'householdLivingExpenses',
+  'age',
   'creditScoreStatus',
 ];
 
