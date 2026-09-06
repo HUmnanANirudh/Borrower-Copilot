@@ -90,20 +90,101 @@ body {
   line-height: 0.92;
 }
 
-/* Print Optimization */
+/* Print Optimization - Strictly Single Page */
 @media print {
-  body {
-    background-color: #ffffff !important;
-    color: #000000 !important;
+  @page {
+    size: A4 portrait;
+    margin: 0; /* Strips browser-injected header (Date) and footer (URL/Page) */
   }
+
+  html, body, main {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #171717 !important;
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 8mm 10mm !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   .no-print {
     display: none !important;
   }
+
   .print-only {
     display: block !important;
   }
+
   .menti-card-shadow {
     box-shadow: none !important;
-    border: 1px solid #000000 !important;
   }
+
+  /* Single-page strict containment - zero page break */
+  .print-one-page {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Safe Area Insets for Mobile PWA */
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pl-safe {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+.pr-safe {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Mobile Touch Ergonomics */
+@media (max-width: 640px) {
+  button, input, select {
+    touch-action: manipulation;
+  }
+}
+
+/* Enhanced mobile slider thumb */
+input[type="range"] {
+  touch-action: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #5769e7;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(87, 105, 231, 0.45);
+  border: 2.5px solid #ffffff;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+  box-shadow: 0 3px 12px rgba(87, 105, 231, 0.6);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #5769e7;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(87, 105, 231, 0.45);
+  border: 2.5px solid #ffffff;
 }

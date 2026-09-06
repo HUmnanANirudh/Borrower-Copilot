@@ -194,21 +194,21 @@ export function QuizContainer() {
     : true;
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-5 py-6 sm:py-10 flex flex-col justify-between">
-      <div>
-        <div className="flex items-center justify-between mb-5">
+    <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-3 sm:py-6 md:py-8 flex-1 flex flex-col justify-between">
+      <div className="flex-1 flex flex-col">
+        <div className="flex items-center justify-between mb-3 sm:mb-5">
           <Link 
             href="/"
-            className="flex items-center gap-2 font-display text-[20px] text-[#171717] tracking-tight"
+            className="flex items-center gap-2 font-display text-[18px] sm:text-[20px] text-[#171717] tracking-tight"
           >
-            <Avatar size={26} name="BorrowIQ" variant="pixel" colors={["#5769e7", "#171717", "#f3ede7", "#52ad6e", "#d5daf7"]} />
+            <Avatar size={24} name="BorrowIQ" variant="pixel" colors={["#5769e7", "#171717", "#f3ede7", "#52ad6e", "#d5daf7"]} />
             BorrowIQ
           </Link>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[#171717] px-3.5 py-1 rounded-full bg-white border border-[#ebeae8] shadow-xs">
+            <span className="text-[11px] sm:text-xs font-semibold text-[#171717] px-3 sm:px-3.5 py-1 rounded-full bg-white border border-[#ebeae8] shadow-2xs">
               {isAdaptivePhase 
-                ? 'Adaptive Range Check' 
+                ? 'Adaptive Check' 
                 : `Step ${currentIndex + 1} of ${totalBaseQuestions}`}
             </span>
           </div>
@@ -220,19 +220,20 @@ export function QuizContainer() {
           aria-valuenow={progressPercent} 
           aria-valuemin={0} 
           aria-valuemax={100}
-          className="w-full h-1.5 bg-[#dedcd9] rounded-full overflow-hidden mb-6"
+          className="w-full h-1.5 sm:h-2 bg-[#dedcd9] rounded-full overflow-hidden mb-3 sm:mb-6"
         >
           <div 
             className="h-full bg-[#5769e7] transition-all duration-300 rounded-full"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
+
         {/* Adaptive Rationale Banner */}
         {currentMeta?.reason && (
-          <div className="mb-6 p-4 rounded-2xl bg-white border border-[#ebeae8] flex items-start gap-3">
+          <div className="mb-3 sm:mb-6 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white border border-[#ebeae8] flex items-start gap-2.5 sm:gap-3 shadow-2xs">
             <div className="w-2 h-2 rounded-full bg-[#5769e7] mt-1.5 shrink-0" />
             <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider block text-[#5d5b59]">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider block text-[#5d5b59]">
                 Adaptive Underwriting Check
               </span>
               <p className="text-xs text-[#171717] font-medium leading-relaxed mt-0.5">
@@ -243,50 +244,50 @@ export function QuizContainer() {
         )}
 
         {/* Main Questionnaire Card */}
-        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#ebeae8] shadow-sm min-h-[360px] flex flex-col justify-center">
+        <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-8 md:p-10 border border-[#ebeae8] shadow-sm flex-1 flex flex-col justify-center min-h-[300px] sm:min-h-[360px]">
           {isSelecting ? (
             <div className="py-8 sm:py-12 flex flex-col items-center justify-center text-center">
-              <div className="relative mb-5">
-                <div className="w-16 h-16 rounded-2xl bg-[#f7f6f4] border border-[#ebeae8] flex items-center justify-center shadow-xs">
-                  <Avatar size={40} name="BorrowIQ" variant="pixel" colors={["#5769e7", "#171717", "#f3ede7", "#52ad6e", "#d5daf7"]} />
+              <div className="relative mb-4 sm:mb-5">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#f7f6f4] border border-[#ebeae8] flex items-center justify-center shadow-xs">
+                  <Avatar size={36} name="BorrowIQ" variant="pixel" colors={["#5769e7", "#171717", "#f3ede7", "#52ad6e", "#d5daf7"]} />
                 </div>
               </div>
 
-              <h2 className="text-xl font-bold text-[#171717] tracking-tight mb-2">
+              <h2 className="text-lg sm:text-xl font-bold text-[#171717] tracking-tight mb-2">
                 Analyzing Risk Signals
               </h2>
 
               {/* Real animated progress bar */}
-              <div className="w-64 sm:w-80 h-2 bg-[#ebeae8] rounded-full overflow-hidden mb-3">
+              <div className="w-56 sm:w-72 md:w-80 h-2 bg-[#ebeae8] rounded-full overflow-hidden mb-3">
                 <div 
                   className="h-full bg-[#5769e7] rounded-full transition-all duration-200 ease-out" 
                   style={{ width: `${Math.min(95, Math.round(analysisProgress))}%` }}
                 />
               </div>
 
-              <p className="text-xs text-[#747371] font-medium max-w-sm transition-all">
+              <p className="text-xs text-[#747371] font-medium max-w-sm transition-all px-2">
                 {analysisStage}
               </p>
             </div>
           ) : (
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#747371]">
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[#747371]">
                   {isAdaptivePhase ? 'Adaptive Range Tightening' : 'Essential Intake'}
                 </span>
               </div>
 
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#171717] leading-tight tracking-tight mb-2">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#171717] leading-tight tracking-tight mb-1 sm:mb-2">
                 {currentQuestion.title}
               </h1>
 
               {currentQuestion.subtitle && (
-                <p className="text-xs sm:text-sm text-[#747371] leading-relaxed mb-4">
+                <p className="text-xs sm:text-sm text-[#747371] leading-relaxed mb-3 sm:mb-4">
                   {currentQuestion.subtitle}
                 </p>
               )}
 
-              <div className="py-4 sm:py-6">
+              <div className="py-2 sm:py-5">
                 <InputControls 
                   currentQuestion={currentQuestion} 
                   currentValue={currentValue} 
@@ -297,49 +298,49 @@ export function QuizContainer() {
             </div>
           )}
         </div>
+      </div>
 
-        {/* Navigation controls outside the card */}
-        {!isSelecting && (
-          <div className="mt-6 flex items-center justify-between gap-4">
-            {currentIndex > 0 ? (
+      {/* Navigation controls - sticky bottom on mobile for thumb accessibility */}
+      {!isSelecting && (
+        <div className="sticky bottom-0 z-30 sm:static bg-[#f3ede7]/95 sm:bg-transparent backdrop-blur-md sm:backdrop-blur-none pt-3 pb-2 sm:py-0 mt-3 sm:mt-6 border-t border-[#ebeae8]/80 sm:border-t-0 flex items-center justify-between gap-3">
+          {currentIndex > 0 ? (
+            <button
+              type="button"
+              onClick={handlePrevious}
+              className="min-h-[44px] sm:min-h-[48px] px-4 sm:px-5 rounded-full text-xs sm:text-sm font-semibold bg-white border border-[#ebeae8] hover:bg-[#f7f6f4] active:bg-[#f2f1f0] text-[#171717] cursor-pointer transition-all shadow-2xs touch-manipulation active:scale-[0.98]"
+            >
+              Previous
+            </button>
+          ) : (
+            <div />
+          )}
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            {(currentQuestion.canSkip || isAdaptivePhase || currentIndex === totalBaseQuestions - 1) && (
               <button
                 type="button"
-                onClick={handlePrevious}
-                className="px-5 py-2.5 rounded-full text-xs font-semibold bg-white border border-[#ebeae8] hover:bg-[#f7f6f4] text-[#171717] cursor-pointer transition-colors shadow-xs"
+                onClick={handleSkip}
+                className="min-h-[44px] sm:min-h-[48px] text-xs sm:text-sm font-semibold text-[#747371] hover:text-[#171717] px-2.5 sm:px-3 py-2 cursor-pointer transition-colors touch-manipulation"
               >
-                Previous
+                Skip
               </button>
-            ) : (
-              <div />
             )}
 
-            <div className="flex items-center gap-2 sm:gap-3">
-              {(currentQuestion.canSkip || isAdaptivePhase || currentIndex === totalBaseQuestions - 1) && (
-                <button
-                  type="button"
-                  onClick={handleSkip}
-                  className="text-xs font-semibold text-[#747371] hover:text-[#171717] px-2.5 sm:px-3 py-2 cursor-pointer transition-colors"
-                >
-                  Skip
-                </button>
-              )}
-
-              <button
-                type="button"
-                disabled={!isChoiceAnswered || isSelecting}
-                onClick={handleNext}
-                className={`px-5 sm:px-7 py-2.5 sm:py-3 rounded-full text-xs font-semibold shadow-sm transition-all ${
-                  !isChoiceAnswered || isSelecting
-                    ? 'bg-[#dedcd9] text-[#747371] cursor-not-allowed opacity-60'
-                    : 'bg-[#5769e7] hover:bg-[#4958be] text-white cursor-pointer active:scale-98'
-                }`}
-              >
-                Continue
-              </button>
-            </div>
+            <button
+              type="button"
+              disabled={!isChoiceAnswered || isSelecting}
+              onClick={handleNext}
+              className={`min-h-[44px] sm:min-h-[48px] px-6 sm:px-8 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-semibold shadow-xs transition-all touch-manipulation ${
+                !isChoiceAnswered || isSelecting
+                  ? 'bg-[#dedcd9] text-[#747371] cursor-not-allowed opacity-60'
+                  : 'bg-[#5769e7] hover:bg-[#4958be] active:bg-[#3f4ba1] text-white cursor-pointer active:scale-[0.98]'
+              }`}
+            >
+              Continue
+            </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

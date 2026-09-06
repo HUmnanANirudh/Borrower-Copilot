@@ -68,7 +68,7 @@ export function CardClient() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f3ede7] text-[#171717] font-sans selection:bg-[#5769e7]/20 selection:text-[#5769e7]">
+    <main className="min-h-screen bg-[#f3ede7] print:bg-white print:min-h-0 print:h-auto print:p-0 text-[#171717] font-sans selection:bg-[#5769e7]/20 selection:text-[#5769e7]">
       <PrintableCard assessment={assessment} profile={profile} />
     </main>
   );
