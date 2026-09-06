@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { BorrowerProfile, Assessment } from '@/lib/types';
 import { evaluateAssessment } from '@/lib/rules/index';
 import { QuoteChecker } from '@/components/results/QuoteChecker';
+import { EMITenureTable } from '@/components/results/EMITenureTable';
 import Avatar from 'boring-avatars';
 
 export function ResultsClient() {
@@ -216,7 +217,10 @@ export function ResultsClient() {
           </div>
         </div>
 
-        {/* Row 3: Bank Quote Reality Check Bento */}
+        {/* Row 3: Tenure Amortization Schedule */}
+        <EMITenureTable assessment={assessment} />
+
+        {/* Row 4: Bank Quote Reality Check Bento */}
         <QuoteChecker assessment={assessment} />
 
       </main>
