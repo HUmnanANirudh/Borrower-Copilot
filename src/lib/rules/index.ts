@@ -106,7 +106,9 @@ export function evaluateAssessment(
     : profile.creditScoreStatus === 'unknown' ? 'UNCERTAIN' : 'COMPETITIVE';
 
   // Step 7: Tenure Matrix & Stress Scenario
-  const baselinePrincipal = Math.min(profile.requestedAmount, Math.max(10000, eligibility.borrowerSafeRange[1]));
+  const baselinePrincipal = eligibility.borrowerSafeRange[1] > 0
+    ? Math.min(profile.requestedAmount, eligibility.borrowerSafeRange[1])
+    : profile.requestedAmount;
   const tenureMatrix = generateTenureMatrix(
     baselinePrincipal > 0 ? baselinePrincipal : profile.requestedAmount,
     midFairRate
@@ -138,19 +140,20 @@ export function evaluateAssessment(
         recommendation: 'Do not take new commercial debt today. Explore regulated lower-cost restructuring (such as self-help micro-credit or non-profit debt consolidation) to retire 30%+ app debt.',
         illustrativeScenario: 'For illustration: Consolidating ₹35,000 at a regulated 15% rate over 24 months costs ~₹1,700/mo, instantly freeing up over ₹6,800 every month.'
       };
-    } else if (metrics.isOverleveraged) {
-      verdictReason = `Existing loan repayments already consume ${Math.round(metrics.currentFOIR)}% of income (breaching the 35% safe ceiling).`;
+    } else if (metrics.currentFOIR >= (metrics.safeFOIRCapPercent ?? 35)) {
+      verdictReason = `Existing loan repayments already consume ${Math.round(metrics.currentFOIR)}% of income (breaching the ${metrics.safeFOIRCapPercent}% safe ceiling).`;
       betterAlternative = {
         action: 'wait_and_rebuild_buffer',
         title: 'Wait and Pay Down Existing EMIs',
         recommendation: 'Wait until existing car/personal loans mature or pay down balances to bring your current FOIR below 25% before re-applying.'
       };
     } else {
-      verdictReason = 'Household living expenses and ongoing debt leave zero uncommitted cash flow for new monthly EMIs.';
+      const expenseShare = Math.round((facts.effectiveExpensesWithSanityFloor / (facts.totalHouseholdIncome || 1)) * 100);
+      verdictReason = `Household living expenses (₹${facts.effectiveExpensesWithSanityFloor.toLocaleString('en-IN')}/mo) consume ${expenseShare}% of monthly income, leaving zero uncommitted cash buffer for new loan EMIs.`;
       betterAlternative = {
         action: 'wait_and_rebuild_buffer',
-        title: 'Rebuild a 1-Month Emergency Cash Buffer',
-        recommendation: 'Focus on establishing a 1-month liquid emergency cushion before taking on new debt obligations.'
+        title: 'Build Cash Surplus Before Borrowing',
+        recommendation: 'Your essential living costs leave no safe margin for monthly repayments. Focus on trimming expenses or increasing income to create a liquid cushion before committing to new debt.'
       };
     }
   } else if (

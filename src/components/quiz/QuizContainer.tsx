@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { BorrowerProfile } from '@/lib/types';
+import { BorrowerProfile, QuizQuestion } from '@/lib/types';
 import { BASE_QUESTION_IDS, QUESTION_REGISTRY, RegisteredQuestion } from '@/lib/questions/registry';
 import { determineNextQuestion, NextQuestionResult } from '@/lib/questions/selector';
 import Avatar from 'boring-avatars';
@@ -102,10 +102,22 @@ export function QuizContainer() {
     router.push('/results');
   };
 
+  const getDefaultValue = (q: QuizQuestion, currentProf: Partial<BorrowerProfile>) => {
+    if (q.id === 'householdLivingExpenses' && currentProf.netMonthlyIncome) {
+      const calculated = Math.round((currentProf.netMonthlyIncome * 0.35) / 2500) * 2500;
+      const minVal = typeof q.min === 'number' ? q.min : 10000;
+      const maxVal = typeof q.max === 'number' ? q.max : 500000;
+      const capVal = typeof q.defaultValue === 'number' ? q.defaultValue : 30000;
+      return Math.min(capVal, Math.max(minVal, Math.min(maxVal, calculated)));
+    }
+    return q.defaultValue;
+  };
+
   const handleNext = async () => {
+    const defaultVal = getDefaultValue(currentQuestion, profile);
     const answeredValue = currentQuestion.inputType === 'choice_pill'
       ? profile[currentQuestion.id as keyof BorrowerProfile]
-      : (profile[currentQuestion.id as keyof BorrowerProfile] ?? currentQuestion.defaultValue);
+      : (profile[currentQuestion.id as keyof BorrowerProfile] ?? defaultVal);
     
     const updatedProfile = {
       ...profile,
@@ -175,7 +187,7 @@ export function QuizContainer() {
   // Deliberate input: choice questions must NOT pre-select unless the user has chosen
   const currentValue = currentQuestion.inputType === 'choice_pill'
     ? profile[currentQuestion.id as keyof BorrowerProfile]
-    : (profile[currentQuestion.id as keyof BorrowerProfile] ?? currentQuestion.defaultValue);
+    : (profile[currentQuestion.id as keyof BorrowerProfile] ?? getDefaultValue(currentQuestion, profile));
 
   const isChoiceAnswered = currentQuestion.inputType === 'choice_pill'
     ? (currentValue !== undefined && currentValue !== null)
